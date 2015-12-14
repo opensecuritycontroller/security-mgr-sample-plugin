@@ -1,0 +1,11 @@
+{
+    "metaDataVersion": "1.0",
+    "pluginName": "ISM",
+    "jarFilename": "IsmMgrPlugin.jar",
+    "applianceManagerApiClass": "com.mcafee.ism.api.IsmApplianceManagerApi",
+    "minIscVersion": {
+        "major": 2,
+        "minor": 0,
+        "build": 2370
+    }
+}
