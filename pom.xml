@@ -77,11 +77,11 @@
 				</configuration>
 			</plugin>
 
-			<plugin>
+			<!-- <plugin>
 				<artifactId>maven-antrun-plugin</artifactId>
 				<version>1.7</version>
 				<executions>
-					<!-- Copy src/main/webapp directory -->
+					Copy src/main/webapp directory
 					<execution>
 						<phase>package</phase>
 						<goals>
@@ -100,7 +100,7 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>
+			</plugin> -->
 
 		</plugins>
 	</build>
