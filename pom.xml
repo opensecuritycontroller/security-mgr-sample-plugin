@@ -77,11 +77,11 @@
 				</configuration>
 			</plugin>
 
-			<!-- <plugin>
+			<plugin>
 				<artifactId>maven-antrun-plugin</artifactId>
 				<version>1.7</version>
 				<executions>
-					Copy src/main/webapp directory
+					<!-- Copy src/main/webapp directory -->
 					<execution>
 						<phase>package</phase>
 						<goals>
@@ -89,18 +89,27 @@
 						</goals>
 						<configuration>
 							<tasks>
-								<copy file="${basedir}/IsmMgrPlugin.json" todir="${basedir}/../vmiDCServer/mgr_plugins" />
+								<!-- <copy file="${basedir}/IsmMgrPlugin.json" todir="${basedir}/../vmiDCServer/mgr_plugins" />
 								<copy file="${basedir}/target/IsmMgrPlugin.jar" todir="${basedir}/../vmiDCServer/mgr_plugins" />
 
 								<copy file="${basedir}/IsmMgrPlugin.json"
 									todir="${basedir}/../serverBOM/root/opt/vmidc/bin/mgr_plugins" />
 								<copy file="${basedir}/target/IsmMgrPlugin.jar"
-									todir="${basedir}/../serverBOM/root/opt/vmidc/bin/mgr_plugins" />
+									todir="${basedir}/../serverBOM/root/opt/vmidc/bin/mgr_plugins" /> -->
+
+                                <!-- Create plugin zip -->
+								<copy file="${basedir}/IsmMgrPlugin.json" tofile="${project.build.directory}/meta.json" />
+
+								<zip destfile="${project.build.directory}/IsmMgrPlugin.zip">
+									<fileset file="${project.build.directory}/meta.json" />
+									<fileset file="${project.build.directory}/IsmMgrPlugin.jar" />
+								</zip>
+
 							</tasks>
 						</configuration>
 					</execution>
 				</executions>
-			</plugin> -->
+			</plugin>
 
 		</plugins>
 	</build>
