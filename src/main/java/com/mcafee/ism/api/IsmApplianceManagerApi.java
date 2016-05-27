@@ -104,4 +104,9 @@ public class IsmApplianceManagerApi implements ApplianceManagerApi {
         return false;
     }
 
+    @Override
+    public String getVendorName() {
+        return "ISM";
+    }
+
 }
