@@ -4,10 +4,12 @@ import com.intelsecurity.isc.plugin.manager.ManagerAuthenticationType;
 import com.intelsecurity.isc.plugin.manager.ManagerNotificationSubscriptionType;
 import com.intelsecurity.isc.plugin.manager.api.ApplianceManagerApi;
 import com.intelsecurity.isc.plugin.manager.api.IscJobNotificationApi;
+import com.intelsecurity.isc.plugin.manager.api.ManagerCallbackNotificationApi;
 import com.intelsecurity.isc.plugin.manager.api.ManagerDeviceApi;
 import com.intelsecurity.isc.plugin.manager.api.ManagerDomainApi;
 import com.intelsecurity.isc.plugin.manager.api.ManagerPolicyApi;
-import com.intelsecurity.isc.plugin.manager.api.ManagerCallbackNotificationApi;
+import com.intelsecurity.isc.plugin.manager.api.ManagerSecurityGroupApi;
+import com.intelsecurity.isc.plugin.manager.api.ManagerSecurityGroupInterfaceApi;
 import com.intelsecurity.isc.plugin.manager.api.ManagerWebSocketNotificationApi;
 import com.intelsecurity.isc.plugin.manager.element.ApplianceManagerConnectorElement;
 import com.intelsecurity.isc.plugin.manager.element.VirtualSystemElement;
@@ -23,8 +25,20 @@ public class IsmApplianceManagerApi implements ApplianceManagerApi {
     }
 
     @Override
-    public ManagerDeviceApi createManagerDeviceApi(VirtualSystemElement vs) throws Exception {
+    public ManagerDeviceApi createManagerDeviceApi(ApplianceManagerConnectorElement mc, VirtualSystemElement vs) throws Exception {
         return IsmDeviceApi.create(vs);
+    }
+
+    @Override
+    public ManagerSecurityGroupInterfaceApi createManagerSecurityGroupInterfaceApi(ApplianceManagerConnectorElement mc,
+            VirtualSystemElement vs) throws Exception {
+        return IsmSecurityGroupInterfaceApi.create(vs);
+    }
+
+    @Override
+    public ManagerSecurityGroupApi createManagerSecurityGroupApi(ApplianceManagerConnectorElement mc,
+            VirtualSystemElement vs) throws Exception {
+        throw new UnsupportedOperationException("Security Group sync is not supported.");
     }
 
     @Override
@@ -50,7 +64,7 @@ public class IsmApplianceManagerApi implements ApplianceManagerApi {
     }
 
     @Override
-    public IscJobNotificationApi createIscJobNotificationApi(VirtualSystemElement vs) throws Exception {
+    public IscJobNotificationApi createIscJobNotificationApi(ApplianceManagerConnectorElement mc, VirtualSystemElement vs) throws Exception {
         return null;
     }
 
@@ -91,17 +105,22 @@ public class IsmApplianceManagerApi implements ApplianceManagerApi {
 
     @Override
     public ManagerNotificationSubscriptionType getNotificationType() {
-        return ManagerNotificationSubscriptionType.CALLBACK_URL;
-    }
-
-    @Override
-    public boolean isNotificationSupported() {
-        return false;
+        return ManagerNotificationSubscriptionType.NONE;
     }
 
     @Override
     public boolean isSecurityGroupSyncSupport() {
         return false;
+    }
+
+    @Override
+    public boolean isAgentManaged() {
+        return false;
+    }
+
+    @Override
+    public void checkConnection(ApplianceManagerConnectorElement mc) throws Exception {
+
     }
 
     @Override

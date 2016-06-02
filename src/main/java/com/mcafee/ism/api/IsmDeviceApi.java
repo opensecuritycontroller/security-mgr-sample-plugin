@@ -8,15 +8,13 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 
 import com.intelsecurity.isc.plugin.manager.api.ManagerDeviceApi;
+import com.intelsecurity.isc.plugin.manager.element.ApplianceBootStrapElement;
 import com.intelsecurity.isc.plugin.manager.element.DistributedApplianceInstanceElement;
 import com.intelsecurity.isc.plugin.manager.element.ManagerDeviceElement;
 import com.intelsecurity.isc.plugin.manager.element.ManagerDeviceMemberElement;
-import com.intelsecurity.isc.plugin.manager.element.ManagerSecurityGroupElement;
-import com.intelsecurity.isc.plugin.manager.element.ManagerSecurityGroupInterfaceElement;
 import com.intelsecurity.isc.plugin.manager.element.VirtualSystemElement;
 import com.mcafee.ism.model.Device;
 import com.mcafee.ism.model.MemberDevice;
-import com.mcafee.ism.model.SecurityGroupInterface;
 import com.mcafee.vmidc.broker.model.entities.appliance.DistributedApplianceInstance;
 import com.mcafee.vmidc.broker.model.entities.appliance.VirtualSystem;
 import com.mcafee.vmidc.broker.service.persistence.EntityManager;
@@ -90,6 +88,11 @@ public class IsmDeviceApi implements ManagerDeviceApi {
             }
         });
 
+    }
+
+    @Override
+    public boolean isDeviceGroupSupported() {
+        return true;
     }
 
     @Override
@@ -196,54 +199,6 @@ public class IsmDeviceApi implements ManagerDeviceApi {
     }
 
     @Override
-    public String createSecurityGroupInterface(String name, String policyId, String tag) throws Exception {
-        return findSecurityGroupInterfaceByName(name);
-    }
-
-    @Override
-    public void updateSecurityGroupInterface(String securityGroupId, String name, String policyId,
-            String serviceProfileId) throws Exception {
-    }
-
-    @Override
-    public void deleteSecurityGroupInterface(String id) throws Exception {
-    }
-
-    @Override
-    public ManagerSecurityGroupInterfaceElement getSecurityGroupInterfaceById(String id) throws Exception {
-        for (com.mcafee.vmidc.broker.model.entities.virtualization.SecurityGroupInterface sgi : this.vs
-                .getSecurityGroupInterfaces()) {
-            if (sgi.getId().toString().equals(id)) {
-                return new SecurityGroupInterface(sgi.getId(), sgi.getName(), sgi.getPolicyId(), sgi.getTag());
-            }
-        }
-
-        return null;
-    }
-
-    @Override
-    public String findSecurityGroupInterfaceByName(String name) throws Exception {
-        for (com.mcafee.vmidc.broker.model.entities.virtualization.SecurityGroupInterface sgi : this.vs
-                .getSecurityGroupInterfaces()) {
-            if (sgi.getName().equals(name)) {
-                return sgi.getId().toString();
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public List<? extends ManagerSecurityGroupInterfaceElement> listSecurityGroupInterfaces() throws Exception {
-        List<ManagerSecurityGroupInterfaceElement> sgis = new ArrayList<ManagerSecurityGroupInterfaceElement>();
-        for (com.mcafee.vmidc.broker.model.entities.virtualization.SecurityGroupInterface sgi : this.vs
-                .getSecurityGroupInterfaces()) {
-            sgis.add(new SecurityGroupInterface(sgi.getId(), sgi.getName(), sgi.getPolicyId(), sgi.getTag()));
-        }
-
-        return sgis;
-    }
-
-    @Override
     public void close() {
     }
 
@@ -268,26 +223,7 @@ public class IsmDeviceApi implements ManagerDeviceApi {
     }
 
     @Override
-    public String createSecurityGroup(String name, String iscId) throws Exception {
+    public byte[] getBootstrapinfo(ApplianceBootStrapElement bootStrapInfo) {
         return null;
     }
-
-    @Override
-    public void updateSecurityGroup(String mgrId, String name) throws Exception {
-    }
-
-    @Override
-    public void deleteSecurityGroup(String mgrId) throws Exception {
-    }
-
-    @Override
-    public List<? extends ManagerSecurityGroupElement> getSecurityGroupList() throws Exception {
-        return null;
-    }
-
-    @Override
-    public ManagerSecurityGroupElement getSecurityGroupById(String mgrId) {
-        return null;
-    }
-
 }
