@@ -89,15 +89,15 @@
 						</goals>
 						<configuration>
 							<tasks>
-								<!-- <copy file="${basedir}/IsmMgrPlugin.json" todir="${basedir}/../vmiDCServer/mgr_plugins" />
+								<copy file="${basedir}/IsmMgrPlugin.json" todir="${basedir}/../vmiDCServer/mgr_plugins" />
 								<copy file="${basedir}/target/IsmMgrPlugin.jar" todir="${basedir}/../vmiDCServer/mgr_plugins" />
-
+								
 								<copy file="${basedir}/IsmMgrPlugin.json"
 									todir="${basedir}/../serverBOM/root/opt/vmidc/bin/mgr_plugins" />
 								<copy file="${basedir}/target/IsmMgrPlugin.jar"
-									todir="${basedir}/../serverBOM/root/opt/vmidc/bin/mgr_plugins" /> -->
+									todir="${basedir}/../serverBOM/root/opt/vmidc/bin/mgr_plugins" />
 
-                                <!-- Create plugin zip -->
+								<!-- Create plugin zip -->
 								<copy file="${basedir}/IsmMgrPlugin.json" tofile="${project.build.directory}/meta.json" />
 
 								<zip destfile="${project.build.directory}/IsmMgrPlugin.zip">
@@ -107,6 +107,23 @@
 
 							</tasks>
 						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>3.0.0</version>
+				<configuration>
+					<finalName>IsmMgrPlugin</finalName>
+				</configuration>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
 					</execution>
 				</executions>
 			</plugin>
