@@ -115,6 +115,11 @@ public class IsmApplianceManagerApi implements ApplianceManagerApi {
 
     @Override
     public boolean isAgentManaged() {
+        return true;
+    }
+
+    @Override
+    public boolean isPolicyMappingSupported() {
         return false;
     }
 
