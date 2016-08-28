@@ -8,7 +8,8 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 
 import com.intelsecurity.isc.plugin.manager.api.ManagerDeviceApi;
-import com.intelsecurity.isc.plugin.manager.element.ApplianceBootStrapElement;
+import com.intelsecurity.isc.plugin.manager.element.ApplianceBootstrapInformationElement;
+import com.intelsecurity.isc.plugin.manager.element.BootStrapInfoProviderElement;
 import com.intelsecurity.isc.plugin.manager.element.DistributedApplianceInstanceElement;
 import com.intelsecurity.isc.plugin.manager.element.ManagerDeviceElement;
 import com.intelsecurity.isc.plugin.manager.element.ManagerDeviceMemberElement;
@@ -223,7 +224,7 @@ public class IsmDeviceApi implements ManagerDeviceApi {
     }
 
     @Override
-    public byte[] getBootstrapinfo(ApplianceBootStrapElement bootStrapInfo) {
+    public ApplianceBootstrapInformationElement getBootstrapinfo(BootStrapInfoProviderElement bootStrapInfo) {
         return null;
     }
 }
