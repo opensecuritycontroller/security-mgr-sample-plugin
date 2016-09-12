@@ -1,6 +1,6 @@
-package com.mcafee.ism.model;
+package org.osc.manager.ism.model;
 
-import com.intelsecurity.isc.plugin.manager.element.ManagerSecurityGroupInterfaceElement;
+import org.osc.sdk.manager.element.ManagerSecurityGroupInterfaceElement;
 
 public class SecurityGroupInterface extends BaseIdNameObject implements ManagerSecurityGroupInterfaceElement {
 

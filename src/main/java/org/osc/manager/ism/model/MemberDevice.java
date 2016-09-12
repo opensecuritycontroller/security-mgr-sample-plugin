@@ -1,6 +1,6 @@
-package com.mcafee.ism.model;
+package org.osc.manager.ism.model;
 
-import com.intelsecurity.isc.plugin.manager.element.ManagerDeviceMemberElement;
+import org.osc.sdk.manager.element.ManagerDeviceMemberElement;
 
 public class MemberDevice extends BaseIdNameObject implements ManagerDeviceMemberElement {
 

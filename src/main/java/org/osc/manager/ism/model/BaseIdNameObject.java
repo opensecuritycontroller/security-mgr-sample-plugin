@@ -1,4 +1,4 @@
-package com.mcafee.ism.model;
+package org.osc.manager.ism.model;
 
 
 public class BaseIdNameObject {

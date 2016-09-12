@@ -1,4 +1,4 @@
-package com.mcafee.ism.api;
+package org.osc.manager.ism.api;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,13 +6,12 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-
-import com.intelsecurity.isc.plugin.manager.api.ManagerSecurityGroupInterfaceApi;
-import com.intelsecurity.isc.plugin.manager.element.ManagerSecurityGroupInterfaceElement;
-import com.intelsecurity.isc.plugin.manager.element.VirtualSystemElement;
-import com.mcafee.ism.model.SecurityGroupInterface;
-import com.mcafee.vmidc.broker.model.entities.appliance.VirtualSystem;
-import com.mcafee.vmidc.broker.util.db.HibernateUtil;
+import org.osc.core.broker.model.entities.appliance.VirtualSystem;
+import org.osc.core.broker.util.db.HibernateUtil;
+import org.osc.manager.ism.model.SecurityGroupInterface;
+import org.osc.sdk.manager.api.ManagerSecurityGroupInterfaceApi;
+import org.osc.sdk.manager.element.ManagerSecurityGroupInterfaceElement;
+import org.osc.sdk.manager.element.VirtualSystemElement;
 
 public class IsmSecurityGroupInterfaceApi implements ManagerSecurityGroupInterfaceApi {
 
@@ -100,7 +99,7 @@ public class IsmSecurityGroupInterfaceApi implements ManagerSecurityGroupInterfa
 
     @Override
     public ManagerSecurityGroupInterfaceElement getSecurityGroupInterfaceById(String id) throws Exception {
-        for (com.mcafee.vmidc.broker.model.entities.virtualization.SecurityGroupInterface sgi : this.vs
+        for (org.osc.core.broker.model.entities.virtualization.SecurityGroupInterface sgi : this.vs
                 .getSecurityGroupInterfaces()) {
             if (sgi.getId().toString().equals(id)) {
                 return new SecurityGroupInterface(sgi.getId(), sgi.getName(), sgi.getPolicyId(), sgi.getTag());
@@ -112,7 +111,7 @@ public class IsmSecurityGroupInterfaceApi implements ManagerSecurityGroupInterfa
 
     @Override
     public String findSecurityGroupInterfaceByName(String name) throws Exception {
-        for (com.mcafee.vmidc.broker.model.entities.virtualization.SecurityGroupInterface sgi : this.vs
+        for (org.osc.core.broker.model.entities.virtualization.SecurityGroupInterface sgi : this.vs
                 .getSecurityGroupInterfaces()) {
             if (sgi.getName().equals(name)) {
                 return sgi.getId().toString();
@@ -124,7 +123,7 @@ public class IsmSecurityGroupInterfaceApi implements ManagerSecurityGroupInterfa
     @Override
     public List<? extends ManagerSecurityGroupInterfaceElement> listSecurityGroupInterfaces() throws Exception {
         List<ManagerSecurityGroupInterfaceElement> sgis = new ArrayList<ManagerSecurityGroupInterfaceElement>();
-        for (com.mcafee.vmidc.broker.model.entities.virtualization.SecurityGroupInterface sgi : this.vs
+        for (org.osc.core.broker.model.entities.virtualization.SecurityGroupInterface sgi : this.vs
                 .getSecurityGroupInterfaces()) {
             sgis.add(new SecurityGroupInterface(sgi.getId(), sgi.getName(), sgi.getPolicyId(), sgi.getTag()));
         }

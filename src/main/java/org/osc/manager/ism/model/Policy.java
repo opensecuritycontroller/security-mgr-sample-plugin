@@ -1,6 +1,6 @@
-package com.mcafee.ism.model;
+package org.osc.manager.ism.model;
 
-import com.intelsecurity.isc.plugin.manager.element.ManagerPolicyElement;
+import org.osc.sdk.manager.element.ManagerPolicyElement;
 
 public class Policy extends BaseIdNameObject implements ManagerPolicyElement {
 

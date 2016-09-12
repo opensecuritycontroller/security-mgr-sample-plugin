@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.mcafee.vmidc</groupId>
+	<groupId>org.osc.manager.ism</groupId>
 	<artifactId>IsmMgrPlugin</artifactId>
 	<version>1.0</version>
 	<packaging>jar</packaging>
@@ -15,17 +15,17 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>com.mcafee.vmidc</groupId>
+			<groupId>org.osc.core</groupId>
 			<artifactId>IscMgrPlugin</artifactId>
 			<version>1.0</version>
 		</dependency>
 		<dependency>
-			<groupId>com.mcafee.vmidc</groupId>
+			<groupId>org.osc.core</groupId>
 			<artifactId>vmiDCCommon</artifactId>
 			<version>1.0</version>
 		</dependency>
 		<dependency>
-			<groupId>com.mcafee.vmidc</groupId>
+			<groupId>org.osc.core</groupId>
 			<artifactId>vmiDCServer</artifactId>
 			<version>1.0</version>
 		</dependency>

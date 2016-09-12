@@ -1,14 +1,13 @@
-package com.mcafee.ism.api;
+package org.osc.manager.ism.api;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-
-import com.intelsecurity.isc.plugin.manager.api.ManagerDomainApi;
-import com.intelsecurity.isc.plugin.manager.element.ApplianceManagerConnectorElement;
-import com.mcafee.ism.model.Domain;
-import com.mcafee.ism.model.DomainListElement;
+import org.osc.manager.ism.model.Domain;
+import org.osc.manager.ism.model.DomainListElement;
+import org.osc.sdk.manager.api.ManagerDomainApi;
+import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
 
 public class IsmDomainApi implements ManagerDomainApi {
 

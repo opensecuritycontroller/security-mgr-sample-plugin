@@ -1,6 +1,6 @@
-package com.mcafee.ism.model;
+package org.osc.manager.ism.model;
 
-import com.intelsecurity.isc.plugin.manager.element.ManagerDomainElement;
+import org.osc.sdk.manager.element.ManagerDomainElement;
 
 public class Domain extends BaseIdNameObject implements ManagerDomainElement {
 

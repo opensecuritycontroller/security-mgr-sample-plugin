@@ -1,4 +1,4 @@
-package com.mcafee.ism.api;
+package org.osc.manager.ism.api;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,20 +6,19 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-
-import com.intelsecurity.isc.plugin.manager.api.ManagerDeviceApi;
-import com.intelsecurity.isc.plugin.manager.element.ApplianceBootstrapInformationElement;
-import com.intelsecurity.isc.plugin.manager.element.BootStrapInfoProviderElement;
-import com.intelsecurity.isc.plugin.manager.element.DistributedApplianceInstanceElement;
-import com.intelsecurity.isc.plugin.manager.element.ManagerDeviceElement;
-import com.intelsecurity.isc.plugin.manager.element.ManagerDeviceMemberElement;
-import com.intelsecurity.isc.plugin.manager.element.VirtualSystemElement;
-import com.mcafee.ism.model.Device;
-import com.mcafee.ism.model.MemberDevice;
-import com.mcafee.vmidc.broker.model.entities.appliance.DistributedApplianceInstance;
-import com.mcafee.vmidc.broker.model.entities.appliance.VirtualSystem;
-import com.mcafee.vmidc.broker.service.persistence.EntityManager;
-import com.mcafee.vmidc.broker.util.db.HibernateUtil;
+import org.osc.core.broker.model.entities.appliance.DistributedApplianceInstance;
+import org.osc.core.broker.model.entities.appliance.VirtualSystem;
+import org.osc.core.broker.service.persistence.EntityManager;
+import org.osc.core.broker.util.db.HibernateUtil;
+import org.osc.manager.ism.model.Device;
+import org.osc.manager.ism.model.MemberDevice;
+import org.osc.sdk.manager.api.ManagerDeviceApi;
+import org.osc.sdk.manager.element.ApplianceBootstrapInformationElement;
+import org.osc.sdk.manager.element.BootStrapInfoProviderElement;
+import org.osc.sdk.manager.element.DistributedApplianceInstanceElement;
+import org.osc.sdk.manager.element.ManagerDeviceElement;
+import org.osc.sdk.manager.element.ManagerDeviceMemberElement;
+import org.osc.sdk.manager.element.VirtualSystemElement;
 
 public class IsmDeviceApi implements ManagerDeviceApi {
 

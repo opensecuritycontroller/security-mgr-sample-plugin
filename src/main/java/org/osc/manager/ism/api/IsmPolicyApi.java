@@ -1,13 +1,12 @@
-package com.mcafee.ism.api;
+package org.osc.manager.ism.api;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-
-import com.intelsecurity.isc.plugin.manager.api.ManagerPolicyApi;
-import com.intelsecurity.isc.plugin.manager.element.ApplianceManagerConnectorElement;
-import com.mcafee.ism.model.PolicyListElement;
+import org.osc.manager.ism.model.PolicyListElement;
+import org.osc.sdk.manager.api.ManagerPolicyApi;
+import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
 
 public class IsmPolicyApi implements ManagerPolicyApi {
 
