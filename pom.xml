@@ -89,13 +89,6 @@
 						</goals>
 						<configuration>
 							<tasks>
-								<copy file="${basedir}/IsmMgrPlugin.json" todir="${basedir}/../vmiDCServer/mgr_plugins" />
-								<copy file="${basedir}/target/IsmMgrPlugin.jar" todir="${basedir}/../vmiDCServer/mgr_plugins" />
-								
-								<copy file="${basedir}/IsmMgrPlugin.json"
-									todir="${basedir}/../serverBOM/root/opt/vmidc/bin/mgr_plugins" />
-								<copy file="${basedir}/target/IsmMgrPlugin.jar"
-									todir="${basedir}/../serverBOM/root/opt/vmidc/bin/mgr_plugins" />
 
 								<!-- Create plugin zip -->
 								<copy file="${basedir}/IsmMgrPlugin.json" tofile="${project.build.directory}/meta.json" />
