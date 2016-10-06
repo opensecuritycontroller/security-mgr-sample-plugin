@@ -224,6 +224,11 @@ public class IsmDeviceApi implements ManagerDeviceApi {
 
     @Override
     public ApplianceBootstrapInformationElement getBootstrapinfo(BootStrapInfoProviderElement bootStrapInfo) {
-        return null;
+        return new ApplianceBootstrapInformationElement(){
+            @Override
+            public List<BootstrapFileElement> getBootstrapFiles() {
+                return new ArrayList<BootstrapFileElement>();
+            }
+        };
     }
 }

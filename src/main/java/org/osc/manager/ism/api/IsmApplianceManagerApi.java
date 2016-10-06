@@ -6,6 +6,7 @@ import org.osc.sdk.manager.api.ApplianceManagerApi;
 import org.osc.sdk.manager.api.IscJobNotificationApi;
 import org.osc.sdk.manager.api.ManagerCallbackNotificationApi;
 import org.osc.sdk.manager.api.ManagerDeviceApi;
+import org.osc.sdk.manager.api.ManagerDeviceMemberApi;
 import org.osc.sdk.manager.api.ManagerDomainApi;
 import org.osc.sdk.manager.api.ManagerPolicyApi;
 import org.osc.sdk.manager.api.ManagerSecurityGroupApi;
@@ -49,6 +50,11 @@ public class IsmApplianceManagerApi implements ApplianceManagerApi {
     @Override
     public ManagerDomainApi createManagerDomainApi(ApplianceManagerConnectorElement mc) throws Exception {
         return IsmDomainApi.create(mc);
+    }
+
+    @Override
+    public ManagerDeviceMemberApi createManagerDeviceMemberApi(ApplianceManagerConnectorElement mc, VirtualSystemElement vs) throws Exception {
+        return IsmAgentApi.create(mc, vs);
     }
 
     @Override
@@ -115,7 +121,7 @@ public class IsmApplianceManagerApi implements ApplianceManagerApi {
 
     @Override
     public boolean isAgentManaged() {
-        return true;
+        return false;
     }
 
     @Override
