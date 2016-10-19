@@ -12,13 +12,32 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
-
+     <profiles>
+        <profile>
+            <id>default</id>
+            <dependencies>
+                <dependency>
+                    <groupId>org.osc.core</groupId>
+                    <artifactId>IscMgrPlugin</artifactId>
+                    <version>1.0</version>
+                </dependency>
+            </dependencies>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+        </profile>
+        <profile>
+            <id>useGitPlugins</id>
+            <dependencies>
+                <dependency>
+                    <groupId>org.osc.sdk</groupId>
+                    <artifactId>OscMgrPlugin</artifactId>
+                    <version>1.0</version>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>  
 	<dependencies>
-		<dependency>
-			<groupId>org.osc.core</groupId>
-			<artifactId>IscMgrPlugin</artifactId>
-			<version>1.0</version>
-		</dependency>
 		<dependency>
 			<groupId>org.osc.core</groupId>
 			<artifactId>vmiDCCommon</artifactId>
