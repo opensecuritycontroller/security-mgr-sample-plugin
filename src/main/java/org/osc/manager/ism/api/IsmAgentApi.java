@@ -17,14 +17,15 @@ import org.osc.sdk.manager.element.VirtualSystemElement;
 /**
  * Only used for testing
  */
-public class IsmAgentApi implements ManagerDeviceMemberApi{
+public class IsmAgentApi implements ManagerDeviceMemberApi {
 
-    Logger log = Logger.getLogger(IsmAgentApi.class);
+    private Logger log = Logger.getLogger(IsmAgentApi.class);
 
     ApplianceManagerConnectorElement mc;
 
     private IsmAgentApi(ApplianceManagerConnectorElement mc, VirtualSystemElement vs) throws Exception {
         this.mc = mc;
+        this.log.info("Agent API created for Virtual System: " + vs.getName());
     }
 
     public static IsmAgentApi create(ApplianceManagerConnectorElement mc, VirtualSystemElement vs) throws Exception {
@@ -64,11 +65,11 @@ public class IsmAgentApi implements ManagerDeviceMemberApi{
         agentElem.setBrokerIp("3.3.3.3");
         agentElem.setApplianceGateway("1.1.1.1");
         agentElem.setApplianceSubnetMask("255.255.255.0");
-        agentElem.setRx(ThreadLocalRandom.current().nextLong(10000,100000));
-        agentElem.setDropSva(ThreadLocalRandom.current().nextLong(0,1000));
-        agentElem.setTxSva(ThreadLocalRandom.current().nextLong(10000,100000));
+        agentElem.setRx(ThreadLocalRandom.current().nextLong(10000, 100000));
+        agentElem.setDropSva(ThreadLocalRandom.current().nextLong(0, 1000));
+        agentElem.setTxSva(ThreadLocalRandom.current().nextLong(10000, 100000));
 
-     // Add Appliance status
+        // Add Appliance status
         agentElem.setDiscovered(Boolean.TRUE);
         agentElem.setInspectionReady(Boolean.TRUE);
 
@@ -82,9 +83,5 @@ public class IsmAgentApi implements ManagerDeviceMemberApi{
     @Override
     public void syncAgent() {
     }
-
-
-
-
 }
 
