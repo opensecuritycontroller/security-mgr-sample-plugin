@@ -1,5 +1,16 @@
 package org.osc.manager.ism.api;
 
+import static java.util.Collections.singletonMap;
+import static org.osgi.service.jdbc.DataSourceFactory.JDBC_PASSWORD;
+import static org.osgi.service.jdbc.DataSourceFactory.JDBC_URL;
+import static org.osgi.service.jdbc.DataSourceFactory.JDBC_USER;
+
+import java.sql.SQLException;
+import java.util.Properties;
+
+import javax.persistence.EntityManager;
+import javax.sql.DataSource;
+
 import org.osc.sdk.manager.ManagerAuthenticationType;
 import org.osc.sdk.manager.ManagerNotificationSubscriptionType;
 import org.osc.sdk.manager.api.ApplianceManagerApi;
@@ -14,26 +25,75 @@ import org.osc.sdk.manager.api.ManagerSecurityGroupInterfaceApi;
 import org.osc.sdk.manager.api.ManagerWebSocketNotificationApi;
 import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
 import org.osc.sdk.manager.element.VirtualSystemElement;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.jdbc.DataSourceFactory;
+import org.osgi.service.jpa.EntityManagerFactoryBuilder;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
+import org.osgi.service.transaction.control.TransactionControl;
+import org.osgi.service.transaction.control.jpa.JPAEntityManagerProviderFactory;
 
+
+@Component(configurationPid="com.mcafee.nsm.ApplianceManager",
+property="osc.plugin.name=ISM")
 public class IsmApplianceManagerApi implements ApplianceManagerApi {
 
-    public IsmApplianceManagerApi() {
+    @Reference(target="(osgi.local.enabled=true)")
+    private TransactionControl txControl;
 
+    @Reference(target="(osgi.unit.name=ism-mgr)")
+    private EntityManagerFactoryBuilder builder;
+
+    @Reference(target="(osgi.jdbc.driver.class=org.h2.Driver)")
+    private DataSourceFactory jdbcFactory;
+    
+    @Reference(target="(osgi.local.enabled=true)")
+    private JPAEntityManagerProviderFactory resourceFactory;
+    
+    private EntityManager em;
+    
+    @ObjectClassDefinition
+    @interface Config {
+        String db_url() default "jdbc:h2:./ismPlugin";
+        
+        String user() default "admin";
+        
+        String _password() default "abc12345";
     }
-
-    public static IsmApplianceManagerApi create() {
-        return new IsmApplianceManagerApi();
+    
+    @Activate
+    void start(Config config) throws SQLException {
+        
+        // There is no way to provide generic configuration for
+        // a plugin, so we wire this up programatically.
+        
+        Properties props = new Properties();
+        
+        props.setProperty(JDBC_URL, config.db_url());
+        if(config.user() != null && !config.user().isEmpty()) {
+            props.setProperty(JDBC_USER, config.user());
+            props.setProperty(JDBC_PASSWORD, config._password());
+        }
+        
+        DataSource ds = jdbcFactory.createDataSource(props);
+        
+        em = resourceFactory.getProviderFor(builder, 
+                singletonMap("javax.persistence.nonJtaDataSource", (Object)ds), null)
+                .getResource(txControl);
+        
     }
-
+    
+    
     @Override
     public ManagerDeviceApi createManagerDeviceApi(ApplianceManagerConnectorElement mc, VirtualSystemElement vs) throws Exception {
-        return IsmDeviceApi.create(vs);
+        return new IsmDeviceApi(vs, txControl, em);
     }
 
     @Override
     public ManagerSecurityGroupInterfaceApi createManagerSecurityGroupInterfaceApi(ApplianceManagerConnectorElement mc,
             VirtualSystemElement vs) throws Exception {
-        return IsmSecurityGroupInterfaceApi.create(vs);
+        return new IsmSecurityGroupInterfaceApi(vs, txControl, em);
     }
 
     @Override

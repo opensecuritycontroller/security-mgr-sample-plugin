@@ -6,7 +6,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.osc.manager.ism.model.IsmAgent;
 import org.osc.sdk.manager.api.ManagerDeviceMemberApi;
@@ -41,7 +40,7 @@ public class IsmAgentApi implements ManagerDeviceMemberApi {
         // Get basic status
         ManagerDeviceMemberStatusElement agentElem = null;
         List<ManagerDeviceMemberStatusElement> response = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(list)){
+        if (list != null){
             for (DistributedApplianceInstanceElement dai: list){
                 agentElem = getAgentBasicStatus(dai);
                 response.add(agentElem);
