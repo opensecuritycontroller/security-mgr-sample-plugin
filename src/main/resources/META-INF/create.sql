@@ -7,6 +7,6 @@ create table if not exists SecurityGroup ( id bigint not null, name varchar(255)
  
 create table if not exists VSSDevice ( id bigint not null, name varchar(255), primary key (id) );
  
-alter table DeviceMember add constraint if not exists FKfjf5y9rnm9q5vbxwkgmjaatoo foreign key (parent_id) references VSSDevice;
+alter table DeviceMember add constraint if not exists FK_DEVICE_MEMBER_VSS_DEVICE foreign key (parent_id) references VSSDevice;
  
-alter table SecurityGroup add constraint if not exists FK6c3solpbb0j6atgf5lxv3w6d7 foreign key (parent_id) references VSSDevice;
+alter table SecurityGroup add constraint if not exists FK_SECURITY_GROUP_VSS_DEVICE foreign key (parent_id) references VSSDevice;
