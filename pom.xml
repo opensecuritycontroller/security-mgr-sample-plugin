@@ -291,6 +291,7 @@
 									<fileset dir="${project.build.directory}/plugin" />
 									<manifest>
 										<attribute name="Deployment-Name" value="ISM" />
+										<attribute name="Deployment-Type" value="MANAGER"/>
 										<attribute name="Deployment-SymbolicName" value="IsmMgrPlugin" />
 										<attribute name="Deployment-Version" value="1.0.0" />
 										<attribute name="Require-Bundle" value="IsmMgrPlugin" />
