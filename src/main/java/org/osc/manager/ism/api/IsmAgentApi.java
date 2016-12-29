@@ -20,7 +20,7 @@ public class IsmAgentApi implements ManagerDeviceMemberApi {
 
     private Logger log = Logger.getLogger(IsmAgentApi.class);
 
-    ApplianceManagerConnectorElement mc;
+    private ApplianceManagerConnectorElement mc;
 
     private IsmAgentApi(ApplianceManagerConnectorElement mc, VirtualSystemElement vs) throws Exception {
         this.mc = mc;
