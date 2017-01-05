@@ -13,6 +13,9 @@ public class SecurityGroupInterface {
     private String policyId;
 
     private String tag;
+    
+    SecurityGroupInterface(){
+    }
 
     public SecurityGroupInterface(String name, String policyId, String tag) {
         this.name = name;
