@@ -2,45 +2,20 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>org.osc.manager.ism</groupId>
-	<artifactId>IsmMgrPlugin</artifactId>
+	<groupId>org.osc.plugin</groupId>
+	<artifactId>security-mgr-sample-plugin</artifactId>
 	<version>1.0</version>
 	<packaging>jar</packaging>
-
-	<name>IsmMgrPlugin</name>
+    <description>Sample Security Manager Plugin For OSC</description>
+	<name>org.osc.plugin:security-mgr-sample-plugin</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
-	<profiles>
-		<profile>
-			<id>default</id>
-			<dependencies>
-				<dependency>
-					<groupId>org.osc.core</groupId>
-					<artifactId>IscMgrPlugin</artifactId>
-					<version>1.0</version>
-				</dependency>
-			</dependencies>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-		</profile>
-		<profile>
-			<id>useGitPlugins</id>
-			<dependencies>
-				<dependency>
-					<groupId>org.osc.sdk</groupId>
-					<artifactId>OscMgrPlugin</artifactId>
-					<version>1.0</version>
-				</dependency>
-			</dependencies>
-		</profile>
-	</profiles>
 	<dependencies>
-		<dependency>
-			<groupId>org.osc.core</groupId>
-			<artifactId>IscMgrPlugin</artifactId>
+        <dependency>
+			<groupId>org.osc.api</groupId>
+			<artifactId>security-mgr-api</artifactId>
 			<version>1.0</version>
 		</dependency>
 		<dependency>
@@ -244,7 +219,6 @@
 				<version>2.5</version>
 				<configuration>
 					<outputDirectory>${project.build.directory}/plugin</outputDirectory>
-					<finalName>IsmMgrPlugin</finalName>
 					<archive>
 						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
 						<manifestEntries>
@@ -285,16 +259,16 @@
 						</goals>
 						<configuration>
 							<tasks>
-
+                        
 								<!-- Create plugin .bar -->
-								<jar destfile="${project.build.directory}/IsmMgrPlugin.bar">
+								<jar destfile="${project.build.directory}/MgrSamplePlugin.bar">
 									<fileset dir="${project.build.directory}/plugin" />
 									<manifest>
-										<attribute name="Deployment-Name" value="ISM" />
+										<attribute name="Deployment-Name" value="MSP" />
 										<attribute name="Deployment-Type" value="MANAGER"/>
-										<attribute name="Deployment-SymbolicName" value="IsmMgrPlugin" />
+										<attribute name="Deployment-SymbolicName" value="MgrSamplePlugin" />
 										<attribute name="Deployment-Version" value="1.0.0" />
-										<attribute name="Require-Bundle" value="IsmMgrPlugin" />
+										<attribute name="Require-Bundle" value="security-mgr-sample-plugin" />
 									</manifest>
 								</jar>
 							</tasks>
@@ -372,7 +346,7 @@
 							<artifacts>
 								<artifact>
 									<type>bar</type>
-									<file>${project.build.directory}/IsmMgrPlugin.bar</file>
+									<file>${project.build.directory}/MgrSamplePlugin.bar</file>
 								</artifact>
 							</artifacts>
 						</configuration>
@@ -385,7 +359,7 @@
 				<artifactId>maven-source-plugin</artifactId>
 				<version>3.0.0</version>
 				<configuration>
-					<finalName>IsmMgrPlugin</finalName>
+					<finalName>security-mgr-sample-plugin</finalName>
 				</configuration>
 				<executions>
 					<execution>

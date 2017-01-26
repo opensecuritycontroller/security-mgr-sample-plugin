@@ -2,12 +2,7 @@ package com.mcafee.ism;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.ops4j.pax.exam.CoreOptions.bootClasspathLibrary;
-import static org.ops4j.pax.exam.CoreOptions.bundle;
-import static org.ops4j.pax.exam.CoreOptions.junitBundles;
-import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
-import static org.ops4j.pax.exam.CoreOptions.options;
-import static org.ops4j.pax.exam.CoreOptions.systemPackage;
+import static org.ops4j.pax.exam.CoreOptions.*;
 
 import java.util.Collections;
 
@@ -33,13 +28,13 @@ import org.osc.sdk.manager.element.VirtualizationConnectorElement;
 @RunWith(PaxExam.class)
 @ExamReactorStrategy(PerMethod.class)
 public class OSGiIntegrationTest {
- 
+
     public static final class VSElement implements VirtualSystemElement {
-        
+
         private final Long id;
-        
+
         private final String name;
-        
+
         public VSElement(Long id, String name) {
             this.id = id;
             this.name = name;
@@ -52,7 +47,7 @@ public class OSGiIntegrationTest {
 
         @Override
         public String getName() {
-            return name;
+            return this.name;
         }
 
         @Override
@@ -67,7 +62,7 @@ public class OSGiIntegrationTest {
 
         @Override
         public Long getId() {
-            return id;
+            return this.id;
         }
 
         @Override
@@ -95,31 +90,31 @@ public class OSGiIntegrationTest {
 
     @org.ops4j.pax.exam.Configuration
     public Option[] config() {
- 
+
         return options(
                 // Load the current module from its built classes so we get the latest from Eclipse
                 bundle("reference:file:" + PathUtils.getBaseDir() + "/target/classes/"),
-                
+
                 // And some dependencies
                 mavenBundle("org.apache.felix", "org.apache.felix.scr").versionAsInProject(),
 
-                mavenBundle("org.osc.core", "IscMgrPlugin").versionAsInProject(),
+                mavenBundle("org.osc.api", "security-mgr-api").versionAsInProject(),
                 mavenBundle("javax.websocket", "javax.websocket-api").versionAsInProject(),
                 mavenBundle("log4j", "log4j").versionAsInProject(),
                 mavenBundle("org.apache.aries.jpa", "org.apache.aries.jpa.container").versionAsInProject(),
                 mavenBundle("org.apache.aries.tx-control", "tx-control-service-local").versionAsInProject(),
                 mavenBundle("org.apache.aries.tx-control", "tx-control-provider-jpa-local").versionAsInProject(),
                 mavenBundle("com.h2database", "h2").versionAsInProject(),
-                
-                // Hibernate 
-                
+
+                // Hibernate
+
                 systemPackage("javax.xml.stream;version=1.0"),
                 systemPackage("javax.xml.stream.events;version=1.0"),
                 systemPackage("javax.xml.stream.util;version=1.0"),
                 systemPackage("javax.transaction;version=1.1"),
                 systemPackage("javax.transaction.xa;version=1.1"),
                 bootClasspathLibrary(mavenBundle("org.apache.geronimo.specs", "geronimo-jta_1.1_spec", "1.1.1")).beforeFramework(),
-                
+
                 // Hibernate bundles and their dependencies (JPA API is available from the tx-control)
                 mavenBundle("org.apache.servicemix.bundles", "org.apache.servicemix.bundles.antlr", "2.7.7_5"),
                 mavenBundle("org.apache.servicemix.bundles", "org.apache.servicemix.bundles.dom4j", "1.6.1_5"),
@@ -130,57 +125,54 @@ public class OSGiIntegrationTest {
                 mavenBundle("org.hibernate", "hibernate-core", "5.0.9.Final"),
                 mavenBundle("org.hibernate", "hibernate-osgi", "5.0.9.Final"),
                 mavenBundle("org.hibernate", "hibernate-entitymanager", "5.0.9.Final"),
-                
+
                 // Just needed for the test so we can configure the client to point at the local test server
-//                mavenBundle("org.apache.felix", "org.apache.felix.configadmin", "1.8.10"),
-                
+                //                mavenBundle("org.apache.felix", "org.apache.felix.configadmin", "1.8.10"),
+
                 // Uncomment this line to allow remote debugging
                 // CoreOptions.vmOption("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=1044"),
-                
+
                 junitBundles()
-            );
+                );
     }
-    
+
     @Before
     public void start() throws Exception {
-        
+
         VirtualSystemElement vse = new VSElement(1L, VSS_TEST);
-        
-        ManagerDeviceApi managerDeviceApi = api.createManagerDeviceApi(null, vse);
-        
+
+        ManagerDeviceApi managerDeviceApi = this.api.createManagerDeviceApi(null, vse);
+
         assertEquals("1", managerDeviceApi.createVSSDevice());
-        
+
         assertNotNull(managerDeviceApi.createDeviceMember(DEVICE_MEMBER_TEST, null, null, null, null, null));
     }
-    
-    @After 
+
+    @After
     public void stop() throws Exception {
         VirtualSystemElement vse = new VSElement(1L, VSS_TEST);
-        
-        ManagerDeviceApi managerDeviceApi = api.createManagerDeviceApi(null, vse);
+
+        ManagerDeviceApi managerDeviceApi = this.api.createManagerDeviceApi(null, vse);
         managerDeviceApi.deleteVSSDevice();
         assertEquals(Collections.emptyList(), managerDeviceApi.listDevices());
     }
-    
+
     @Test
     public void testRegistered() throws Exception {
-        
+
         VirtualSystemElement vs = new VSElement(0L, "abc");
-        
-        ManagerDeviceApi managerDeviceApi = api.createManagerDeviceApi(null, vs);
-        
+
+        ManagerDeviceApi managerDeviceApi = this.api.createManagerDeviceApi(null, vs);
+
         assertEquals(1, managerDeviceApi.listDevices().size());
-        
+
         assertEquals("1", managerDeviceApi.findDeviceByName(VSS_TEST));
         assertEquals(0, managerDeviceApi.listDeviceMembers().size());
-        
+
         vs = new VSElement(1L, VSS_TEST);
-        managerDeviceApi = api.createManagerDeviceApi(null, vs);
+        managerDeviceApi = this.api.createManagerDeviceApi(null, vs);
         assertEquals(1, managerDeviceApi.listDeviceMembers().size());
-        
+
         assertNotNull(managerDeviceApi.findDeviceMemberByName(DEVICE_MEMBER_TEST));
     }
-
-    
-    
 }
