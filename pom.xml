@@ -261,12 +261,12 @@
 							<tasks>
                         
 								<!-- Create plugin .bar -->
-								<jar destfile="${project.build.directory}/MgrSamplePlugin.bar">
+								<jar destfile="${project.build.directory}/SampleMgrPlugin.bar">
 									<fileset dir="${project.build.directory}/plugin" />
 									<manifest>
-										<attribute name="Deployment-Name" value="MSP" />
+										<attribute name="Deployment-Name" value="SMP" />
 										<attribute name="Deployment-Type" value="MANAGER"/>
-										<attribute name="Deployment-SymbolicName" value="MgrSamplePlugin" />
+										<attribute name="Deployment-SymbolicName" value="SampleMgrPlugin" />
 										<attribute name="Deployment-Version" value="1.0.0" />
 										<attribute name="Require-Bundle" value="security-mgr-sample-plugin" />
 									</manifest>
@@ -346,7 +346,7 @@
 							<artifacts>
 								<artifact>
 									<type>bar</type>
-									<file>${project.build.directory}/MgrSamplePlugin.bar</file>
+									<file>${project.build.directory}/SampleMgrPlugin.bar</file>
 								</artifact>
 							</artifacts>
 						</configuration>
