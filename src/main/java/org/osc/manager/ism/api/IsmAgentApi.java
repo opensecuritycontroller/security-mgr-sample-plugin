@@ -16,7 +16,7 @@ import org.osc.sdk.manager.element.VirtualSystemElement;
 /**
  * Only used for testing
  */
-public class IsmAgentApi implements ManagerDeviceMemberApi {
+public final class IsmAgentApi implements ManagerDeviceMemberApi {
 
     private Logger log = Logger.getLogger(IsmAgentApi.class);
 
