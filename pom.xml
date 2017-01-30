@@ -9,6 +9,17 @@
     <description>Sample Security Manager Plugin For OSC</description>
 	<name>org.osc.plugin:security-mgr-sample-plugin</name>
 
+	<repositories>
+    	<repository>
+			<id>osc-nexus</id>
+			<name>OSC Nexus</name>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<url>http://10.3.240.132:8082/nexus/content/repositories/releases/</url>
+		</repository>
+	</repositories>
+	
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
