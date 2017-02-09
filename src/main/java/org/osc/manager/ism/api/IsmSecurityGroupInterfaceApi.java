@@ -22,14 +22,12 @@ public class IsmSecurityGroupInterfaceApi implements ManagerSecurityGroupInterfa
     private static final Logger LOGGER = Logger.getLogger(IsmSecurityGroupInterfaceApi.class);
     private static final String SGI_NOT_FOUND_MESSAGE = "A security group interface with id %s was not found.";
 
-    private final VirtualSystemElement vs;
-
     private final TransactionControl txControl;
 
     private final EntityManager em;
 
     public IsmSecurityGroupInterfaceApi(VirtualSystemElement vs, TransactionControl txControl, EntityManager em) {
-        this.vs = vs;
+        // Set vs as class variable as needed
         this.txControl = txControl;
         this.em = em;
     }
