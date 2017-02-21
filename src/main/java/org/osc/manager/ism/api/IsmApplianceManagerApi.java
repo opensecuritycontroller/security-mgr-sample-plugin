@@ -5,6 +5,7 @@ import static org.osgi.service.jdbc.DataSourceFactory.JDBC_PASSWORD;
 import static org.osgi.service.jdbc.DataSourceFactory.JDBC_URL;
 import static org.osgi.service.jdbc.DataSourceFactory.JDBC_USER;
 
+import java.net.URL;
 import java.sql.SQLException;
 import java.util.Properties;
 
@@ -192,6 +193,11 @@ public class IsmApplianceManagerApi implements ApplianceManagerApi {
     @Override
     public void checkConnection(ApplianceManagerConnectorElement mc) throws Exception {
 
+    }
+
+    @Override
+    public URL getConnectionUrl(ApplianceManagerConnectorElement mc) throws Exception {
+        return null;
     }
 
     @Override
