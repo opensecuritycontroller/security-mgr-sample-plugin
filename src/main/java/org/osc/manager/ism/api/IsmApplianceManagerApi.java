@@ -4,6 +4,7 @@ import static java.util.Collections.singletonMap;
 import static org.osc.sdk.manager.Constants.*;
 import static org.osgi.service.jdbc.DataSourceFactory.*;
 
+import java.net.URL;
 import java.sql.SQLException;
 import java.util.Properties;
 
@@ -200,6 +201,11 @@ public class IsmApplianceManagerApi implements ApplianceManagerApi {
     @Override
     public void checkConnection(ApplianceManagerConnectorElement mc) throws Exception {
 
+    }
+
+    @Override
+    public URL getConnectionUrl(ApplianceManagerConnectorElement mc) throws Exception {
+        return null;
     }
 
     @Override
