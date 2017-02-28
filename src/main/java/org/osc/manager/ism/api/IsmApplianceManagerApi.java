@@ -1,9 +1,8 @@
 package org.osc.manager.ism.api;
 
 import static java.util.Collections.singletonMap;
-import static org.osgi.service.jdbc.DataSourceFactory.JDBC_PASSWORD;
-import static org.osgi.service.jdbc.DataSourceFactory.JDBC_URL;
-import static org.osgi.service.jdbc.DataSourceFactory.JDBC_USER;
+import static org.osc.sdk.manager.Constants.*;
+import static org.osgi.service.jdbc.DataSourceFactory.*;
 
 import java.net.URL;
 import java.sql.SQLException;
@@ -37,7 +36,16 @@ import org.osgi.service.transaction.control.jpa.JPAEntityManagerProviderFactory;
 
 
 @Component(configurationPid="com.mcafee.nsm.ApplianceManager",
-property="osc.plugin.name=ISM")
+property={
+        PLUGIN_NAME + "=ISM",
+        VENDOR_NAME + "=Sample",
+        SERVICE_NAME + "=DPI",
+        EXTERNAL_SERVICE_NAME + "=SAMPLE_IPS",
+        AUTHENTICATION_TYPE + "=BASIC_AUTH",
+        NOTIFICATION_TYPE + "=NONE",
+        SYNC_SECURITY_GROUP + ":Boolean=false",
+        PROVIDE_DEVICE_STATUS + ":Boolean=true",
+        SYNC_POLICY_MAPPING + ":Boolean=false"})
 public class IsmApplianceManagerApi implements ApplianceManagerApi {
 
     @Reference(target="(osgi.local.enabled=true)")
@@ -48,53 +56,53 @@ public class IsmApplianceManagerApi implements ApplianceManagerApi {
 
     @Reference(target="(osgi.jdbc.driver.class=org.h2.Driver)")
     private DataSourceFactory jdbcFactory;
-    
+
     @Reference(target="(osgi.local.enabled=true)")
     private JPAEntityManagerProviderFactory resourceFactory;
-    
+
     private EntityManager em;
-    
+
     @ObjectClassDefinition
     @interface Config {
         String db_url() default "jdbc:h2:./ismPlugin";
-        
+
         String user() default "admin";
-        
+
         String _password() default "abc12345";
     }
-    
+
     @Activate
     void start(Config config) throws SQLException {
-        
+
         // There is no way to provide generic configuration for
         // a plugin, so we wire this up programatically.
-        
+
         Properties props = new Properties();
-        
+
         props.setProperty(JDBC_URL, config.db_url());
         if(config.user() != null && !config.user().isEmpty()) {
             props.setProperty(JDBC_USER, config.user());
             props.setProperty(JDBC_PASSWORD, config._password());
         }
-        
-        DataSource ds = jdbcFactory.createDataSource(props);
-        
-        em = resourceFactory.getProviderFor(builder, 
+
+        DataSource ds = this.jdbcFactory.createDataSource(props);
+
+        this.em = this.resourceFactory.getProviderFor(this.builder,
                 singletonMap("javax.persistence.nonJtaDataSource", (Object)ds), null)
-                .getResource(txControl);
-        
+                .getResource(this.txControl);
+
     }
-    
-    
+
+
     @Override
     public ManagerDeviceApi createManagerDeviceApi(ApplianceManagerConnectorElement mc, VirtualSystemElement vs) throws Exception {
-        return new IsmDeviceApi(vs, txControl, em);
+        return new IsmDeviceApi(vs, this.txControl, this.em);
     }
 
     @Override
     public ManagerSecurityGroupInterfaceApi createManagerSecurityGroupInterfaceApi(ApplianceManagerConnectorElement mc,
             VirtualSystemElement vs) throws Exception {
-        return new IsmSecurityGroupInterfaceApi(vs, txControl, em);
+        return new IsmSecurityGroupInterfaceApi(vs, this.txControl, this.em);
     }
 
     @Override
