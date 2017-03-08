@@ -4,7 +4,7 @@
    version="2.1">
   
   <persistence-unit name="ism-mgr">
-    <description>The ISM Persistence Unit</description>
+    <description>The SMP Persistence Unit</description>
     
     <properties>
         <property name="javax.persistence.schema-generation.database.action" value="create"/>

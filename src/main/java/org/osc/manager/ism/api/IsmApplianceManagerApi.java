@@ -36,7 +36,7 @@ import org.osgi.service.transaction.control.jpa.JPAEntityManagerProviderFactory;
 
 @Component(configurationPid="com.mcafee.nsm.ApplianceManager",
 property={
-        PLUGIN_NAME + "=ISM",
+        PLUGIN_NAME + "=" + IsmApplianceManagerApi.PLUGIN_NAME,
         VENDOR_NAME + "=Sample",
         SERVICE_NAME + "=DPI",
         EXTERNAL_SERVICE_NAME + "=SAMPLE_IPS",
@@ -46,6 +46,7 @@ property={
         PROVIDE_DEVICE_STATUS + ":Boolean=true",
         SYNC_POLICY_MAPPING + ":Boolean=false"})
 public class IsmApplianceManagerApi implements ApplianceManagerApi {
+    public static final String PLUGIN_NAME = "SMP";
 
     @Reference(target="(osgi.local.enabled=true)")
     private TransactionControl txControl;
@@ -149,7 +150,7 @@ public class IsmApplianceManagerApi implements ApplianceManagerApi {
 
     @Override
     public String getName() {
-        return "ISM";
+        return PLUGIN_NAME;
     }
 
     @Override
@@ -204,7 +205,7 @@ public class IsmApplianceManagerApi implements ApplianceManagerApi {
 
     @Override
     public String getVendorName() {
-        return "ISM";
+        return PLUGIN_NAME;
     }
 
 }
