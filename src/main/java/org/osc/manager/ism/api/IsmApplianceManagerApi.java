@@ -46,7 +46,7 @@ property={
         PROVIDE_DEVICE_STATUS + ":Boolean=true",
         SYNC_POLICY_MAPPING + ":Boolean=false"})
 public class IsmApplianceManagerApi implements ApplianceManagerApi {
-    public static final String PLUGIN_NAME = "SMP";
+    static final String PLUGIN_NAME = "SMP";
 
     @Reference(target="(osgi.local.enabled=true)")
     private TransactionControl txControl;
