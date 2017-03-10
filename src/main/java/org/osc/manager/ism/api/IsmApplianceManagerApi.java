@@ -10,8 +10,6 @@ import java.util.Properties;
 import javax.persistence.EntityManager;
 import javax.sql.DataSource;
 
-import org.osc.sdk.manager.ManagerAuthenticationType;
-import org.osc.sdk.manager.ManagerNotificationSubscriptionType;
 import org.osc.sdk.manager.api.ApplianceManagerApi;
 import org.osc.sdk.manager.api.IscJobNotificationApi;
 import org.osc.sdk.manager.api.ManagerCallbackNotificationApi;
@@ -148,63 +146,12 @@ public class IsmApplianceManagerApi implements ApplianceManagerApi {
     }
 
     @Override
-    public String getName() {
-        return "ISM";
-    }
-
-    @Override
-    public String getVersion() {
-        return "1.0";
-    }
-
-    @Override
-    public String getServiceName() {
-        return "DPI";
-    }
-
-    @Override
-    public String getNsxServiceName() {
-        return "IPS_IDS";
-    }
-
-    @Override
     public String getManagerUrl(String ipAddress) {
         return "http://" + ipAddress;
-    }
-
-    @Override
-    public ManagerAuthenticationType getAuthenticationType() {
-        return ManagerAuthenticationType.BASIC_AUTH;
-    }
-
-    @Override
-    public ManagerNotificationSubscriptionType getNotificationType() {
-        return ManagerNotificationSubscriptionType.NONE;
-    }
-
-    @Override
-    public boolean isSecurityGroupSyncSupport() {
-        return false;
-    }
-
-    @Override
-    public boolean isAgentManaged() {
-        return true;
-    }
-
-    @Override
-    public boolean isPolicyMappingSupported() {
-        return false;
     }
 
     @Override
     public void checkConnection(ApplianceManagerConnectorElement mc) throws Exception {
 
     }
-
-    @Override
-    public String getVendorName() {
-        return "ISM";
-    }
-
 }
