@@ -22,6 +22,9 @@
 	
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<repoVersionCmd>
+            git describe | grep init | cut -d '-' -f 2-3
+        </repoVersionCmd>
 	</properties>
 	<dependencies>
         <dependency>
@@ -234,8 +237,7 @@
 						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
 						<manifestEntries>
 							<Build-Time>${maven.build.timestamp}</Build-Time>
-							<Implementation-Build>${buildNumber}</Implementation-Build>
-							<Implementation-Version>${productVersion}</Implementation-Version>
+                            <Build-Version>${buildVersion}</Build-Version>
 						</manifestEntries>
 					</archive>
 				</configuration>
@@ -262,6 +264,24 @@
 				<artifactId>maven-antrun-plugin</artifactId>
 				<version>1.7</version>
 				<executions>
+                    <execution>
+                        <id>generate-version</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <exec outputproperty="buildFragment" dir="." executable="sh">
+                                    <arg value="-c" />
+                                    <arg value="${repoVersionCmd}" />
+                                </exec>
+                                <property name="buildVersion" value="${project.version}-${buildFragment}" />
+                                <echo>Version: ${buildVersion}</echo>
+                            </target>
+                            <exportAntProperties>true</exportAntProperties>
+                        </configuration>
+                    </execution>
 					<!-- Copy src/main/webapp directory -->
 					<execution>
 						<phase>package</phase>
@@ -270,7 +290,6 @@
 						</goals>
 						<configuration>
 							<tasks>
-                        
 								<!-- Create plugin .bar -->
 								<jar destfile="${project.build.directory}/SampleMgrPlugin.bar">
 									<fileset dir="${project.build.directory}/plugin" />
@@ -278,7 +297,7 @@
 										<attribute name="Deployment-Name" value="SMP" />
 										<attribute name="Deployment-Type" value="MANAGER"/>
 										<attribute name="Deployment-SymbolicName" value="SampleMgrPlugin" />
-										<attribute name="Deployment-Version" value="1.0.0" />
+                                        <attribute name="Deployment-Version" value="${buildVersion}" />
 										<attribute name="Require-Bundle" value="security-mgr-sample-plugin" />
 									</manifest>
 								</jar>
