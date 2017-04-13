@@ -1,0 +1,5 @@
+Meta-Persistence: META-INF/persistence.xml
+
+#These are needed due to a bug in Hibernate
+
+Import-Package: org.hibernate.proxy,javassist.util.proxy,*
