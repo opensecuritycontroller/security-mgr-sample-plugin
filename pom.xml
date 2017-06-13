@@ -281,6 +281,7 @@
                         </goals>
                         <configuration>
                             <configLocation>checkstyle.xml</configLocation>
+                            <includeTestSourceDirectory>true</includeTestSourceDirectory>
                             <!-- Turning the fail-on-violation flag on -->
                             <failOnViolation>true</failOnViolation>
                         </configuration>
