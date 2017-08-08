@@ -18,10 +18,10 @@ package org.osc.manager.rest.server.api;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
-import javax.ws.rs.DELETE;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -30,104 +30,85 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
-import org.osc.manager.rest.server.SecureManagerServerRestConstants;
-import org.osc.manager.ism.entities.PolicyElements;
+import org.osc.manager.ism.entities.PolicyEntity;
+import org.osc.manager.rest.server.SecurityManagerServerRestConstants;
 import org.osgi.service.component.annotations.Component;
 
-
-
-
 @Component(service = PolicyApis.class)
-@Path(SecureManagerServerRestConstants.SERVER_API_PATH_PREFIX + "/policies")
+@Path(SecurityManagerServerRestConstants.SERVER_API_PATH_PREFIX + "/policy")
 @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 
 public class PolicyApis {
-	
-	private static final Logger logger = Logger.getLogger(PolicyApis.class);
+
+    private static final Logger logger = Logger.getLogger(PolicyApis.class);
 
     /**
-     * Creates the ISM policies
+     * Creates the Policy
      *
      * @return policy
      */
     @POST
-    public PolicyElements createIsmPolicies(@Context HttpHeaders headers ,PolicyElements elements){
-    	
-    	logger.info("Creating Policies Elements...");
-       
-    	// TODO DB Create
+    public PolicyEntity createPolicy(@Context HttpHeaders headers ,PolicyEntity entity) {
 
-        return elements;
+        logger.info("Creating Policy Entity...");
+        //TODO Sudhir: Add db calls here
+        return entity;
     }
-    
-    
+
     /**
-     * Updates the ISM policy
+     * Updates the Policy
      *
      * @return - updated policy
      */
-    @Path("/{policyId}")    
+    @Path("/{policyId}")
     @PUT
-    public PolicyElements updateIsmPolicies(@Context HttpHeaders headers ,@PathParam("policyId") Long policyId,
-    										PolicyElements elements){
-    	
-    	logger.info("Updating Policies Element ..." + policyId);
-       
-    	// TODO DBUpdate
+    public PolicyEntity updatePolicy(@Context HttpHeaders headers ,@PathParam("policyId") Long policyId,PolicyEntity entity) {
 
-        return elements;
+        logger.info("Updating Policy Entity ..." + policyId);
+        //TODO Sudhir: Add db calls here
+        return entity;
     }
-    
+
     /**
-     * Deletes the ISM Policy
+     * Deletes the Delete Policy
      *
      * @return - deleted policy
      */
-    @Path("/{policyId}")    
+    @Path("/{policyId}")
     @DELETE
-    public PolicyElements deleteIsmPolicies(@Context HttpHeaders headers ,@PathParam("policyId") Long policyId,
-    										PolicyElements elements){
-    	
-    	logger.info("Deleting Policies Element ..." + policyId);
-       
-    	// TODO DBUpdate
+    public PolicyEntity deletePolicy(@Context HttpHeaders headers,@PathParam("policyId") Long policyId,PolicyEntity entity) {
 
-        return elements;
+        logger.info("Deleting Policies Entity ..." + policyId);
+        //TODO Sudhir: Add db calls here
+        return entity;
     }
 
-    
     /**
-     * Lists the ISM Policy
+     * Lists the Policy Id's
      *
-     * @return - Policy List
+     * @return - Policy Id's
      */
 	@GET
-    public List<PolicyElements> getPolicyList(@Context HttpHeaders headers) {
-		
-		logger.info("Listing Policies");
-        
-		// TODO retrieve from DB 
-		
+    public List<String> getPolicyIds(@Context HttpHeaders headers) {
+
+	    logger.info("Listing Policy Ids'");
+	    //TODO Sudhir: Add db calls here
 		return null;
     }
-	
+
     /**
-     * Gets the ISM Policy
+     * Gets the Policy
      *
      * @return - Policy
      */
-	
+
     @Path("/{policyId}")
 	@GET
-    public PolicyElements getPolicy(@Context HttpHeaders headers,@PathParam("policyId") Long policyId) {
-		
-    	 logger.info("getting Policy " + policyId);
-        
-		// TODO retrieve from DB 
-		
+    public PolicyEntity getPolicy(@Context HttpHeaders headers,@PathParam("policyId") Long policyId) {
+
+        logger.info("getting Policy " + policyId);
+        //TODO Sudhir: Add db calls here
 		return null;
     }
-
-	
 }

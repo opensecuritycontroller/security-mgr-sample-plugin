@@ -14,10 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package org.osc.manager.rest.server;
+package org.osc.manager.ism.entities;
 
-public interface SecureManagerServerRestConstants {
-    // Because we started with versions in the URL, we will continue to have v1 in the URL
-    String SERVER_API_PATH_PREFIX = "/sm/server/v1";
+import org.osc.sdk.manager.element.ManagerPolicyElement;
 
+public class PolicyEntity implements ManagerPolicyElement {
+
+    private Long id;
+    private String name;
+
+    @Override
+    public String getId() {
+        return this.id.toString();
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    @Override
+    public String getName() {
+        return this.name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 }

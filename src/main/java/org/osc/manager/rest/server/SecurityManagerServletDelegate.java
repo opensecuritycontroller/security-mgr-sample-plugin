@@ -16,7 +16,11 @@
  *******************************************************************************/
 
 package org.osc.manager.rest.server;
-import static org.osgi.service.http.whiteboard.HttpWhiteboardConstants.*;
+import static org.osgi.service.http.whiteboard.HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_NAME;
+import static org.osgi.service.http.whiteboard.HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_SELECT;
+import static org.osgi.service.http.whiteboard.HttpWhiteboardConstants.HTTP_WHITEBOARD_SERVLET_NAME;
+import static org.osgi.service.http.whiteboard.HttpWhiteboardConstants.HTTP_WHITEBOARD_SERVLET_PATTERN;
+import static org.osgi.service.http.whiteboard.HttpWhiteboardConstants.HTTP_WHITEBOARD_TARGET;
 
 import java.io.IOException;
 
@@ -30,52 +34,42 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.osc.manager.rest.server.api.PolicyApis;
-//import org.osc.core.broker.rest.server.ApiServletContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 
 @Component(name = "sm.servlet", service = Servlet.class, property = {
 
-        HTTP_WHITEBOARD_SERVLET_NAME + "=" + "OSC-API", HTTP_WHITEBOARD_SERVLET_PATTERN + "=/testsmplugin/*",
+        HTTP_WHITEBOARD_SERVLET_NAME + "=" + "OSC-API", HTTP_WHITEBOARD_SERVLET_PATTERN + "=/testplugin/*",
         HTTP_WHITEBOARD_CONTEXT_SELECT + "=(" + HTTP_WHITEBOARD_CONTEXT_NAME + "=" + "OSC-API"
-        + ")",        
+        + ")",
         HTTP_WHITEBOARD_TARGET + "=(" + "org.apache.felix.http.name" + "=" + "OSC-API" + ")"
-        
+
  })
 
+public class SecurityManagerServletDelegate extends ResourceConfig implements Servlet {
 
-public class SecureManagerServletDelegate extends ResourceConfig implements Servlet {
     static final long serialVersionUID = 1L;
+    @Reference
+    private PolicyApis policiesApis;
+    /** The Jersey REST container */
+    private ServletContainer container;
 
-   @Reference
-   private PolicyApis policiesApis;
-
-   
-   /** The Jersey REST container */
-   private ServletContainer container;
-   
-   @Activate
-   void activate() {
-       // Json feature
-	   super.register(JacksonJaxbJsonProvider.class);
-
-       //Properties
-       super.property(ServerProperties.FEATURE_AUTO_DISCOVERY_DISABLE, true);
-
-       // agent & server apis
-       super.registerInstances(this.policiesApis);
-       
-       this.container = new ServletContainer(this);
-    }
+    @Activate
+    void activate() {
+        // Json feature
+        super.register(JacksonJaxbJsonProvider.class);
+        super.property(ServerProperties.FEATURE_AUTO_DISCOVERY_DISABLE, true);
+        super.registerInstances(this.policiesApis);
+        this.container = new ServletContainer(this);
+       }
 
     @Override
     public void destroy() {
         this.container.destroy();
     }
-
-    // Servlet interface methods
 
     @Override
     public ServletConfig getServletConfig() {

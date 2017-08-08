@@ -14,31 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package org.osc.manager.ism.entities;
+package org.osc.manager.rest.server;
 
-
-
-
-public class PolicyElements {
-    
-    private Long id;
-    
-    private String name;
-    
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
+public interface SecurityManagerServerRestConstants {
+    // Because we started with versions in the URL, we will continue to have v1 in the URL
+    String SERVER_API_PATH_PREFIX = "/sm";
 }
