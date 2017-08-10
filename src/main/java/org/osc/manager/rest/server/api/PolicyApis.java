@@ -25,8 +25,6 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
@@ -44,70 +42,71 @@ public class PolicyApis {
     private static final Logger logger = Logger.getLogger(PolicyApis.class);
 
     /**
-     * Creates the Policy
+     * Creates the Policy for a given domain
      *
      * @return policy
      */
+    @Path("/{domainId}")
     @POST
-    public PolicyEntity createPolicy(@Context HttpHeaders headers ,PolicyEntity entity) {
+    public PolicyEntity createPolicy(@PathParam("domainId") Long domainId, PolicyEntity entity) {
 
         logger.info("Creating Policy Entity...");
         //TODO Sudhir: Add db calls here
-        return entity;
+        return null;
     }
 
     /**
-     * Updates the Policy
+     * Updates the Policy for a given domain
      *
      * @return - updated policy
      */
-    @Path("/{policyId}")
+    @Path("/{domainId}")
     @PUT
-    public PolicyEntity updatePolicy(@Context HttpHeaders headers ,@PathParam("policyId") Long policyId,PolicyEntity entity) {
+    public PolicyEntity updatePolicy(@PathParam("domainId") Long domainId, PolicyEntity entity) {
 
-        logger.info("Updating Policy Entity ..." + policyId);
+        logger.info("Updating Policy Entity ...");
         //TODO Sudhir: Add db calls here
-        return entity;
+        return null;
     }
 
     /**
-     * Deletes the Delete Policy
+     * Deletes the Delete Policy for a given domain
      *
      * @return - deleted policy
      */
-    @Path("/{policyId}")
+    @Path("/{domainId}")
     @DELETE
-    public PolicyEntity deletePolicy(@Context HttpHeaders headers,@PathParam("policyId") Long policyId,PolicyEntity entity) {
+    public PolicyEntity deletePolicy(@PathParam("domainId") Long domainId, PolicyEntity entity) {
 
-        logger.info("Deleting Policies Entity ..." + policyId);
+        logger.info("Deleting Policies Entity ...");
         //TODO Sudhir: Add db calls here
-        return entity;
+        return null;
     }
 
     /**
-     * Lists the Policy Id's
+     * Lists the Policy Id's for a given domain
      *
      * @return - Policy Id's
      */
-	@GET
-    public List<String> getPolicyIds(@Context HttpHeaders headers) {
+    @Path("/{domainId}")
+    @GET
+    public List<String> getPolicyIds(@PathParam("domainId") Long domainId) {
 
-	    logger.info("Listing Policy Ids'");
+        logger.info("Listing Policy Ids'" + domainId);
 	    //TODO Sudhir: Add db calls here
 		return null;
     }
 
     /**
-     * Gets the Policy
+     * Gets the Policy for a given domain and the policy id
      *
      * @return - Policy
      */
-
-    @Path("/{policyId}")
+    @Path("/{policyId}/domain/{domainId}")
 	@GET
-    public PolicyEntity getPolicy(@Context HttpHeaders headers,@PathParam("policyId") Long policyId) {
+    public PolicyEntity getPolicy(@PathParam("policyId") Long policyId, @PathParam("domainId") Long domainId) {
 
-        logger.info("getting Policy " + policyId);
+        logger.info("getting Policy " + policyId + domainId);
         //TODO Sudhir: Add db calls here
 		return null;
     }

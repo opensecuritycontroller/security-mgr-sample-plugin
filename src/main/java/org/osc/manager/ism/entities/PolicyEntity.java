@@ -16,12 +16,16 @@
  *******************************************************************************/
 package org.osc.manager.ism.entities;
 
+import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
+import org.osc.sdk.manager.element.DomainElement;
 import org.osc.sdk.manager.element.ManagerPolicyElement;
 
 public class PolicyEntity implements ManagerPolicyElement {
 
     private Long id;
     private String name;
+    private ApplianceManagerConnectorElement applianceManagerConnector;
+    private DomainElement domain;
 
     @Override
     public String getId() {
@@ -39,5 +43,21 @@ public class PolicyEntity implements ManagerPolicyElement {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public ApplianceManagerConnectorElement getApplianceManagerConnector() {
+        return this.applianceManagerConnector;
+    }
+
+    void setApplianceManagerConnector(ApplianceManagerConnectorElement applianceManagerConnector) {
+        this.applianceManagerConnector = applianceManagerConnector;
+    }
+
+    public DomainElement getDomain() {
+        return this.domain;
+    }
+
+    public void setDomain(DomainElement domain) {
+        this.domain = domain;
     }
 }
