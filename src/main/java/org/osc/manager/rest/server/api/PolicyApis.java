@@ -46,9 +46,9 @@ public class PolicyApis {
      *
      * @return policy
      */
-    @Path("/{domainId}")
+    @Path("/domains/{domainid}")
     @POST
-    public PolicyEntity createPolicy(@PathParam("domainId") Long domainId, PolicyEntity entity) {
+    public PolicyEntity createPolicy(@PathParam("domainid") Long domainid, PolicyEntity entity) {
 
         logger.info("Creating Policy Entity...");
         //TODO Sudhir: Add db calls here
@@ -56,13 +56,14 @@ public class PolicyApis {
     }
 
     /**
-     * Updates the Policy for a given domain
+     * Updates the Policy for a given domain and the policy
      *
      * @return - updated policy
      */
-    @Path("/{domainId}")
+    @Path("/domains/{domainid}/policies/{policyid}")
     @PUT
-    public PolicyEntity updatePolicy(@PathParam("domainId") Long domainId, PolicyEntity entity) {
+    public PolicyEntity updatePolicy(@PathParam("domainid") Long domainid, @PathParam("policyid") Long policyid,
+            PolicyEntity entity) {
 
         logger.info("Updating Policy Entity ...");
         //TODO Sudhir: Add db calls here
@@ -70,13 +71,14 @@ public class PolicyApis {
     }
 
     /**
-     * Deletes the Delete Policy for a given domain
+     * Deletes the Policy for a given domain and the policy
      *
      * @return - deleted policy
      */
-    @Path("/{domainId}")
+    @Path("/domains/{domainid}/policies/{policyid}")
     @DELETE
-    public PolicyEntity deletePolicy(@PathParam("domainId") Long domainId, PolicyEntity entity) {
+    public PolicyEntity deletePolicy(@PathParam("domainid") Long domainid, @PathParam("policyid") Long policyid,
+            PolicyEntity entity) {
 
         logger.info("Deleting Policies Entity ...");
         //TODO Sudhir: Add db calls here
@@ -88,25 +90,25 @@ public class PolicyApis {
      *
      * @return - Policy Id's
      */
-    @Path("/{domainId}")
+    @Path("/domains/{domainid}")
     @GET
-    public List<String> getPolicyIds(@PathParam("domainId") Long domainId) {
+    public List<String> getPolicyIds(@PathParam("domainid") Long domainid) {
 
-        logger.info("Listing Policy Ids'" + domainId);
+        logger.info("Listing Policy Ids'");
 	    //TODO Sudhir: Add db calls here
 		return null;
     }
 
     /**
-     * Gets the Policy for a given domain and the policy id
+     * Gets the Policy for a given domain and the policy
      *
      * @return - Policy
      */
-    @Path("/{policyId}/domain/{domainId}")
+    @Path("/domains/{domainid}/policies/{policyid}")
 	@GET
-    public PolicyEntity getPolicy(@PathParam("policyId") Long policyId, @PathParam("domainId") Long domainId) {
+    public PolicyEntity getPolicy(@PathParam("domainid") Long domainid, @PathParam("policyId") Long policyid) {
 
-        logger.info("getting Policy " + policyId + domainId);
+        logger.info("getting Policy ");
         //TODO Sudhir: Add db calls here
 		return null;
     }
