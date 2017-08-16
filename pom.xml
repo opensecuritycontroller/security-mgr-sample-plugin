@@ -400,7 +400,6 @@
 									<fileset dir="${project.build.directory}/plugin" />
 									<manifest>
 										<attribute name="Deployment-Name" value="ISM" />
-										<attribute name="Deployment-Type" value="MANAGER"/>
 										<attribute name="Deployment-SymbolicName" value="SampleMgrPlugin" />
                                         <attribute name="Deployment-Version" value="${fullVersion}" />
 										<attribute name="Require-Bundle" value="security-mgr-sample-plugin" />
