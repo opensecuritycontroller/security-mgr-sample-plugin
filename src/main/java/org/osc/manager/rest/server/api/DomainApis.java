@@ -32,21 +32,21 @@ import org.osc.manager.ism.entities.PolicyEntity;
 import org.osc.manager.rest.server.SecurityManagerServerRestConstants;
 import org.osgi.service.component.annotations.Component;
 
-@Component(service = PolicyApis.class)
-@Path(SecurityManagerServerRestConstants.SERVER_API_PATH_PREFIX + "/policy")
+@Component(service = DomainApis.class)
+@Path(SecurityManagerServerRestConstants.SERVER_API_PATH_PREFIX + "/domains")
 @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 
-public class PolicyApis {
+public class DomainApis {
 
-    private static final Logger logger = Logger.getLogger(PolicyApis.class);
+    private static final Logger logger = Logger.getLogger(DomainApis.class);
 
     /**
      * Creates the Policy for a given domain
      *
      * @return policy
      */
-    @Path("/domains/{domainid}")
+    @Path("/{domainid}")
     @POST
     public PolicyEntity createPolicy(@PathParam("domainid") Long domainid, PolicyEntity entity) {
 
@@ -60,7 +60,7 @@ public class PolicyApis {
      *
      * @return - updated policy
      */
-    @Path("/domains/{domainid}/policies/{policyid}")
+    @Path("/{domainid}/policies/{policyid}")
     @PUT
     public PolicyEntity updatePolicy(@PathParam("domainid") Long domainid, @PathParam("policyid") Long policyid,
             PolicyEntity entity) {
@@ -75,7 +75,7 @@ public class PolicyApis {
      *
      * @return - deleted policy
      */
-    @Path("/domains/{domainid}/policies/{policyid}")
+    @Path("/{domainid}/policies/{policyid}")
     @DELETE
     public PolicyEntity deletePolicy(@PathParam("domainid") Long domainid, @PathParam("policyid") Long policyid,
             PolicyEntity entity) {
@@ -90,7 +90,7 @@ public class PolicyApis {
      *
      * @return - Policy Id's
      */
-    @Path("/domains/{domainid}")
+    @Path("/{domainid}")
     @GET
     public List<String> getPolicyIds(@PathParam("domainid") Long domainid) {
 
@@ -104,7 +104,7 @@ public class PolicyApis {
      *
      * @return - Policy
      */
-    @Path("/domains/{domainid}/policies/{policyid}")
+    @Path("/{domainid}/policies/{policyid}")
 	@GET
     public PolicyEntity getPolicy(@PathParam("domainid") Long domainid, @PathParam("policyId") Long policyid) {
 

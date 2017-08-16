@@ -33,7 +33,7 @@ import javax.servlet.ServletResponse;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.servlet.ServletContainer;
-import org.osc.manager.rest.server.api.PolicyApis;
+import org.osc.manager.rest.server.api.DomainApis;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -53,7 +53,7 @@ public class SecurityManagerServletDelegate extends ResourceConfig implements Se
 
     static final long serialVersionUID = 1L;
     @Reference
-    private PolicyApis policiesApis;
+    private DomainApis domainApis;
     /** The Jersey REST container */
     private ServletContainer container;
 
@@ -62,7 +62,7 @@ public class SecurityManagerServletDelegate extends ResourceConfig implements Se
         // Json feature
         super.register(JacksonJaxbJsonProvider.class);
         super.property(ServerProperties.FEATURE_AUTO_DISCOVERY_DISABLE, true);
-        super.registerInstances(this.policiesApis);
+        super.registerInstances(this.domainApis);
         this.container = new ServletContainer(this);
        }
 
