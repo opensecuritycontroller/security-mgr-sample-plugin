@@ -122,8 +122,29 @@ public class OSGiIntegrationTest {
                 mavenBundle("org.apache.aries.tx-control", "tx-control-provider-jpa-local").versionAsInProject(),
                 mavenBundle("com.h2database", "h2").versionAsInProject(),
 
+                // Adding a service endpoint
+                mavenBundle("javax.servlet", "javax.servlet-api").versionAsInProject(),
+                mavenBundle("javax.ws.rs", "javax.ws.rs-api").versionAsInProject(),
+                mavenBundle("org.glassfish.jersey.core", "jersey-server").versionAsInProject(),
+                mavenBundle("org.glassfish.jersey.core", "jersey-client").versionAsInProject(),
+                mavenBundle("javax.annotation", "javax.annotation-api").versionAsInProject(),
+                mavenBundle("javax.validation", "validation-api").versionAsInProject(),
+                mavenBundle("org.glassfish.jersey.bundles.repackaged", "jersey-guava").versionAsInProject(),
+                mavenBundle("org.glassfish.hk2", "hk2-api").versionAsInProject(),
+                mavenBundle("org.glassfish.hk2", "hk2-locator").versionAsInProject(),
+                mavenBundle("org.glassfish.hk2", "hk2-utils").versionAsInProject(),
+                mavenBundle("org.glassfish.hk2.external", "aopalliance-repackaged").versionAsInProject(),
+                mavenBundle("org.glassfish.jersey.core", "jersey-common").versionAsInProject(),
+                mavenBundle("org.glassfish.hk2", "osgi-resource-locator").versionAsInProject(),
+                mavenBundle("org.glassfish.jersey.containers", "jersey-container-servlet-core").versionAsInProject(),
+                mavenBundle("com.fasterxml.jackson.jaxrs", "jackson-jaxrs-json-provider").versionAsInProject(),
+                mavenBundle("com.fasterxml.jackson.core", "jackson-core").versionAsInProject(),
+                mavenBundle("com.fasterxml.jackson.core", "jackson-databind").versionAsInProject(),
+                mavenBundle("com.fasterxml.jackson.jaxrs", "jackson-jaxrs-base").versionAsInProject(),                
+                mavenBundle("com.fasterxml.jackson.core", "jackson-annotations").versionAsInProject(),
+                
+                
                 // Hibernate
-
                 systemPackage("javax.xml.stream;version=1.0"),
                 systemPackage("javax.xml.stream.events;version=1.0"),
                 systemPackage("javax.xml.stream.util;version=1.0"),
@@ -134,13 +155,14 @@ public class OSGiIntegrationTest {
                 // Hibernate bundles and their dependencies (JPA API is available from the tx-control)
                 mavenBundle("org.apache.servicemix.bundles", "org.apache.servicemix.bundles.antlr", "2.7.7_5"),
                 mavenBundle("org.apache.servicemix.bundles", "org.apache.servicemix.bundles.dom4j", "1.6.1_5"),
-                mavenBundle("org.javassist", "javassist", "3.18.1-GA"),
+                mavenBundle("org.javassist", "javassist", "3.20.0-GA"),
                 mavenBundle("org.jboss.logging", "jboss-logging", "3.3.0.Final"),
                 mavenBundle("org.jboss", "jandex", "2.0.0.Final"),
                 mavenBundle("org.hibernate.common", "hibernate-commons-annotations", "5.0.1.Final"),
-                mavenBundle("org.hibernate", "hibernate-core", "5.0.9.Final"),
-                mavenBundle("org.hibernate", "hibernate-osgi", "5.0.9.Final"),
-                mavenBundle("org.hibernate", "hibernate-entitymanager", "5.0.9.Final"),
+                mavenBundle("org.hibernate", "hibernate-core", "5.2.3.Final"),
+                mavenBundle("org.hibernate", "hibernate-osgi", "5.2.3.Final"),
+                mavenBundle("com.fasterxml", "classmate").versionAsInProject(),
+                //mavenBundle("org.hibernate", "hibernate-entitymanager", "5.2.3.Final"),
 
                 // Just needed for the test so we can configure the client to point at the local test server
                 //                mavenBundle("org.apache.felix", "org.apache.felix.configadmin", "1.8.10"),
