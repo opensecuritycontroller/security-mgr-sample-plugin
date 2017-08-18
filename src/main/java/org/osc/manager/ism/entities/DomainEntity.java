@@ -16,6 +16,10 @@
  *******************************************************************************/
 package org.osc.manager.ism.entities;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.ForeignKey;
@@ -23,35 +27,43 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 
-import org.osc.sdk.manager.element.ManagerPolicyElement;
+import org.osc.sdk.manager.element.ManagerDomainElement;
 
 @Entity
-public class PolicyEntity implements ManagerPolicyElement {
+public class DomainEntity implements ManagerDomainElement {
+    private String name;
 
     @Id
     @GeneratedValue
-    private Long id;
-    private String name;
+    private Long Id;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "appliance_manager_connector_fk", nullable = false, foreignKey = @ForeignKey(name = "FK_PO_APPLIANCE_MANAGER_CONNECTOR"))
-    private ApplianceManagerConnectorEntity parent;
+    @JoinColumn(name = "appliance_manager_connector_fk", nullable = false, foreignKey = @ForeignKey(name = "FK_DO_APPLIANCE_MANAGER_CONNECTOR"))
+    private ApplianceManagerConnectorEntity applianceManagerConnector;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "domain_fk", nullable = false, foreignKey = @ForeignKey(name = "FK_PO_DOMAIN"))
-    private DomainEntity domain;
+    @OneToMany(mappedBy = "domain", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<PolicyEntity> policies = new ArrayList<PolicyEntity>();
 
     @Override
     public String getId() {
-        if (this.id == null) {
+        if (this.Id == null) {
             return null;
         }
-        return this.id.toString();
+        return this.Id.toString();
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setId(Long Id) {
+        this.Id = Id;
+    }
+
+    public List<PolicyEntity> getPolicies() {
+        return this.policies;
+    }
+
+    public void setPolicies(PolicyEntity policies) {
+        this.policies.add(policies);
     }
 
     @Override
@@ -63,19 +75,11 @@ public class PolicyEntity implements ManagerPolicyElement {
         this.name = name;
     }
 
-    public ApplianceManagerConnectorEntity getParent() {
-        return this.parent;
+    public ApplianceManagerConnectorEntity getapplianceManagerConnector() {
+        return this.applianceManagerConnector;
     }
 
-    public void setParent(ApplianceManagerConnectorEntity parent) {
-        this.parent = parent;
-    }
-
-    public DomainEntity getDomain() {
-        return this.domain;
-    }
-
-    public void setDomain(DomainEntity domain) {
-        this.domain = domain;
+    public void setapplianceManagerConnector(ApplianceManagerConnectorEntity applianceManagerConnector) {
+        this.applianceManagerConnector = applianceManagerConnector;
     }
 }

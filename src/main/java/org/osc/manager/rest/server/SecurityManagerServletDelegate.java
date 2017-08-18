@@ -16,27 +16,39 @@
  *******************************************************************************/
 
 package org.osc.manager.rest.server;
+import static java.util.Collections.singletonMap;
 import static org.osgi.service.http.whiteboard.HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_NAME;
 import static org.osgi.service.http.whiteboard.HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_SELECT;
 import static org.osgi.service.http.whiteboard.HttpWhiteboardConstants.HTTP_WHITEBOARD_SERVLET_NAME;
 import static org.osgi.service.http.whiteboard.HttpWhiteboardConstants.HTTP_WHITEBOARD_SERVLET_PATTERN;
 import static org.osgi.service.http.whiteboard.HttpWhiteboardConstants.HTTP_WHITEBOARD_TARGET;
+import static org.osgi.service.jdbc.DataSourceFactory.JDBC_PASSWORD;
+import static org.osgi.service.jdbc.DataSourceFactory.JDBC_URL;
+import static org.osgi.service.jdbc.DataSourceFactory.JDBC_USER;
 
 import java.io.IOException;
+import java.util.Properties;
 
+import javax.persistence.EntityManager;
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.sql.DataSource;
 
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.osc.manager.rest.server.api.DomainApis;
+import org.osc.manager.rest.server.api.ManagerConnectorApis;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.jdbc.DataSourceFactory;
+import org.osgi.service.jpa.EntityManagerFactoryBuilder;
+import org.osgi.service.transaction.control.TransactionControl;
+import org.osgi.service.transaction.control.jpa.JPAEntityManagerProviderFactory;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 
@@ -54,15 +66,45 @@ public class SecurityManagerServletDelegate extends ResourceConfig implements Se
     static final long serialVersionUID = 1L;
     @Reference
     private DomainApis domainApis;
+    @Reference
+    private ManagerConnectorApis mcApis;
+
+    @Reference(target = "(osgi.local.enabled=true)")
+    private TransactionControl txControl;
+
+    @Reference(target = "(osgi.unit.name=ism-mgr)")
+    private EntityManagerFactoryBuilder builder;
+
+    @Reference(target = "(osgi.jdbc.driver.class=org.h2.Driver)")
+    private DataSourceFactory jdbcFactory;
+
+    @Reference(target = "(osgi.local.enabled=true)")
+    private JPAEntityManagerProviderFactory resourceFactory;
+    private EntityManager em;
+
     /** The Jersey REST container */
     private ServletContainer container;
 
     @Activate
-    void activate() {
-        // Json feature
+    void activate() throws Exception {
+
         super.register(JacksonJaxbJsonProvider.class);
         super.property(ServerProperties.FEATURE_AUTO_DISCOVERY_DISABLE, true);
-        super.registerInstances(this.domainApis);
+
+        Properties props = new Properties();
+        props.setProperty(JDBC_URL, "jdbc:h2:./ismPlugin");
+        props.setProperty(JDBC_USER, "admin");
+        props.setProperty(JDBC_PASSWORD, "abc12345");
+
+        DataSource ds = this.jdbcFactory.createDataSource(props);
+
+        this.em = this.resourceFactory
+                .getProviderFor(this.builder, singletonMap("javax.persistence.nonJtaDataSource", (Object) ds), null)
+                .getResource(this.txControl);
+
+        this.mcApis.createManagerConnectorDb(this.em, this.txControl);
+
+        super.registerInstances(this.domainApis, this.mcApis);
         this.container = new ServletContainer(this);
        }
 

@@ -18,35 +18,104 @@ package org.osc.manager.ism.api;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+
+import javax.persistence.EntityManager;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 
 import org.apache.log4j.Logger;
-import org.osc.manager.ism.model.Domain;
-import org.osc.manager.ism.model.DomainListElement;
+import org.osc.manager.ism.entities.ApplianceManagerConnectorEntity;
+import org.osc.manager.ism.entities.DomainEntity;
 import org.osc.sdk.manager.api.ManagerDomainApi;
 import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
+import org.osc.sdk.manager.element.ManagerDomainElement;
+import org.osgi.service.transaction.control.TransactionControl;
 
 public class IsmDomainApi implements ManagerDomainApi {
 
     Logger log = Logger.getLogger(IsmDomainApi.class);
+    private TransactionControl txControl;
+    private EntityManager em;
+    ApplianceManagerConnectorElement mc;
 
-    public IsmDomainApi(ApplianceManagerConnectorElement mc) throws Exception {
-
+    public IsmDomainApi(ApplianceManagerConnectorElement mc, TransactionControl txControl, EntityManager em)
+            throws Exception {
+        this.txControl = txControl;
+        this.em = em;
+        this.mc = mc;
     }
 
-    public static IsmDomainApi create(ApplianceManagerConnectorElement mc) throws Exception {
-        return new IsmDomainApi(mc);
+    public static IsmDomainApi create(ApplianceManagerConnectorElement mc, TransactionControl txControl,
+            EntityManager em) throws Exception {
+
+        return new IsmDomainApi(mc, txControl, em);
+    }
+
+    public String createDomain(ManagerDomainElement dm) throws Exception {
+
+        String name = this.mc.getName();
+        DomainEntity domains = new DomainEntity();
+        domains.setName(dm.getName());
+
+        return this.txControl.required(new Callable<DomainEntity>() {
+            @Override
+            public DomainEntity call() throws Exception {
+                CriteriaBuilder cb = IsmDomainApi.this.em.getCriteriaBuilder();
+
+                CriteriaQuery<ApplianceManagerConnectorEntity> q = cb
+                        .createQuery(ApplianceManagerConnectorEntity.class);
+                Root<ApplianceManagerConnectorEntity> r = q.from(ApplianceManagerConnectorEntity.class);
+                q.select(r).where(cb.and(cb.equal(r.get("name"), name)));
+                ApplianceManagerConnectorEntity result = IsmDomainApi.this.em.createQuery(q).getSingleResult();
+                domains.setapplianceManagerConnector(result);
+                IsmDomainApi.this.em.persist(domains);
+                return domains;
+            }
+        }).getName();
     }
 
     @Override
-    public Domain getDomain(String domainId) throws Exception {
-        return new Domain(0L, "Root-Domain");
+    public DomainEntity getDomain(String domainId) throws Exception {
+
+        return this.txControl.required(new Callable<DomainEntity>() {
+            @Override
+            public DomainEntity call() throws Exception {
+                CriteriaBuilder cb = IsmDomainApi.this.em.getCriteriaBuilder();
+
+                CriteriaQuery<DomainEntity> q = cb.createQuery(DomainEntity.class);
+                Root<DomainEntity> r = q.from(DomainEntity.class);
+                q.select(r).where(cb.and(cb.equal(r.get("id"), domainId)));
+                DomainEntity result = IsmDomainApi.this.em.createQuery(q).getSingleResult();
+                return result;
+            }
+        });
     }
 
     @Override
-    public List<DomainListElement> listDomains() throws Exception {
-        List<DomainListElement> domainList = new ArrayList<DomainListElement>();
-        domainList.add(new DomainListElement(0L, "Root-Domain"));
-        return domainList;
+    public List<DomainEntity> listDomains() throws Exception {
+
+        List<DomainEntity> domains = new ArrayList<DomainEntity>();
+
+        return this.txControl.supports(new Callable<List<DomainEntity>>() {
+
+            @Override
+            public List<DomainEntity> call() throws Exception {
+                CriteriaBuilder cb = IsmDomainApi.this.em.getCriteriaBuilder();
+                CriteriaQuery<DomainEntity> q = cb.createQuery(DomainEntity.class);
+                Root<DomainEntity> r = q.from(DomainEntity.class);
+                q.select(r);
+
+                for (DomainEntity domain : IsmDomainApi.this.em.createQuery(q).getResultList()) {
+                    DomainEntity domainList = new DomainEntity();
+                    domainList.setName(domain.getName());
+                    domainList.setId(Long.parseLong(domain.getId()));
+                    domains.add(domainList);
+                }
+                return domains;
+            }
+        });
     }
 
 }
