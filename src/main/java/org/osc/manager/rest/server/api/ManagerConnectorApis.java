@@ -52,11 +52,11 @@ public class ManagerConnectorApis {
     private TransactionControl txControl;
 
     /**
-     * Creates the DB handler
+     * Init the DB
      *
      *
      */
-    public void createManagerConnectorDb(EntityManager em, TransactionControl txControl) throws Exception {
+    public void init(EntityManager em, TransactionControl txControl) throws Exception {
         this.em = em;
         this.txControl = txControl;
     }
@@ -68,20 +68,20 @@ public class ManagerConnectorApis {
      * @throws Exception
      */
     @POST
-    public ApplianceManagerConnectorEntity createManagerConnector(ApplianceManagerConnectorEntity entity)
+    public String createManagerConnector(ApplianceManagerConnectorEntity entity)
             throws Exception {
 
-        logger.info("Creating Manager Connector...");
+        logger.info("Creating Manager Connector...:" + entity.getName());
 
-        return this.txControl.required(new Callable<ApplianceManagerConnectorEntity>() {
+        return this.txControl.required(new Callable<String>() {
 
             @Override
-            public ApplianceManagerConnectorEntity call() throws Exception {
+            public String call() throws Exception {
                 ApplianceManagerConnectorEntity mc = new ApplianceManagerConnectorEntity();
                 mc.setName(entity.getName());
-                mc.setid(entity.getid());
-                ManagerConnectorApis.this.em.persist(mc);
-                return mc;
+                em.persist(mc);
+                Long id = mc.getid();
+                return Long.toString(id);
             }
         });
     }
@@ -96,21 +96,26 @@ public class ManagerConnectorApis {
     public ApplianceManagerConnectorEntity updateManagerConnector(@PathParam("applianceManagerConnectorId") Long amcId,
             ApplianceManagerConnectorEntity entity) {
 
-        logger.info("Updating MC Entity ...");
+        logger.info("Updating MC Entity Id...:" + amcId);
 
         return this.txControl.required(new Callable<ApplianceManagerConnectorEntity>() {
             @Override
             public ApplianceManagerConnectorEntity call() throws Exception {
-                CriteriaBuilder cb = ManagerConnectorApis.this.em.getCriteriaBuilder();
+                CriteriaBuilder cb = em.getCriteriaBuilder();
 
                 CriteriaQuery<ApplianceManagerConnectorEntity> q = cb.createQuery(ApplianceManagerConnectorEntity.class);
                 Root<ApplianceManagerConnectorEntity> r = q.from(ApplianceManagerConnectorEntity.class);
                 q.select(r).where(cb.and(cb.equal(r.get("id"), amcId)));
 
-                ApplianceManagerConnectorEntity result = ManagerConnectorApis.this.em.createQuery(q).getSingleResult();
-                result.setName(entity.getName());
-                ManagerConnectorApis.this.em.persist(result);
-                return entity;
+                List<ApplianceManagerConnectorEntity> result = ManagerConnectorApis.this.em.createQuery(q)
+                        .getResultList();
+                if (result.isEmpty() == true) {
+                    return null;
+                } else {
+                    result.get(0).setName(entity.getName());
+                    em.persist(result.get(0));
+                    return entity;
+                }
             }
         });
     }
@@ -125,7 +130,8 @@ public class ManagerConnectorApis {
     public ApplianceManagerConnectorEntity deleteManagerConnector(@PathParam("applianceManagerConnectorId") Long amcId,
             ApplianceManagerConnectorEntity entity) {
 
-        logger.info("Updating MC Entity ...");
+        logger.info("Deleting MC Entity Id...:" + amcId);
+
         return this.txControl.required(new Callable<ApplianceManagerConnectorEntity>() {
             @Override
             public ApplianceManagerConnectorEntity call() throws Exception {
@@ -137,9 +143,13 @@ public class ManagerConnectorApis {
                 Root<ApplianceManagerConnectorEntity> r = q.from(ApplianceManagerConnectorEntity.class);
                 q.select(r).where(cb.and(cb.equal(r.get("id"), amcId)));
 
-                ApplianceManagerConnectorEntity result = ManagerConnectorApis.this.em.createQuery(q).getSingleResult();
-                ManagerConnectorApis.this.em.remove(result);
-                return entity;
+                List<ApplianceManagerConnectorEntity> result = em.createQuery(q).getResultList();
+                if (result.isEmpty() == true) {
+                    return null;
+                } else {
+                    em.remove(result.get(0));
+                    return new ApplianceManagerConnectorEntity();
+                }
             }
         });
     }
@@ -153,24 +163,28 @@ public class ManagerConnectorApis {
     @GET
     public ApplianceManagerConnectorEntity getManagerConnector(@PathParam("applianceManagerConnectorId") Long amcId) {
 
-        logger.info("listing MC...'");
+        logger.info("Query MC for Id...:" + amcId);
 
         ApplianceManagerConnectorEntity mc = new ApplianceManagerConnectorEntity();
 
         return this.txControl.required(new Callable<ApplianceManagerConnectorEntity>() {
             @Override
             public ApplianceManagerConnectorEntity call() throws Exception {
-                CriteriaBuilder cb = ManagerConnectorApis.this.em.getCriteriaBuilder();
+                CriteriaBuilder cb = em.getCriteriaBuilder();
 
                 CriteriaQuery<ApplianceManagerConnectorEntity> q = cb
                         .createQuery(ApplianceManagerConnectorEntity.class);
                 Root<ApplianceManagerConnectorEntity> r = q.from(ApplianceManagerConnectorEntity.class);
                 q.select(r).where(cb.and(cb.equal(r.get("id"), amcId)));
 
-                ApplianceManagerConnectorEntity result = ManagerConnectorApis.this.em.createQuery(q).getSingleResult();
-                mc.setName(result.getName());
-                mc.setid(result.getid());
-                return mc;
+                List<ApplianceManagerConnectorEntity> result = em.createQuery(q).getResultList();
+                if (result.isEmpty() == true) {
+                    return null;
+                } else {
+                    mc.setName(result.get(0).getName());
+                    mc.setid(result.get(0).getid());
+                    return mc;
+                }
             }
         });
     }
@@ -186,23 +200,26 @@ public class ManagerConnectorApis {
 
         logger.info("Listing MC Ids'");
 
-        List<String> mc = new ArrayList<String>();
+        List<String> mcIds = new ArrayList<String>();
 
         return this.txControl.supports(new Callable<List<String>>() {
 
             @Override
             public List<String> call() throws Exception {
-                CriteriaBuilder cb = ManagerConnectorApis.this.em.getCriteriaBuilder();
+                CriteriaBuilder cb = em.getCriteriaBuilder();
                 CriteriaQuery<ApplianceManagerConnectorEntity> q = cb
                         .createQuery(ApplianceManagerConnectorEntity.class);
                 Root<ApplianceManagerConnectorEntity> r = q.from(ApplianceManagerConnectorEntity.class);
                 q.select(r);
-
-                for (ApplianceManagerConnectorEntity mgrMc : ManagerConnectorApis.this.em.createQuery(q)
-                        .getResultList()) {
-                    mc.add(mgrMc.getName());
+                List<ApplianceManagerConnectorEntity> result = em.createQuery(q).getResultList();
+                if (result.isEmpty() == false) {
+                    for (ApplianceManagerConnectorEntity mgrMc : result) {
+                        mcIds.add(new String(Long.toString(mgrMc.getid())));
+                    }
+                    return mcIds;
+                } else {
+                    return null;
                 }
-                return mc;
             }
         });
     }

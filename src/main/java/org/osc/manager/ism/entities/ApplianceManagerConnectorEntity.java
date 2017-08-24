@@ -25,6 +25,7 @@ import javax.net.ssl.TrustManager;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Transient;
@@ -35,11 +36,12 @@ import org.osc.sdk.manager.element.ManagerTypeElement;
 @Entity
 public class ApplianceManagerConnectorEntity implements ApplianceManagerConnectorElement {
 
-    private String name;
-
+    @GeneratedValue
     @Id
     @Column(name = "id")
     private Long id;
+    @Column(name = "name", unique = true, nullable = false)
+    private String name;
     @Transient
     private String ipAddress;
     @Transient

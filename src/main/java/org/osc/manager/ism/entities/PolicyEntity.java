@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.osc.manager.ism.entities;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.ForeignKey;
@@ -32,6 +33,7 @@ public class PolicyEntity implements ManagerPolicyElement {
     @Id
     @GeneratedValue
     private Long id;
+    @Column(name = "name", unique = true, nullable = false)
     private String name;
 
     @ManyToOne(fetch = FetchType.EAGER)

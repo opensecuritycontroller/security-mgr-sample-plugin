@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.ForeignKey;
@@ -33,6 +34,8 @@ import org.osc.sdk.manager.element.ManagerDomainElement;
 
 @Entity
 public class DomainEntity implements ManagerDomainElement {
+
+    @Column(name = "name", unique = true, nullable = false)
     private String name;
 
     @Id

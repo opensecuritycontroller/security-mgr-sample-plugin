@@ -16,7 +16,6 @@
  *******************************************************************************/
 package org.osc.manager.ism.api;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -26,11 +25,9 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
 import org.apache.log4j.Logger;
-import org.osc.manager.ism.entities.ApplianceManagerConnectorEntity;
 import org.osc.manager.ism.entities.DomainEntity;
 import org.osc.sdk.manager.api.ManagerDomainApi;
 import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
-import org.osc.sdk.manager.element.ManagerDomainElement;
 import org.osgi.service.transaction.control.TransactionControl;
 
 public class IsmDomainApi implements ManagerDomainApi {
@@ -53,29 +50,6 @@ public class IsmDomainApi implements ManagerDomainApi {
         return new IsmDomainApi(mc, txControl, em);
     }
 
-    public String createDomain(ManagerDomainElement dm) throws Exception {
-
-        String name = this.mc.getName();
-        DomainEntity domains = new DomainEntity();
-        domains.setName(dm.getName());
-
-        return this.txControl.required(new Callable<DomainEntity>() {
-            @Override
-            public DomainEntity call() throws Exception {
-                CriteriaBuilder cb = IsmDomainApi.this.em.getCriteriaBuilder();
-
-                CriteriaQuery<ApplianceManagerConnectorEntity> q = cb
-                        .createQuery(ApplianceManagerConnectorEntity.class);
-                Root<ApplianceManagerConnectorEntity> r = q.from(ApplianceManagerConnectorEntity.class);
-                q.select(r).where(cb.and(cb.equal(r.get("name"), name)));
-                ApplianceManagerConnectorEntity result = IsmDomainApi.this.em.createQuery(q).getSingleResult();
-                domains.setapplianceManagerConnector(result);
-                IsmDomainApi.this.em.persist(domains);
-                return domains;
-            }
-        }).getName();
-    }
-
     @Override
     public DomainEntity getDomain(String domainId) throws Exception {
 
@@ -83,20 +57,25 @@ public class IsmDomainApi implements ManagerDomainApi {
             @Override
             public DomainEntity call() throws Exception {
                 CriteriaBuilder cb = IsmDomainApi.this.em.getCriteriaBuilder();
+                DomainEntity domain = new DomainEntity();
 
                 CriteriaQuery<DomainEntity> q = cb.createQuery(DomainEntity.class);
                 Root<DomainEntity> r = q.from(DomainEntity.class);
-                q.select(r).where(cb.and(cb.equal(r.get("id"), domainId)));
-                DomainEntity result = IsmDomainApi.this.em.createQuery(q).getSingleResult();
-                return result;
+                q.select(r).where(cb.and(cb.equal(r.get("Id"), Long.parseLong(domainId))));
+                List<DomainEntity> result = IsmDomainApi.this.em.createQuery(q).getResultList();
+                if (result.isEmpty() == true) {
+                    return null;
+                } else{
+                    domain.setId(Long.parseLong(result.get(0).getId()));
+                    domain.setName(result.get(0).getName());
+                    return domain;
+                }
             }
         });
     }
 
     @Override
     public List<DomainEntity> listDomains() throws Exception {
-
-        List<DomainEntity> domains = new ArrayList<DomainEntity>();
 
         return this.txControl.supports(new Callable<List<DomainEntity>>() {
 
@@ -106,16 +85,13 @@ public class IsmDomainApi implements ManagerDomainApi {
                 CriteriaQuery<DomainEntity> q = cb.createQuery(DomainEntity.class);
                 Root<DomainEntity> r = q.from(DomainEntity.class);
                 q.select(r);
-
-                for (DomainEntity domain : IsmDomainApi.this.em.createQuery(q).getResultList()) {
-                    DomainEntity domainList = new DomainEntity();
-                    domainList.setName(domain.getName());
-                    domainList.setId(Long.parseLong(domain.getId()));
-                    domains.add(domainList);
+                List<DomainEntity> domainList = IsmDomainApi.this.em.createQuery(q).getResultList();
+                if (domainList.isEmpty() == false) {
+                    return domainList;
+                } else {
+                    return null;
                 }
-                return domains;
             }
         });
     }
-
 }

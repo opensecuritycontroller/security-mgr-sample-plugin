@@ -17,18 +17,8 @@
 package org.osc.manager.ism.api;
 
 import static java.util.Collections.singletonMap;
-import static org.osc.sdk.manager.Constants.AUTHENTICATION_TYPE;
-import static org.osc.sdk.manager.Constants.EXTERNAL_SERVICE_NAME;
-import static org.osc.sdk.manager.Constants.NOTIFICATION_TYPE;
-import static org.osc.sdk.manager.Constants.PLUGIN_NAME;
-import static org.osc.sdk.manager.Constants.PROVIDE_DEVICE_STATUS;
-import static org.osc.sdk.manager.Constants.SERVICE_NAME;
-import static org.osc.sdk.manager.Constants.SYNC_POLICY_MAPPING;
-import static org.osc.sdk.manager.Constants.SYNC_SECURITY_GROUP;
-import static org.osc.sdk.manager.Constants.VENDOR_NAME;
-import static org.osgi.service.jdbc.DataSourceFactory.JDBC_PASSWORD;
-import static org.osgi.service.jdbc.DataSourceFactory.JDBC_URL;
-import static org.osgi.service.jdbc.DataSourceFactory.JDBC_USER;
+import static org.osc.sdk.manager.Constants.*;
+import static org.osgi.service.jdbc.DataSourceFactory.*;
 
 import java.sql.SQLException;
 import java.util.Properties;
@@ -137,7 +127,7 @@ public class IsmApplianceManagerApi implements ApplianceManagerApi {
 
     @Override
     public ManagerPolicyApi createManagerPolicyApi(ApplianceManagerConnectorElement mc) throws Exception {
-        return IsmPolicyApi.create(mc);
+        return IsmPolicyApi.create(mc, this.txControl, this.em);
     }
 
     @Override

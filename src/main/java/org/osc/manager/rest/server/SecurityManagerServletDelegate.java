@@ -17,14 +17,8 @@
 
 package org.osc.manager.rest.server;
 import static java.util.Collections.singletonMap;
-import static org.osgi.service.http.whiteboard.HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_NAME;
-import static org.osgi.service.http.whiteboard.HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_SELECT;
-import static org.osgi.service.http.whiteboard.HttpWhiteboardConstants.HTTP_WHITEBOARD_SERVLET_NAME;
-import static org.osgi.service.http.whiteboard.HttpWhiteboardConstants.HTTP_WHITEBOARD_SERVLET_PATTERN;
-import static org.osgi.service.http.whiteboard.HttpWhiteboardConstants.HTTP_WHITEBOARD_TARGET;
-import static org.osgi.service.jdbc.DataSourceFactory.JDBC_PASSWORD;
-import static org.osgi.service.jdbc.DataSourceFactory.JDBC_URL;
-import static org.osgi.service.jdbc.DataSourceFactory.JDBC_USER;
+import static org.osgi.service.http.whiteboard.HttpWhiteboardConstants.*;
+import static org.osgi.service.jdbc.DataSourceFactory.*;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -102,7 +96,8 @@ public class SecurityManagerServletDelegate extends ResourceConfig implements Se
                 .getProviderFor(this.builder, singletonMap("javax.persistence.nonJtaDataSource", (Object) ds), null)
                 .getResource(this.txControl);
 
-        this.mcApis.createManagerConnectorDb(this.em, this.txControl);
+        this.mcApis.init(this.em, this.txControl);
+        this.domainApis.init(this.em, this.txControl);
 
         super.registerInstances(this.domainApis, this.mcApis);
         this.container = new ServletContainer(this);
