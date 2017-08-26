@@ -37,7 +37,7 @@ public class IsmDomainApi implements ManagerDomainApi {
     private EntityManager em;
     ApplianceManagerConnectorElement mc;
 
-    public IsmDomainApi(ApplianceManagerConnectorElement mc, TransactionControl txControl, EntityManager em)
+    private IsmDomainApi(ApplianceManagerConnectorElement mc, TransactionControl txControl, EntityManager em)
             throws Exception {
         this.txControl = txControl;
         this.em = em;
@@ -56,19 +56,18 @@ public class IsmDomainApi implements ManagerDomainApi {
         return this.txControl.required(new Callable<DomainEntity>() {
             @Override
             public DomainEntity call() throws Exception {
-                CriteriaBuilder cb = IsmDomainApi.this.em.getCriteriaBuilder();
-                DomainEntity domain = new DomainEntity();
+                CriteriaBuilder criteriaBuilder = IsmDomainApi.this.em.getCriteriaBuilder();
+                DomainEntity domain = null;
 
-                CriteriaQuery<DomainEntity> q = cb.createQuery(DomainEntity.class);
-                Root<DomainEntity> r = q.from(DomainEntity.class);
-                q.select(r).where(cb.and(cb.equal(r.get("Id"), Long.parseLong(domainId))));
-                List<DomainEntity> result = IsmDomainApi.this.em.createQuery(q).getResultList();
-                if (result.isEmpty() == true) {
-                    return null;
-                } else{
-                    domain.setId(Long.parseLong(result.get(0).getId()));
-                    domain.setName(result.get(0).getName());
+                CriteriaQuery<DomainEntity> query = criteriaBuilder.createQuery(DomainEntity.class);
+                Root<DomainEntity> r = query.from(DomainEntity.class);
+                query.select(r)
+                        .where(criteriaBuilder.and(criteriaBuilder.equal(r.get("Id"), Long.parseLong(domainId))));
+                List<DomainEntity> result = em.createQuery(query).getResultList();
+                if (result.isEmpty()) {
                     return domain;
+                } else{
+                    return result.get(0);
                 }
             }
         });
@@ -81,16 +80,11 @@ public class IsmDomainApi implements ManagerDomainApi {
 
             @Override
             public List<DomainEntity> call() throws Exception {
-                CriteriaBuilder cb = IsmDomainApi.this.em.getCriteriaBuilder();
-                CriteriaQuery<DomainEntity> q = cb.createQuery(DomainEntity.class);
-                Root<DomainEntity> r = q.from(DomainEntity.class);
-                q.select(r);
-                List<DomainEntity> domainList = IsmDomainApi.this.em.createQuery(q).getResultList();
-                if (domainList.isEmpty() == false) {
-                    return domainList;
-                } else {
-                    return null;
-                }
+                CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+                CriteriaQuery<DomainEntity> query = criteriaBuilder.createQuery(DomainEntity.class);
+                Root<DomainEntity> r = query.from(DomainEntity.class);
+                query.select(r);
+                return em.createQuery(query).getResultList();
             }
         });
     }

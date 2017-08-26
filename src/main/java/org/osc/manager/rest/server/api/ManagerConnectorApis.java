@@ -79,6 +79,18 @@ public class ManagerConnectorApis {
             public String call() throws Exception {
                 ApplianceManagerConnectorEntity mc = new ApplianceManagerConnectorEntity();
                 mc.setName(entity.getName());
+
+                CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+
+                CriteriaQuery<ApplianceManagerConnectorEntity> query = criteriaBuilder
+                        .createQuery(ApplianceManagerConnectorEntity.class);
+                Root<ApplianceManagerConnectorEntity> r = query.from(ApplianceManagerConnectorEntity.class);
+                query.select(r).where(criteriaBuilder.and(criteriaBuilder.equal(r.get("name"), entity.getName())));
+                List<ApplianceManagerConnectorEntity> result = em.createQuery(query).getResultList();
+                if (!result.isEmpty()) {
+                    throw new Exception("Manager Connector Entity name already exists..");
+                    //TODO - to add RETURN 404 error:Sudhir
+                }
                 em.persist(mc);
                 Long id = mc.getid();
                 return Long.toString(id);
@@ -101,16 +113,18 @@ public class ManagerConnectorApis {
         return this.txControl.required(new Callable<ApplianceManagerConnectorEntity>() {
             @Override
             public ApplianceManagerConnectorEntity call() throws Exception {
-                CriteriaBuilder cb = em.getCriteriaBuilder();
+                CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
 
-                CriteriaQuery<ApplianceManagerConnectorEntity> q = cb.createQuery(ApplianceManagerConnectorEntity.class);
-                Root<ApplianceManagerConnectorEntity> r = q.from(ApplianceManagerConnectorEntity.class);
-                q.select(r).where(cb.and(cb.equal(r.get("id"), amcId)));
+                CriteriaQuery<ApplianceManagerConnectorEntity> query = criteriaBuilder
+                        .createQuery(ApplianceManagerConnectorEntity.class);
+                Root<ApplianceManagerConnectorEntity> r = query.from(ApplianceManagerConnectorEntity.class);
+                query.select(r).where(criteriaBuilder.and(criteriaBuilder.equal(r.get("id"), amcId)));
 
-                List<ApplianceManagerConnectorEntity> result = ManagerConnectorApis.this.em.createQuery(q)
+                List<ApplianceManagerConnectorEntity> result = ManagerConnectorApis.this.em.createQuery(query)
                         .getResultList();
-                if (result.isEmpty() == true) {
-                    return null;
+                if (result.isEmpty()) {
+                    throw new Exception("Manager Connector Entity does not already exists..");
+                    //TODO - to add RETURN 404 error:Sudhir
                 } else {
                     result.get(0).setName(entity.getName());
                     em.persist(result.get(0));
@@ -127,29 +141,27 @@ public class ManagerConnectorApis {
      */
     @Path("/{applianceManagerConnectorId}")
     @DELETE
-    public ApplianceManagerConnectorEntity deleteManagerConnector(@PathParam("applianceManagerConnectorId") Long amcId,
+    public void deleteManagerConnector(@PathParam("applianceManagerConnectorId") Long amcId,
             ApplianceManagerConnectorEntity entity) {
 
         logger.info("Deleting MC Entity Id...:" + amcId);
 
-        return this.txControl.required(new Callable<ApplianceManagerConnectorEntity>() {
+        this.txControl.required(new Callable<Void>() {
             @Override
-            public ApplianceManagerConnectorEntity call() throws Exception {
+            public Void call() throws Exception {
 
-                CriteriaBuilder cb = ManagerConnectorApis.this.em.getCriteriaBuilder();
+                CriteriaBuilder criteriaBuilder = ManagerConnectorApis.this.em.getCriteriaBuilder();
 
-                CriteriaQuery<ApplianceManagerConnectorEntity> q = cb
+                CriteriaQuery<ApplianceManagerConnectorEntity> query = criteriaBuilder
                         .createQuery(ApplianceManagerConnectorEntity.class);
-                Root<ApplianceManagerConnectorEntity> r = q.from(ApplianceManagerConnectorEntity.class);
-                q.select(r).where(cb.and(cb.equal(r.get("id"), amcId)));
+                Root<ApplianceManagerConnectorEntity> r = query.from(ApplianceManagerConnectorEntity.class);
+                query.select(r).where(criteriaBuilder.and(criteriaBuilder.equal(r.get("id"), amcId)));
 
-                List<ApplianceManagerConnectorEntity> result = em.createQuery(q).getResultList();
-                if (result.isEmpty() == true) {
-                    return null;
-                } else {
+                List<ApplianceManagerConnectorEntity> result = em.createQuery(query).getResultList();
+                if (!result.isEmpty()) {
                     em.remove(result.get(0));
-                    return new ApplianceManagerConnectorEntity();
                 }
+                return null;
             }
         });
     }
@@ -165,22 +177,21 @@ public class ManagerConnectorApis {
 
         logger.info("Query MC for Id...:" + amcId);
 
-        ApplianceManagerConnectorEntity mc = new ApplianceManagerConnectorEntity();
-
         return this.txControl.required(new Callable<ApplianceManagerConnectorEntity>() {
             @Override
             public ApplianceManagerConnectorEntity call() throws Exception {
-                CriteriaBuilder cb = em.getCriteriaBuilder();
-
-                CriteriaQuery<ApplianceManagerConnectorEntity> q = cb
+                CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+                ApplianceManagerConnectorEntity mc = null;
+                CriteriaQuery<ApplianceManagerConnectorEntity> query = criteriaBuilder
                         .createQuery(ApplianceManagerConnectorEntity.class);
-                Root<ApplianceManagerConnectorEntity> r = q.from(ApplianceManagerConnectorEntity.class);
-                q.select(r).where(cb.and(cb.equal(r.get("id"), amcId)));
+                Root<ApplianceManagerConnectorEntity> r = query.from(ApplianceManagerConnectorEntity.class);
+                query.select(r).where(criteriaBuilder.and(criteriaBuilder.equal(r.get("id"), amcId)));
 
-                List<ApplianceManagerConnectorEntity> result = em.createQuery(q).getResultList();
-                if (result.isEmpty() == true) {
-                    return null;
+                List<ApplianceManagerConnectorEntity> result = em.createQuery(query).getResultList();
+                if (result.isEmpty()) {
+                    return mc;
                 } else {
+                    mc = new ApplianceManagerConnectorEntity();
                     mc.setName(result.get(0).getName());
                     mc.setid(result.get(0).getid());
                     return mc;
@@ -200,25 +211,25 @@ public class ManagerConnectorApis {
 
         logger.info("Listing MC Ids'");
 
-        List<String> mcIds = new ArrayList<String>();
-
         return this.txControl.supports(new Callable<List<String>>() {
 
             @Override
             public List<String> call() throws Exception {
-                CriteriaBuilder cb = em.getCriteriaBuilder();
-                CriteriaQuery<ApplianceManagerConnectorEntity> q = cb
+                CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+                List<String> mcIds = null;
+                CriteriaQuery<ApplianceManagerConnectorEntity> query = criteriaBuilder
                         .createQuery(ApplianceManagerConnectorEntity.class);
-                Root<ApplianceManagerConnectorEntity> r = q.from(ApplianceManagerConnectorEntity.class);
-                q.select(r);
-                List<ApplianceManagerConnectorEntity> result = em.createQuery(q).getResultList();
-                if (result.isEmpty() == false) {
+                Root<ApplianceManagerConnectorEntity> r = query.from(ApplianceManagerConnectorEntity.class);
+                query.select(r);
+                List<ApplianceManagerConnectorEntity> result = em.createQuery(query).getResultList();
+                if (!result.isEmpty()) {
+                    mcIds = new ArrayList<String>();
                     for (ApplianceManagerConnectorEntity mgrMc : result) {
                         mcIds.add(new String(Long.toString(mgrMc.getid())));
                     }
                     return mcIds;
                 } else {
-                    return null;
+                    return mcIds;
                 }
             }
         });

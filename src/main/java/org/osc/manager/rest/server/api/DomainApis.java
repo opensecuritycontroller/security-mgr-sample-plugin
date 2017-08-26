@@ -70,32 +70,45 @@ public class DomainApis {
      */
     @Path("/{domainid}/policies")
     @POST
-    public PolicyEntity createPolicy(@PathParam("domainid") Long domainid, PolicyEntity entity) {
+    public String createPolicy(@PathParam("domainid") Long domainid, PolicyEntity entity) {
 
         logger.info("Creating Policy Entity...:" + entity.getName());
 
-        return this.txControl.required(new Callable<PolicyEntity>() {
+        return this.txControl.required(new Callable<String>() {
 
             @Override
-            public PolicyEntity call() throws Exception {
+            public String call() throws Exception {
 
-                CriteriaBuilder cb = em.getCriteriaBuilder();
+                CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
 
-                CriteriaQuery<DomainEntity> q = cb.createQuery(DomainEntity.class);
-                Root<DomainEntity> r = q.from(DomainEntity.class);
-                q.select(r).where(cb.and(cb.equal(r.get("Id"), domainid)));
+                CriteriaQuery<DomainEntity> query = criteriaBuilder.createQuery(DomainEntity.class);
+                Root<DomainEntity> r = query.from(DomainEntity.class);
+                query.select(r).where(criteriaBuilder.and(criteriaBuilder.equal(r.get("Id"), domainid)));
 
-                List<DomainEntity> result = em.createQuery(q).getResultList();
-                if (result.isEmpty() == false) {
-                    PolicyEntity policy = new PolicyEntity();
+                List<DomainEntity> result = em.createQuery(query).getResultList();
+
+                CriteriaQuery<PolicyEntity> policyquery = criteriaBuilder.createQuery(PolicyEntity.class);
+                Root<PolicyEntity> rpolicy = policyquery.from(PolicyEntity.class);
+                policyquery.select(rpolicy)
+                        .where(criteriaBuilder.and(criteriaBuilder.equal(rpolicy.get("name"), entity.getName())));
+
+                List<PolicyEntity> policyresult = em.createQuery(policyquery).getResultList();
+                if (!policyresult.isEmpty()) {
+                    throw new Exception("Policy Entity name already exists...:");
+                    //TODO - to add RETURN 404 error:Sudhir
+                }
+                PolicyEntity policy = null;
+                if (!result.isEmpty()) {
+                    policy = new PolicyEntity();
                     policy.setName(entity.getName());
                     policy.setDomain(result.get(0));
                     policy.setParent(result.get(0).getapplianceManagerConnector());
                     em.persist(policy);
-                    return entity;
+                    return policy.getId();
                 }
                 else {
-                    return null;
+                    throw new Exception("Domain Entity does not exists...");
+                    //TODO - Add Exception to return 404 error code: Sudhir
                 }
             }
         });
@@ -118,20 +131,21 @@ public class DomainApis {
             @Override
             public PolicyEntity call() throws Exception {
 
-                CriteriaBuilder cb = em.getCriteriaBuilder();
+                CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
 
-                CriteriaQuery<PolicyEntity> q = cb.createQuery(PolicyEntity.class);
-                Root<PolicyEntity> r = q.from(PolicyEntity.class);
-                q.select(r).where(cb.and(cb.equal(r.get("domain").get("Id"), domainid)),
-                        cb.equal(r.get("id"), policyid));
+                CriteriaQuery<PolicyEntity> query = criteriaBuilder.createQuery(PolicyEntity.class);
+                Root<PolicyEntity> r = query.from(PolicyEntity.class);
+                query.select(r).where(criteriaBuilder.and(criteriaBuilder.equal(r.get("domain").get("Id"), domainid)),
+                        criteriaBuilder.equal(r.get("id"), policyid));
 
-                List<PolicyEntity> result = em.createQuery(q).getResultList();
-                if (result.isEmpty() == false) {
+                List<PolicyEntity> result = em.createQuery(query).getResultList();
+                if (!result.isEmpty()) {
                     result.get(0).setName(entity.getName());
                     em.persist(result.get(0));
                     return entity;
                 } else {
-                    return null;
+                    throw new Exception("domain or the policy Entity does not exists...");
+                    //TODO - to add RETURN 404 error:Sudhir
                 }
             }
         });
@@ -144,31 +158,28 @@ public class DomainApis {
      */
     @Path("/{domainid}/policies/{policyid}")
     @DELETE
-    public PolicyEntity deletePolicy(@PathParam("domainid") Long domainid, @PathParam("policyid") Long policyid,
+    public void deletePolicy(@PathParam("domainid") Long domainid, @PathParam("policyid") Long policyid,
             PolicyEntity entity) {
 
         logger.info("Deleting for Policies Entity Id...:" + policyid);
 
-        return this.txControl.required(new Callable<PolicyEntity>() {
+        this.txControl.required(new Callable<Void>() {
 
             @Override
-            public PolicyEntity call() throws Exception {
+            public Void call() throws Exception {
 
-                CriteriaBuilder cb = em.getCriteriaBuilder();
+                CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
 
-                CriteriaQuery<PolicyEntity> q = cb.createQuery(PolicyEntity.class);
-                Root<PolicyEntity> r = q.from(PolicyEntity.class);
-                q.select(r).where(cb.and(cb.equal(r.get("domain").get("Id"), domainid)),
-                        cb.equal(r.get("id"), policyid));
+                CriteriaQuery<PolicyEntity> query = criteriaBuilder.createQuery(PolicyEntity.class);
+                Root<PolicyEntity> r = query.from(PolicyEntity.class);
+                query.select(r).where(criteriaBuilder.and(criteriaBuilder.equal(r.get("domain").get("Id"), domainid)),
+                        criteriaBuilder.equal(r.get("id"), policyid));
 
-                List<PolicyEntity> result = DomainApis.this.em.createQuery(q).getResultList();
-                if (result.isEmpty() == false) {
+                List<PolicyEntity> result = DomainApis.this.em.createQuery(query).getResultList();
+                if (!result.isEmpty()) {
                     em.remove(result.get(0));
-                    return new PolicyEntity();
                 }
-                else {
-                    return null;
-                }
+                return null;
             }
         });
     }
@@ -189,19 +200,21 @@ public class DomainApis {
 
             @Override
             public List<String> call() throws Exception {
-                CriteriaBuilder cb = em.getCriteriaBuilder();
-                CriteriaQuery<PolicyEntity> q = cb.createQuery(PolicyEntity.class);
-                Root<PolicyEntity> r = q.from(PolicyEntity.class);
-                q.select(r).where(cb.and(cb.equal(r.get("domain").get("Id"), domainid)));
-                List<String> policy = new ArrayList<String>();
-                List<PolicyEntity> PolicyList = em.createQuery(q).getResultList();
-                if (PolicyList.isEmpty() == false) {
+                CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+                CriteriaQuery<PolicyEntity> query = criteriaBuilder.createQuery(PolicyEntity.class);
+                Root<PolicyEntity> r = query.from(PolicyEntity.class);
+                query.select(r).where(criteriaBuilder.and(criteriaBuilder.equal(r.get("domain").get("Id"), domainid)));
+                List<String> policy = null;
+                List<PolicyEntity> PolicyList = em.createQuery(query).getResultList();
+                if (!PolicyList.isEmpty()) {
+                    policy = new ArrayList<String>();
                     for (PolicyEntity mgrPolicy : PolicyList) {
                         policy.add(new String(mgrPolicy.getId()));
                     }
                     return policy;
                 } else {
-                    return null;
+                    throw new Exception("Domain Entity does not exists...");
+                    //TODO - to add RETURN 404 error:Sudhir
                 }
             }
         });
@@ -224,19 +237,21 @@ public class DomainApis {
 
             @Override
             public PolicyEntity call() throws Exception {
-                CriteriaBuilder cb = em.getCriteriaBuilder();
-                CriteriaQuery<PolicyEntity> q = cb.createQuery(PolicyEntity.class);
-                Root<PolicyEntity> r = q.from(PolicyEntity.class);
-                q.select(r)
-                        .where(cb.and(cb.equal(r.get("domain").get("Id"), domainid), cb.equal(r.get("id"), policyid)));
-                List<PolicyEntity> result = em.createQuery(q).getResultList();
-                if (result.isEmpty() == false) {
-                    PolicyEntity policy = new PolicyEntity();
+                CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+                CriteriaQuery<PolicyEntity> query = criteriaBuilder.createQuery(PolicyEntity.class);
+                Root<PolicyEntity> r = query.from(PolicyEntity.class);
+                query.select(r).where(criteriaBuilder.and(criteriaBuilder.equal(r.get("domain").get("Id"), domainid),
+                        criteriaBuilder.equal(r.get("id"), policyid)));
+                List<PolicyEntity> result = em.createQuery(query).getResultList();
+                PolicyEntity policy = null;
+                if (!result.isEmpty()) {
+                    policy = new PolicyEntity();
                     policy.setName(result.get(0).getName());
                     policy.setId(Long.parseLong(result.get(0).getId()));
                     return policy;
                 } else {
-                    return null;
+                    throw new Exception("Policy or Domain Entity does not exists...");
+                    //TODO - Add 404 error response - Sudhir
                 }
             }
         });
@@ -248,32 +263,48 @@ public class DomainApis {
      * @return Domain
      */
     @POST
-    public DomainEntity createDomain(DomainEntity entity) {
+    public String createDomain(DomainEntity entity) {
 
         logger.info("Creating Domain Entity...:" + entity.getName());
 
-        return this.txControl.required(new Callable<DomainEntity>() {
+        return this.txControl.required(new Callable<String>() {
 
             @Override
-            public DomainEntity call() throws Exception {
+            public String call() throws Exception {
 
-                DomainEntity domainElement = new DomainEntity();
-                CriteriaBuilder cb = em.getCriteriaBuilder();
+                DomainEntity domainElement = null;
+                CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
 
-                CriteriaQuery<ApplianceManagerConnectorEntity> q = cb
+                CriteriaQuery<ApplianceManagerConnectorEntity> query = criteriaBuilder
                         .createQuery(ApplianceManagerConnectorEntity.class);
-                Root<ApplianceManagerConnectorEntity> r = q.from(ApplianceManagerConnectorEntity.class);
-                q.select(r)
-                        .where(cb.and(cb.equal(r.get("name"), entity.getapplianceManagerConnector().getName())));
+                Root<ApplianceManagerConnectorEntity> r = query.from(ApplianceManagerConnectorEntity.class);
+                query.select(r)
+                        .where(criteriaBuilder.and(
+                                criteriaBuilder.equal(r.get("name"), entity.getapplianceManagerConnector().getName())));
 
-                List<ApplianceManagerConnectorEntity> result = em.createQuery(q).getResultList();
-                if (result.isEmpty() == false) {
+                List<ApplianceManagerConnectorEntity> result = em.createQuery(query).getResultList();
+
+                CriteriaQuery<DomainEntity> domainquery = criteriaBuilder.createQuery(DomainEntity.class);
+                Root<DomainEntity> rdomain = domainquery.from(DomainEntity.class);
+                domainquery.select(rdomain)
+                        .where(criteriaBuilder
+                        .and(criteriaBuilder.equal(r.get("name"), entity.getName())));
+
+                List<DomainEntity> domainresult = em.createQuery(domainquery).getResultList();
+                if (!domainresult.isEmpty()) {
+                    throw new Exception("Domain name already exists...");
+                    //TODO - to add RETURN 404 error:Sudhir
+                }
+
+                if (!result.isEmpty()) {
+                    domainElement = new DomainEntity();
                     domainElement.setapplianceManagerConnector(result.get(0));
                     domainElement.setName(entity.getName());
                     em.persist(domainElement);
-                    return entity;
+                    return domainElement.getId();
                 } else {
-                    return null;
+                    throw new Exception("Domain Entity exists...");
+                    //TODO - to add RETURN 404 error:Sudhir
                 }
             }
         });
@@ -295,18 +326,19 @@ public class DomainApis {
             @Override
             public DomainEntity call() throws Exception {
 
-                CriteriaBuilder cb = em.getCriteriaBuilder();
-                CriteriaQuery<DomainEntity> q = cb.createQuery(DomainEntity.class);
-                Root<DomainEntity> r = q.from(DomainEntity.class);
-                q.select(r).where(cb.and(cb.equal(r.get("Id"), domainid)));
-                List<DomainEntity> result = em.createQuery(q).getResultList();
-                if (result.isEmpty() == false) {
+                CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+                CriteriaQuery<DomainEntity> query = criteriaBuilder.createQuery(DomainEntity.class);
+                Root<DomainEntity> r = query.from(DomainEntity.class);
+                query.select(r).where(criteriaBuilder.and(criteriaBuilder.equal(r.get("Id"), domainid)));
+                List<DomainEntity> result = em.createQuery(query).getResultList();
+                if (!result.isEmpty()) {
                     result.get(0).setName(entity.getName());
                     em.persist(result.get(0));
                     return entity;
                 }
                 else {
-                    return null;
+                    throw new Exception("Domain Entity does not exists...");
+                    //TODO - to add RETURN 404 error:Sudhir
                 }
             }
         });
@@ -319,27 +351,24 @@ public class DomainApis {
      */
     @Path("/{domainid}")
     @DELETE
-    public DomainEntity deleteDomain(@PathParam("domainid") Long domainid) {
+    public void deleteDomain(@PathParam("domainid") Long domainid) {
 
         logger.info("Deleting Domain Entity ID...:" + domainid);
 
-        return this.txControl.required(new Callable<DomainEntity>() {
+        this.txControl.required(new Callable<Void>() {
 
             @Override
-            public DomainEntity call() throws Exception {
+            public Void call() throws Exception {
 
-                CriteriaBuilder cb = em.getCriteriaBuilder();
-                CriteriaQuery<DomainEntity> q = cb.createQuery(DomainEntity.class);
-                Root<DomainEntity> r = q.from(DomainEntity.class);
-                q.select(r).where(cb.and(cb.equal(r.get("Id"), domainid)));
-                List<DomainEntity> result = em.createQuery(q).getResultList();
-                if (result.isEmpty() == false) {
+                CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+                CriteriaQuery<DomainEntity> query = criteriaBuilder.createQuery(DomainEntity.class);
+                Root<DomainEntity> r = query.from(DomainEntity.class);
+                query.select(r).where(criteriaBuilder.and(criteriaBuilder.equal(r.get("Id"), domainid)));
+                List<DomainEntity> result = em.createQuery(query).getResultList();
+                if (!result.isEmpty()) {
                     em.remove(result.get(0));
-                    return new DomainEntity();
                 }
-                else {
-                    return null;
-                }
+                return null;
             }
         });
     }
@@ -358,20 +387,22 @@ public class DomainApis {
 
             @Override
             public List<String> call() throws Exception {
-                CriteriaBuilder cb = em.getCriteriaBuilder();
-                CriteriaQuery<DomainEntity> q = cb
+                CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+                CriteriaQuery<DomainEntity> query = criteriaBuilder
                         .createQuery(DomainEntity.class);
-                Root<DomainEntity> r = q.from(DomainEntity.class);
-                q.select(r);
-                List<String> domainList = new ArrayList<String>();
-                List<DomainEntity> result = em.createQuery(q).getResultList();
-                if (result.isEmpty() == false) {
+                Root<DomainEntity> r = query.from(DomainEntity.class);
+                query.select(r);
+                List<String> domainList = null;
+                List<DomainEntity> result = em.createQuery(query).getResultList();
+                if (!result.isEmpty()) {
+                    domainList = new ArrayList<String>();
                     for (DomainEntity mgrDm : result) {
                         domainList.add(new String(mgrDm.getId()));
                     }
                     return domainList;
                 } else {
-                    return null;
+                    throw new Exception("Domain Entity does not exists...");
+                    //TODO - to add RETURN 404 error:Sudhir
                 }
             }
         });
@@ -388,25 +419,24 @@ public class DomainApis {
 
         logger.info("getting Domain for ID...:" + domainid);
 
-        DomainEntity domainElement = new DomainEntity();
-
         return this.txControl.required(new Callable<DomainEntity>() {
 
             @Override
             public DomainEntity call() throws Exception {
-                CriteriaBuilder cb = em.getCriteriaBuilder();
+                CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
 
-                CriteriaQuery<DomainEntity> q = cb.createQuery(DomainEntity.class);
-                Root<DomainEntity> r = q.from(DomainEntity.class);
-                q.select(r).where(cb.and(cb.equal(r.get("Id"), domainid)));
-
-                List<DomainEntity> result = em.createQuery(q).getResultList();
-                if (result.isEmpty() == false) {
+                CriteriaQuery<DomainEntity> query = criteriaBuilder.createQuery(DomainEntity.class);
+                Root<DomainEntity> r = query.from(DomainEntity.class);
+                query.select(r).where(criteriaBuilder.and(criteriaBuilder.equal(r.get("Id"), domainid)));
+                DomainEntity domainElement = null;
+                List<DomainEntity> result = em.createQuery(query).getResultList();
+                if (!result.isEmpty()) {
+                    domainElement = new DomainEntity();
                     domainElement.setName(result.get(0).getName());
                     domainElement.setId(Long.parseLong(result.get(0).getId()));
                     return domainElement;
                 } else {
-                    return null;
+                    return domainElement;
                 }
             }
         });

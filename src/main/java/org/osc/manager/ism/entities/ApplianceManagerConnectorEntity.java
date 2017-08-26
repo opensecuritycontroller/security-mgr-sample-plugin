@@ -28,12 +28,14 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
 import org.osc.sdk.manager.element.ManagerTypeElement;
 
 @Entity
+@Table(name = "MANAGERCONNECTOR")
 public class ApplianceManagerConnectorEntity implements ApplianceManagerConnectorElement {
 
     @GeneratedValue

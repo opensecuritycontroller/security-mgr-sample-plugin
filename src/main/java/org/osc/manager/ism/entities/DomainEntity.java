@@ -29,10 +29,12 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.Table;
 
 import org.osc.sdk.manager.element.ManagerDomainElement;
 
 @Entity
+@Table(name = "DOMAIN")
 public class DomainEntity implements ManagerDomainElement {
 
     @Column(name = "name", unique = true, nullable = false)

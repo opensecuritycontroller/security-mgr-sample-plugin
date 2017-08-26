@@ -16,7 +16,6 @@
  *******************************************************************************/
 package org.osc.manager.ism.api;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -38,7 +37,7 @@ public class IsmPolicyApi implements ManagerPolicyApi {
     private EntityManager em;
     ApplianceManagerConnectorElement mc;
 
-    public IsmPolicyApi(ApplianceManagerConnectorElement mc, TransactionControl txControl, EntityManager em)
+    private IsmPolicyApi(ApplianceManagerConnectorElement mc, TransactionControl txControl, EntityManager em)
             throws Exception {
         this.txControl = txControl;
         this.em = em;
@@ -57,20 +56,19 @@ public class IsmPolicyApi implements ManagerPolicyApi {
 
             @Override
             public PolicyEntity call() throws Exception {
-                CriteriaBuilder cb = em.getCriteriaBuilder();
-                CriteriaQuery<PolicyEntity> q = cb.createQuery(PolicyEntity.class);
-                Root<PolicyEntity> r = q.from(PolicyEntity.class);
-                q.select(r)
-                        .where(cb.and(cb.equal(r.get("domain").get("Id"), Long.parseLong(domainId)),
-                                cb.equal(r.get("id"), Long.parseLong(policyId))));
-                List<PolicyEntity> result = em.createQuery(q).getResultList();
-                if (result.isEmpty() == false) {
-                    PolicyEntity policy = new PolicyEntity();
-                    policy.setName(result.get(0).getName());
-                    policy.setId(Long.parseLong(result.get(0).getId()));
-                    return policy;
+                CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+                CriteriaQuery<PolicyEntity> query = criteriaBuilder.createQuery(PolicyEntity.class);
+                Root<PolicyEntity> r = query.from(PolicyEntity.class);
+                query.select(r)
+                        .where(criteriaBuilder.and(
+                                criteriaBuilder.equal(r.get("domain").get("Id"), Long.parseLong(domainId)),
+                                criteriaBuilder.equal(r.get("id"), Long.parseLong(policyId))));
+                List<PolicyEntity> result = em.createQuery(query).getResultList();
+                PolicyEntity policy = null;
+                if (!result.isEmpty()) {
+                    return result.get(0);
                 } else {
-                    return null;
+                    return policy;
                 }
             }
         });
@@ -83,22 +81,12 @@ public class IsmPolicyApi implements ManagerPolicyApi {
 
             @Override
             public List<PolicyEntity> call() throws Exception {
-                CriteriaBuilder cb = em.getCriteriaBuilder();
-                CriteriaQuery<PolicyEntity> q = cb.createQuery(PolicyEntity.class);
-                Root<PolicyEntity> r = q.from(PolicyEntity.class);
-                q.select(r).where(cb.and(cb.equal(r.get("domain").get("Id"), Long.parseLong(domainId))));
-                List<PolicyEntity> policy = new ArrayList<PolicyEntity>();
-                List<PolicyEntity> PolicyList = em.createQuery(q).getResultList();
-                if (PolicyList.isEmpty() == false) {
-                    for (PolicyEntity mgrPolicy : PolicyList) {
-                        PolicyEntity policyElement=  new PolicyEntity();
-                        policyElement.setName(mgrPolicy.getName());
-                        policy.add(policyElement);
-                    }
-                    return policy;
-                } else {
-                    return null;
-                }
+                CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+                CriteriaQuery<PolicyEntity> query = criteriaBuilder.createQuery(PolicyEntity.class);
+                Root<PolicyEntity> r = query.from(PolicyEntity.class);
+                query.select(r).where(criteriaBuilder
+                        .and(criteriaBuilder.equal(r.get("domain").get("Id"), Long.parseLong(domainId))));
+                return em.createQuery(query).getResultList();
             }
         });
     }
