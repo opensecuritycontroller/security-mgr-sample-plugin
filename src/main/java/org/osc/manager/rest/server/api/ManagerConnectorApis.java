@@ -125,11 +125,11 @@ public class ManagerConnectorApis {
                 if (result.isEmpty()) {
                     throw new Exception("Manager Connector Entity does not already exists..");
                     //TODO - to add RETURN 404 error:Sudhir
-                } else {
-                    result.get(0).setName(entity.getName());
-                    em.persist(result.get(0));
-                    return entity;
                 }
+                result.get(0).setName(entity.getName());
+                em.persist(result.get(0));
+                return entity;
+
             }
         });
     }
@@ -158,9 +158,10 @@ public class ManagerConnectorApis {
                 query.select(r).where(criteriaBuilder.and(criteriaBuilder.equal(r.get("id"), amcId)));
 
                 List<ApplianceManagerConnectorEntity> result = em.createQuery(query).getResultList();
-                if (!result.isEmpty()) {
-                    em.remove(result.get(0));
+                if (result.isEmpty()) {
+                    return null;
                 }
+                em.remove(result.get(0));
                 return null;
             }
         });
@@ -181,7 +182,6 @@ public class ManagerConnectorApis {
             @Override
             public ApplianceManagerConnectorEntity call() throws Exception {
                 CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
-                ApplianceManagerConnectorEntity mc = null;
                 CriteriaQuery<ApplianceManagerConnectorEntity> query = criteriaBuilder
                         .createQuery(ApplianceManagerConnectorEntity.class);
                 Root<ApplianceManagerConnectorEntity> r = query.from(ApplianceManagerConnectorEntity.class);
@@ -189,13 +189,12 @@ public class ManagerConnectorApis {
 
                 List<ApplianceManagerConnectorEntity> result = em.createQuery(query).getResultList();
                 if (result.isEmpty()) {
-                    return mc;
-                } else {
-                    mc = new ApplianceManagerConnectorEntity();
-                    mc.setName(result.get(0).getName());
-                    mc.setid(result.get(0).getid());
-                    return mc;
+                    return null;
                 }
+                ApplianceManagerConnectorEntity mc = new ApplianceManagerConnectorEntity();
+                mc.setName(result.get(0).getName());
+                mc.setid(result.get(0).getid());
+                return mc;
             }
         });
     }
@@ -216,21 +215,19 @@ public class ManagerConnectorApis {
             @Override
             public List<String> call() throws Exception {
                 CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
-                List<String> mcIds = null;
                 CriteriaQuery<ApplianceManagerConnectorEntity> query = criteriaBuilder
                         .createQuery(ApplianceManagerConnectorEntity.class);
                 Root<ApplianceManagerConnectorEntity> r = query.from(ApplianceManagerConnectorEntity.class);
                 query.select(r);
                 List<ApplianceManagerConnectorEntity> result = em.createQuery(query).getResultList();
-                if (!result.isEmpty()) {
-                    mcIds = new ArrayList<String>();
-                    for (ApplianceManagerConnectorEntity mgrMc : result) {
-                        mcIds.add(new String(Long.toString(mgrMc.getid())));
-                    }
-                    return mcIds;
-                } else {
-                    return mcIds;
+                if (result.isEmpty()) {
+                    return null;
                 }
+                List<String> mcIds = new ArrayList<String>();
+                for (ApplianceManagerConnectorEntity mgrMc : result) {
+                    mcIds.add(new String(Long.toString(mgrMc.getid())));
+                }
+                return mcIds;
             }
         });
     }

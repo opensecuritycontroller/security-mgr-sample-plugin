@@ -57,18 +57,18 @@ public class IsmDomainApi implements ManagerDomainApi {
             @Override
             public DomainEntity call() throws Exception {
                 CriteriaBuilder criteriaBuilder = IsmDomainApi.this.em.getCriteriaBuilder();
-                DomainEntity domain = null;
-
                 CriteriaQuery<DomainEntity> query = criteriaBuilder.createQuery(DomainEntity.class);
                 Root<DomainEntity> r = query.from(DomainEntity.class);
                 query.select(r)
-                        .where(criteriaBuilder.and(criteriaBuilder.equal(r.get("Id"), Long.parseLong(domainId))));
+                        .where(criteriaBuilder.and(criteriaBuilder.equal(r.get("id"), Long.parseLong(domainId))));
                 List<DomainEntity> result = em.createQuery(query).getResultList();
                 if (result.isEmpty()) {
-                    return domain;
-                } else{
-                    return result.get(0);
+                    return null;
                 }
+                DomainEntity domain = new DomainEntity();
+                domain.setName(result.get(0).getName());
+                domain.setId(Long.parseLong(result.get(0).getId()));
+                return domain;
             }
         });
     }

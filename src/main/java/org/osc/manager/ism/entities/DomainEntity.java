@@ -42,7 +42,7 @@ public class DomainEntity implements ManagerDomainElement {
 
     @Id
     @GeneratedValue
-    private Long Id;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "appliance_manager_connector_fk", nullable = false, foreignKey = @ForeignKey(name = "FK_DO_APPLIANCE_MANAGER_CONNECTOR"))
@@ -53,14 +53,14 @@ public class DomainEntity implements ManagerDomainElement {
 
     @Override
     public String getId() {
-        if (this.Id == null) {
+        if (this.id == null) {
             return null;
         }
-        return this.Id.toString();
+        return this.id.toString();
     }
 
-    public void setId(Long Id) {
-        this.Id = Id;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public List<PolicyEntity> getPolicies() {

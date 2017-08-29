@@ -8,7 +8,7 @@ create table if not exists SecurityGroupInterface ( id bigint not null, name var
  
 create table if not exists VSSDevice ( id bigint not null, name varchar(255), primary key (id) );
 
-create table if not exists DOMAIN ( Id bigint not null, name varchar(255), appliance_manager_connector_fk bigint, primary key (Id));
+create table if not exists DOMAIN ( id bigint not null, name varchar(255), appliance_manager_connector_fk bigint, primary key (id));
 
 create table if not exists MANAGERCONNECTOR ( id bigint not null, name varchar(255),primary key (id));
 

@@ -61,15 +61,16 @@ public class IsmPolicyApi implements ManagerPolicyApi {
                 Root<PolicyEntity> r = query.from(PolicyEntity.class);
                 query.select(r)
                         .where(criteriaBuilder.and(
-                                criteriaBuilder.equal(r.get("domain").get("Id"), Long.parseLong(domainId)),
+                                criteriaBuilder.equal(r.get("domain").get("id"), Long.parseLong(domainId)),
                                 criteriaBuilder.equal(r.get("id"), Long.parseLong(policyId))));
                 List<PolicyEntity> result = em.createQuery(query).getResultList();
-                PolicyEntity policy = null;
-                if (!result.isEmpty()) {
-                    return result.get(0);
-                } else {
-                    return policy;
+                if (result.isEmpty()) {
+                    return null;
                 }
+                PolicyEntity policy = new PolicyEntity();
+                policy.setName(result.get(0).getName());
+                policy.setId(Long.parseLong(result.get(0).getId()));
+                return policy;
             }
         });
     }
@@ -85,7 +86,7 @@ public class IsmPolicyApi implements ManagerPolicyApi {
                 CriteriaQuery<PolicyEntity> query = criteriaBuilder.createQuery(PolicyEntity.class);
                 Root<PolicyEntity> r = query.from(PolicyEntity.class);
                 query.select(r).where(criteriaBuilder
-                        .and(criteriaBuilder.equal(r.get("domain").get("Id"), Long.parseLong(domainId))));
+                        .and(criteriaBuilder.equal(r.get("domain").get("id"), Long.parseLong(domainId))));
                 return em.createQuery(query).getResultList();
             }
         });
