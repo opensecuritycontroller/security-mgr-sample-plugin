@@ -25,6 +25,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
 import org.apache.log4j.Logger;
+import org.osc.manager.ism.entities.DomainEntity;
 import org.osc.manager.ism.entities.PolicyEntity;
 import org.osc.sdk.manager.api.ManagerPolicyApi;
 import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
@@ -56,6 +57,7 @@ public class IsmPolicyApi implements ManagerPolicyApi {
 
             @Override
             public PolicyEntity call() throws Exception {
+
                 CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
                 CriteriaQuery<PolicyEntity> query = criteriaBuilder.createQuery(PolicyEntity.class);
                 Root<PolicyEntity> r = query.from(PolicyEntity.class);
@@ -65,12 +67,10 @@ public class IsmPolicyApi implements ManagerPolicyApi {
                                 criteriaBuilder.equal(r.get("id"), Long.parseLong(policyId))));
                 List<PolicyEntity> result = em.createQuery(query).getResultList();
                 if (result.isEmpty()) {
-                    return null;
+                    throw new Exception("Policy or Domain Entity does not exists...");
+                    //TODO - Add 404 error response - Sudhir
                 }
-                PolicyEntity policy = new PolicyEntity();
-                policy.setName(result.get(0).getName());
-                policy.setId(Long.parseLong(result.get(0).getId()));
-                return policy;
+                return result.get(0);
             }
         });
     }
@@ -82,6 +82,12 @@ public class IsmPolicyApi implements ManagerPolicyApi {
 
             @Override
             public List<PolicyEntity> call() throws Exception {
+
+                DomainEntity result = em.find(DomainEntity.class, Long.parseLong(domainId));
+                if (result == null) {
+                    throw new Exception("Domain Entity does not exists...");
+                    //TODO - to add RETURN 404 error:Sudhir
+                }
                 CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
                 CriteriaQuery<PolicyEntity> query = criteriaBuilder.createQuery(PolicyEntity.class);
                 Root<PolicyEntity> r = query.from(PolicyEntity.class);

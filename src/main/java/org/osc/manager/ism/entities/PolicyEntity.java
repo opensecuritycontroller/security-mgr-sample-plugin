@@ -39,10 +39,6 @@ public class PolicyEntity implements ManagerPolicyElement {
     private String name;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "appliance_manager_connector_fk", nullable = false, foreignKey = @ForeignKey(name = "FK_PO_APPLIANCE_MANAGER_CONNECTOR"))
-    private ApplianceManagerConnectorEntity parent;
-
-    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "domain_fk", nullable = false, foreignKey = @ForeignKey(name = "FK_PO_DOMAIN"))
     private DomainEntity domain;
 
@@ -65,14 +61,6 @@ public class PolicyEntity implements ManagerPolicyElement {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public ApplianceManagerConnectorEntity getParent() {
-        return this.parent;
-    }
-
-    public void setParent(ApplianceManagerConnectorEntity parent) {
-        this.parent = parent;
     }
 
     public DomainEntity getDomain() {

@@ -19,15 +19,11 @@ package org.osc.manager.ism.entities;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
@@ -44,11 +40,7 @@ public class DomainEntity implements ManagerDomainElement {
     @GeneratedValue
     private Long id;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "appliance_manager_connector_fk", nullable = false, foreignKey = @ForeignKey(name = "FK_DO_APPLIANCE_MANAGER_CONNECTOR"))
-    private ApplianceManagerConnectorEntity applianceManagerConnector;
-
-    @OneToMany(mappedBy = "domain", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "domain", fetch = FetchType.EAGER)
     private List<PolicyEntity> policies = new ArrayList<PolicyEntity>();
 
     @Override
@@ -78,13 +70,5 @@ public class DomainEntity implements ManagerDomainElement {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public ApplianceManagerConnectorEntity getapplianceManagerConnector() {
-        return this.applianceManagerConnector;
-    }
-
-    public void setapplianceManagerConnector(ApplianceManagerConnectorEntity applianceManagerConnector) {
-        this.applianceManagerConnector = applianceManagerConnector;
     }
 }

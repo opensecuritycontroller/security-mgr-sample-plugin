@@ -35,7 +35,6 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.osc.manager.rest.server.api.DomainApis;
-import org.osc.manager.rest.server.api.ManagerConnectorApis;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -58,10 +57,9 @@ import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 public class SecurityManagerServletDelegate extends ResourceConfig implements Servlet {
 
     static final long serialVersionUID = 1L;
+
     @Reference
     private DomainApis domainApis;
-    @Reference
-    private ManagerConnectorApis mcApis;
 
     @Reference(target = "(osgi.local.enabled=true)")
     private TransactionControl txControl;
@@ -96,10 +94,9 @@ public class SecurityManagerServletDelegate extends ResourceConfig implements Se
                 .getProviderFor(this.builder, singletonMap("javax.persistence.nonJtaDataSource", (Object) ds), null)
                 .getResource(this.txControl);
 
-        this.mcApis.init(this.em, this.txControl);
         this.domainApis.init(this.em, this.txControl);
 
-        super.registerInstances(this.domainApis, this.mcApis);
+        super.registerInstances(this.domainApis);
         this.container = new ServletContainer(this);
        }
 
