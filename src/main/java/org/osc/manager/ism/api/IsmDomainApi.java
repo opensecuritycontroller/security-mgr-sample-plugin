@@ -53,15 +53,11 @@ public class IsmDomainApi implements ManagerDomainApi {
     @Override
     public DomainEntity getDomain(String domainId) throws Exception {
 
-        return this.txControl.supports(new Callable<DomainEntity>() {
+        return txControl.supports(new Callable<DomainEntity>() {
             @Override
             public DomainEntity call() throws Exception {
 
-                DomainEntity result = em.find(DomainEntity.class, Long.parseLong(domainId));
-                if (result == null) {
-                    return null;
-                }
-                return result;
+                return em.find(DomainEntity.class, Long.parseLong(domainId));
             }
         });
     }
@@ -69,7 +65,7 @@ public class IsmDomainApi implements ManagerDomainApi {
     @Override
     public List<DomainEntity> listDomains() throws Exception {
 
-        return this.txControl.supports(new Callable<List<DomainEntity>>() {
+        return txControl.supports(new Callable<List<DomainEntity>>() {
 
             @Override
             public List<DomainEntity> call() throws Exception {

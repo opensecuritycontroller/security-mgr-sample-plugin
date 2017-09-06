@@ -67,18 +67,18 @@ public class DomainApis {
      *
      * @return policy
      */
-    @Path("/{domainid}/policies")
+    @Path("/{domainId}/policies")
     @POST
-    public String createPolicy(@PathParam("domainid") Long domainid, PolicyEntity entity) {
+    public String createPolicy(@PathParam("domainId") Long domainId, PolicyEntity entity) {
 
         logger.info("Creating Policy Entity...:" + entity.getName());
 
-        return this.txControl.required(new Callable<PolicyEntity>() {
+        return txControl.required(new Callable<PolicyEntity>() {
 
             @Override
             public PolicyEntity call() throws Exception {
 
-                DomainEntity result = em.find(DomainEntity.class, domainid);
+                DomainEntity result = em.find(DomainEntity.class, domainId);
                 if (result == null) {
                     throw new Exception("Domain Entity does not exists...");
                     //TODO - to add RETURN 404 error:Sudhir
@@ -93,11 +93,9 @@ public class DomainApis {
                     throw new Exception("Policy Entity name already exists...:");
                     //TODO - to add RETURN 404 error:Sudhir
                 }
-                PolicyEntity policy = new PolicyEntity();
-                policy.setName(entity.getName());
-                policy.setDomain(result);
-                em.persist(policy);
-                return policy;
+                entity.setDomain(result);
+                em.persist(entity);
+                return entity;
             }
         }).getId();
     }
@@ -107,14 +105,14 @@ public class DomainApis {
      *
      * @return - updated policy
      */
-    @Path("/{domainid}/policies/{policyid}")
+    @Path("/{domainId}/policies/{policyId}")
     @PUT
-    public PolicyEntity updatePolicy(@PathParam("domainid") Long domainid, @PathParam("policyid") Long policyid,
+    public PolicyEntity updatePolicy(@PathParam("domainId") Long domainId, @PathParam("policyId") Long policyId,
             PolicyEntity entity) {
 
-        logger.info("Updating for Policy Entity Id...:" + policyid);
+        logger.info("Updating for Policy Entity Id...:" + policyId);
 
-        return this.txControl.required(new Callable<PolicyEntity>() {
+        return txControl.required(new Callable<PolicyEntity>() {
 
             @Override
             public PolicyEntity call() throws Exception {
@@ -123,8 +121,8 @@ public class DomainApis {
 
                 CriteriaQuery<PolicyEntity> query = criteriaBuilder.createQuery(PolicyEntity.class);
                 Root<PolicyEntity> r = query.from(PolicyEntity.class);
-                query.select(r).where(criteriaBuilder.and(criteriaBuilder.equal(r.get("domain").get("id"), domainid)),
-                        criteriaBuilder.equal(r.get("id"), policyid));
+                query.select(r).where(criteriaBuilder.and(criteriaBuilder.equal(r.get("domain").get("id"), domainId)),
+                        criteriaBuilder.equal(r.get("id"), policyId));
 
                 List<PolicyEntity> result = em.createQuery(query).getResultList();
                 if (result.isEmpty()) {
@@ -143,23 +141,23 @@ public class DomainApis {
      *
      * @return - deleted policy
      */
-    @Path("/{domainid}/policies/{policyid}")
+    @Path("/{domainId}/policies/{policyId}")
     @DELETE
-    public void deletePolicy(@PathParam("domainid") Long domainid, @PathParam("policyid") Long policyid,
+    public void deletePolicy(@PathParam("domainId") Long domainId, @PathParam("policyId") Long policyId,
             PolicyEntity entity) {
 
-        logger.info("Deleting for Policies Entity Id...:" + policyid);
+        logger.info("Deleting for Policies Entity Id...:" + policyId);
 
-        this.txControl.required(new Callable<Void>() {
+        txControl.required(new Callable<Void>() {
 
             @Override
             public Void call() throws Exception {
 
-                DomainEntity result = em.find(DomainEntity.class, domainid);
+                DomainEntity result = em.find(DomainEntity.class, domainId);
                 if (result == null) {
                     return null;
                 }
-                PolicyEntity policyresult = em.find(PolicyEntity.class, policyid);
+                PolicyEntity policyresult = em.find(PolicyEntity.class, policyId);
                 if (policyresult == null) {
                     return null;
                 }
@@ -174,19 +172,19 @@ public class DomainApis {
      *
      * @return - Policy Id's
      */
-    @Path("/{domainid}/policies")
+    @Path("/{domainId}/policies")
     @GET
-    public List<String> getPolicyIds(@PathParam("domainid") Long domainid) {
+    public List<String> getPolicyIds(@PathParam("domainId") Long domainId) {
 
-        logger.info("Listing Policy Ids'for domain Id ...:" + domainid);
+        logger.info("Listing Policy Ids'for domain Id ...:" + domainId);
 
 
-        return this.txControl.supports(new Callable<List<String>>() {
+        return txControl.supports(new Callable<List<String>>() {
 
             @Override
             public List<String> call() throws Exception {
 
-                DomainEntity result = em.find(DomainEntity.class, domainid);
+                DomainEntity result = em.find(DomainEntity.class, domainId);
                 if (result == null) {
                     throw new Exception("Domain Entity does not exists...");
                     //TODO - to add RETURN 404 error:Sudhir
@@ -194,17 +192,18 @@ public class DomainApis {
                 CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
                 CriteriaQuery<PolicyEntity> query = criteriaBuilder.createQuery(PolicyEntity.class);
                 Root<PolicyEntity> r = query.from(PolicyEntity.class);
-                query.select(r).where(criteriaBuilder.and(criteriaBuilder.equal(r.get("domain").get("id"), domainid)));
+                query.select(r).where(criteriaBuilder.and(criteriaBuilder.equal(r.get("domain").get("id"), domainId)));
                 List<PolicyEntity> policyList = em.createQuery(query).getResultList();
 
+                List<String> policies = new ArrayList<String>();
                 if (policyList.isEmpty()) {
-                    return null;
+                    return policies;
                 }
-                List<String> policy = new ArrayList<String>();
+
                 for (PolicyEntity mgrPolicy : policyList) {
-                    policy.add(new String(mgrPolicy.getId()));
+                    policies.add(new String(mgrPolicy.getId()));
                 }
-                return policy;
+                return policies;
             }
         });
     }
@@ -215,22 +214,22 @@ public class DomainApis {
      * @return - Policy
      * @throws Exception
      */
-    @Path("/{domainid}/policies/{policyid}")
+    @Path("/{domainId}/policies/{policyId}")
 	@GET
-    public PolicyEntity getPolicy(@PathParam("domainid") Long domainid, @PathParam("policyid") Long policyid)
+    public PolicyEntity getPolicy(@PathParam("domainId") Long domainId, @PathParam("policyId") Long policyId)
             throws Exception {
 
-        logger.info("getting Policy for Policy ID..:" + policyid);
+        logger.info("getting Policy for Policy ID..:" + policyId);
 
-        return this.txControl.supports(new Callable<PolicyEntity>() {
+        return txControl.supports(new Callable<PolicyEntity>() {
 
             @Override
             public PolicyEntity call() throws Exception {
                 CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
                 CriteriaQuery<PolicyEntity> query = criteriaBuilder.createQuery(PolicyEntity.class);
                 Root<PolicyEntity> r = query.from(PolicyEntity.class);
-                query.select(r).where(criteriaBuilder.and(criteriaBuilder.equal(r.get("domain").get("id"), domainid),
-                        criteriaBuilder.equal(r.get("id"), policyid)));
+                query.select(r).where(criteriaBuilder.and(criteriaBuilder.equal(r.get("domain").get("id"), domainId),
+                        criteriaBuilder.equal(r.get("id"), policyId)));
                 List<PolicyEntity> result = em.createQuery(query).getResultList();
                 if (result.isEmpty()) {
                     throw new Exception("Policy or Domain Entity does not exists...");
@@ -251,7 +250,7 @@ public class DomainApis {
 
         logger.info("Creating Domain Entity...:" + entity.getName());
 
-        return this.txControl.required(new Callable<DomainEntity>() {
+        return txControl.required(new Callable<DomainEntity>() {
 
             @Override
             public DomainEntity call() throws Exception {
@@ -277,18 +276,18 @@ public class DomainApis {
      *
      * @return - updated Domain
      */
-    @Path("/{domainid}")
+    @Path("/{domainId}")
     @PUT
-    public DomainEntity updateDomain(@PathParam("domainid") Long domainid, DomainEntity entity) {
+    public DomainEntity updateDomain(@PathParam("domainId") Long domainId, DomainEntity entity) {
 
-        logger.info("Updating Domain Entity ID...:" + domainid);
+        logger.info("Updating Domain Entity ID...:" + domainId);
 
-        return this.txControl.required(new Callable<DomainEntity>() {
+        return txControl.required(new Callable<DomainEntity>() {
 
             @Override
             public DomainEntity call() throws Exception {
 
-                DomainEntity result = em.find(DomainEntity.class, domainid);
+                DomainEntity result = em.find(DomainEntity.class, domainId);
                 if (result == null) {
                     throw new Exception("Domain Entity does not exists...");
                     //TODO - to add RETURN 404 error:Sudhir
@@ -305,18 +304,18 @@ public class DomainApis {
      *
      * @return - deleted Domain
      */
-    @Path("/{domainid}")
+    @Path("/{domainId}")
     @DELETE
-    public void deleteDomain(@PathParam("domainid") Long domainid) {
+    public void deleteDomain(@PathParam("domainId") Long domainId) {
 
-        logger.info("Deleting Domain Entity ID...:" + domainid);
+        logger.info("Deleting Domain Entity ID...:" + domainId);
 
-        this.txControl.required(new Callable<Void>() {
+        txControl.required(new Callable<Void>() {
 
             @Override
             public Void call() throws Exception {
 
-                DomainEntity result = em.find(DomainEntity.class, domainid);
+                DomainEntity result = em.find(DomainEntity.class, domainId);
                 if (result == null) {
                     return null;
                 }
@@ -336,7 +335,7 @@ public class DomainApis {
 
         logger.info("Listing Domain Ids'");
 
-        return this.txControl.supports(new Callable<List<String>>() {
+        return txControl.supports(new Callable<List<String>>() {
 
             @Override
             public List<String> call() throws Exception {
@@ -369,18 +368,18 @@ public class DomainApis {
      * @return - Domain
      * @throws InterruptedException
      */
-    @Path("/{domainid}")
+    @Path("/{domainId}")
     @GET
-    public DomainEntity getDomain(@PathParam("domainid") Long domainid) throws Exception {
+    public DomainEntity getDomain(@PathParam("domainId") Long domainId) throws Exception {
 
-        logger.info("getting Domain for ID...:" + domainid);
+        logger.info("getting Domain for ID...:" + domainId);
 
-        return this.txControl.supports(new Callable<DomainEntity>() {
+        return txControl.supports(new Callable<DomainEntity>() {
 
             @Override
             public DomainEntity call() throws Exception {
 
-                DomainEntity result = em.find(DomainEntity.class, Long.valueOf(domainid));
+                DomainEntity result = em.find(DomainEntity.class, Long.valueOf(domainId));
                 if (result == null) {
                     return null;
                 }
