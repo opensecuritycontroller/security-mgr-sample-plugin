@@ -73,7 +73,7 @@ public class DomainApis {
 
         logger.info("Creating Policy Entity...:" + entity.getName());
 
-        return txControl.required(new Callable<PolicyEntity>() {
+        return this.txControl.required(new Callable<PolicyEntity>() {
 
             @Override
             public PolicyEntity call() throws Exception {
@@ -112,7 +112,7 @@ public class DomainApis {
 
         logger.info("Updating for Policy Entity Id...:" + policyId);
 
-        return txControl.required(new Callable<PolicyEntity>() {
+        return this.txControl.required(new Callable<PolicyEntity>() {
 
             @Override
             public PolicyEntity call() throws Exception {
@@ -148,7 +148,7 @@ public class DomainApis {
 
         logger.info("Deleting for Policies Entity Id...:" + policyId);
 
-        txControl.required(new Callable<Void>() {
+        this.txControl.required(new Callable<Void>() {
 
             @Override
             public Void call() throws Exception {
@@ -179,7 +179,7 @@ public class DomainApis {
         logger.info("Listing Policy Ids'for domain Id ...:" + domainId);
 
 
-        return txControl.supports(new Callable<List<String>>() {
+        return this.txControl.supports(new Callable<List<String>>() {
 
             @Override
             public List<String> call() throws Exception {
@@ -194,7 +194,6 @@ public class DomainApis {
                 Root<PolicyEntity> r = query.from(PolicyEntity.class);
                 query.select(r).where(criteriaBuilder.and(criteriaBuilder.equal(r.get("domain").get("id"), domainId)));
                 List<PolicyEntity> policyList = em.createQuery(query).getResultList();
-
                 List<String> policies = new ArrayList<String>();
                 if (policyList.isEmpty()) {
                     return policies;
@@ -221,7 +220,7 @@ public class DomainApis {
 
         logger.info("getting Policy for Policy ID..:" + policyId);
 
-        return txControl.supports(new Callable<PolicyEntity>() {
+        return this.txControl.supports(new Callable<PolicyEntity>() {
 
             @Override
             public PolicyEntity call() throws Exception {
@@ -250,7 +249,7 @@ public class DomainApis {
 
         logger.info("Creating Domain Entity...:" + entity.getName());
 
-        return txControl.required(new Callable<DomainEntity>() {
+        return this.txControl.required(new Callable<DomainEntity>() {
 
             @Override
             public DomainEntity call() throws Exception {
@@ -282,7 +281,7 @@ public class DomainApis {
 
         logger.info("Updating Domain Entity ID...:" + domainId);
 
-        return txControl.required(new Callable<DomainEntity>() {
+        return this.txControl.required(new Callable<DomainEntity>() {
 
             @Override
             public DomainEntity call() throws Exception {
@@ -310,7 +309,7 @@ public class DomainApis {
 
         logger.info("Deleting Domain Entity ID...:" + domainId);
 
-        txControl.required(new Callable<Void>() {
+        this.txControl.required(new Callable<Void>() {
 
             @Override
             public Void call() throws Exception {
@@ -335,7 +334,7 @@ public class DomainApis {
 
         logger.info("Listing Domain Ids'");
 
-        return txControl.supports(new Callable<List<String>>() {
+        return this.txControl.supports(new Callable<List<String>>() {
 
             @Override
             public List<String> call() throws Exception {
@@ -345,19 +344,15 @@ public class DomainApis {
                 Root<DomainEntity> r = query.from(DomainEntity.class);
                 query.select(r);
                 List<DomainEntity> result = em.createQuery(query).getResultList();
-                if (result.isEmpty()) {
-                    throw new Exception("Domain Entity does not exists...");
-                    //TODO - to add RETURN 404 error:Sudhir
-                }
                 List<String> domainList = new ArrayList<String>();
+                if (result.isEmpty()) {
+                    return domainList;
+                }
+
                 for (DomainEntity mgrDm : result) {
                     domainList.add(new String(mgrDm.getId()));
                 }
-                if (domainList.isEmpty()) {
-                    return null;
-                }
                 return domainList;
-
             }
         });
     }
@@ -366,7 +361,7 @@ public class DomainApis {
      * Gets the Domain for a given domain Id
      *
      * @return - Domain
-     * @throws InterruptedException
+     * @throws Exception
      */
     @Path("/{domainId}")
     @GET
@@ -374,16 +369,12 @@ public class DomainApis {
 
         logger.info("getting Domain for ID...:" + domainId);
 
-        return txControl.supports(new Callable<DomainEntity>() {
+        return this.txControl.supports(new Callable<DomainEntity>() {
 
             @Override
             public DomainEntity call() throws Exception {
 
-                DomainEntity result = em.find(DomainEntity.class, Long.valueOf(domainId));
-                if (result == null) {
-                    return null;
-                }
-                return result;
+                return em.find(DomainEntity.class, Long.valueOf(domainId));
             }
         });
     }

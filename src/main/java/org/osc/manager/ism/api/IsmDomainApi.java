@@ -53,7 +53,7 @@ public class IsmDomainApi implements ManagerDomainApi {
     @Override
     public DomainEntity getDomain(String domainId) throws Exception {
 
-        return txControl.supports(new Callable<DomainEntity>() {
+        return this.txControl.supports(new Callable<DomainEntity>() {
             @Override
             public DomainEntity call() throws Exception {
 
@@ -65,7 +65,7 @@ public class IsmDomainApi implements ManagerDomainApi {
     @Override
     public List<DomainEntity> listDomains() throws Exception {
 
-        return txControl.supports(new Callable<List<DomainEntity>>() {
+        return this.txControl.supports(new Callable<List<DomainEntity>>() {
 
             @Override
             public List<DomainEntity> call() throws Exception {
