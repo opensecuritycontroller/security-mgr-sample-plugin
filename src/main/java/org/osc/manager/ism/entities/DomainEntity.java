@@ -16,31 +16,32 @@
  *******************************************************************************/
 package org.osc.manager.ism.entities;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import org.osc.sdk.manager.element.ManagerPolicyElement;
+import org.osc.sdk.manager.element.ManagerDomainElement;
 
 @Entity
-@Table(name = "POLICY")
-public class PolicyEntity implements ManagerPolicyElement {
+@Table(name = "DOMAIN")
+public class DomainEntity implements ManagerDomainElement {
+
+    @Column(name = "name", unique = true, nullable = false)
+    private String name;
 
     @Id
     @GeneratedValue
     private Long id;
-    @Column(name = "name", unique = true, nullable = false)
-    private String name;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "domain_fk", nullable = false, foreignKey = @ForeignKey(name = "FK_PO_DOMAIN"))
-    private DomainEntity domain;
+    @OneToMany(mappedBy = "domain", fetch = FetchType.EAGER)
+    private List<PolicyEntity> policies = new ArrayList<PolicyEntity>();
 
     @Override
     public String getId() {
@@ -54,6 +55,14 @@ public class PolicyEntity implements ManagerPolicyElement {
         this.id = id;
     }
 
+    public List<PolicyEntity> getPolicies() {
+        return this.policies;
+    }
+
+    public void setPolicies(PolicyEntity policies) {
+        this.policies.add(policies);
+    }
+
     @Override
     public String getName() {
         return this.name;
@@ -61,13 +70,5 @@ public class PolicyEntity implements ManagerPolicyElement {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public DomainEntity getDomain() {
-        return this.domain;
-    }
-
-    public void setDomain(DomainEntity domain) {
-        this.domain = domain;
     }
 }

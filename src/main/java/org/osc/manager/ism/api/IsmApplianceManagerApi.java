@@ -59,6 +59,7 @@ property={
         SYNC_SECURITY_GROUP + ":Boolean=false",
         PROVIDE_DEVICE_STATUS + ":Boolean=true",
         SYNC_POLICY_MAPPING + ":Boolean=false"})
+
 public class IsmApplianceManagerApi implements ApplianceManagerApi {
 
     @Reference(target="(osgi.local.enabled=true)")
@@ -126,12 +127,12 @@ public class IsmApplianceManagerApi implements ApplianceManagerApi {
 
     @Override
     public ManagerPolicyApi createManagerPolicyApi(ApplianceManagerConnectorElement mc) throws Exception {
-        return IsmPolicyApi.create(mc);
+        return IsmPolicyApi.create(mc, this.txControl, this.em);
     }
 
     @Override
     public ManagerDomainApi createManagerDomainApi(ApplianceManagerConnectorElement mc) throws Exception {
-        return IsmDomainApi.create(mc);
+        return IsmDomainApi.create(mc, this.txControl, this.em);
     }
 
     @Override

@@ -15,8 +15,15 @@
  * limitations under the License.
  *******************************************************************************/
 package org.osc.manager.rest.server.api;
-import java.util.List;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
+
+import javax.persistence.EntityManager;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -28,9 +35,11 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
+import org.osc.manager.ism.entities.DomainEntity;
 import org.osc.manager.ism.entities.PolicyEntity;
 import org.osc.manager.rest.server.SecurityManagerServerRestConstants;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.transaction.control.TransactionControl;
 
 @Component(service = DomainApis.class)
 @Path(SecurityManagerServerRestConstants.SERVER_API_PATH_PREFIX + "/domains")
@@ -40,19 +49,55 @@ import org.osgi.service.component.annotations.Component;
 public class DomainApis {
 
     private static final Logger logger = Logger.getLogger(DomainApis.class);
+    private EntityManager em;
+    private TransactionControl txControl;
+
+    /**
+     * init the DB
+     *
+     *
+     */
+    public void init(EntityManager em, TransactionControl txControl) throws Exception {
+        this.em = em;
+        this.txControl = txControl;
+    }
 
     /**
      * Creates the Policy for a given domain
      *
      * @return policy
      */
-    @Path("/{domainid}")
+    @Path("/{domainId}/policies")
     @POST
-    public PolicyEntity createPolicy(@PathParam("domainid") Long domainid, PolicyEntity entity) {
+    public String createPolicy(@PathParam("domainId") Long domainId, PolicyEntity entity) {
 
-        logger.info("Creating Policy Entity...");
-        //TODO Sudhir: Add db calls here
-        return null;
+        logger.info("Creating Policy Entity...:" + entity.getName());
+
+        return this.txControl.required(new Callable<PolicyEntity>() {
+
+            @Override
+            public PolicyEntity call() throws Exception {
+
+                DomainEntity result = em.find(DomainEntity.class, domainId);
+                if (result == null) {
+                    throw new Exception("Domain Entity does not exists...");
+                    //TODO - to add RETURN 404 error:Sudhir
+                }
+                CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+                CriteriaQuery<PolicyEntity> query = criteriaBuilder.createQuery(PolicyEntity.class);
+                Root<PolicyEntity> r = query.from(PolicyEntity.class);
+                query.select(r).where(criteriaBuilder.and(criteriaBuilder.equal(r.get("name"), entity.getName())));
+
+                List<PolicyEntity> policyresult = em.createQuery(query).getResultList();
+                if (!policyresult.isEmpty()) {
+                    throw new Exception("Policy Entity name already exists...:");
+                    //TODO - to add RETURN 404 error:Sudhir
+                }
+                entity.setDomain(result);
+                em.persist(entity);
+                return entity;
+            }
+        }).getId();
     }
 
     /**
@@ -60,14 +105,35 @@ public class DomainApis {
      *
      * @return - updated policy
      */
-    @Path("/{domainid}/policies/{policyid}")
+    @Path("/{domainId}/policies/{policyId}")
     @PUT
-    public PolicyEntity updatePolicy(@PathParam("domainid") Long domainid, @PathParam("policyid") Long policyid,
+    public PolicyEntity updatePolicy(@PathParam("domainId") Long domainId, @PathParam("policyId") Long policyId,
             PolicyEntity entity) {
 
-        logger.info("Updating Policy Entity ...");
-        //TODO Sudhir: Add db calls here
-        return null;
+        logger.info("Updating for Policy Entity Id...:" + policyId);
+
+        return this.txControl.required(new Callable<PolicyEntity>() {
+
+            @Override
+            public PolicyEntity call() throws Exception {
+
+                CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+
+                CriteriaQuery<PolicyEntity> query = criteriaBuilder.createQuery(PolicyEntity.class);
+                Root<PolicyEntity> r = query.from(PolicyEntity.class);
+                query.select(r).where(criteriaBuilder.and(criteriaBuilder.equal(r.get("domain").get("id"), domainId)),
+                        criteriaBuilder.equal(r.get("id"), policyId));
+
+                List<PolicyEntity> result = em.createQuery(query).getResultList();
+                if (result.isEmpty()) {
+                    throw new Exception("domain or the policy Entity does not exists...");
+                    //TODO - to add RETURN 404 error:Sudhir
+                }
+                result.get(0).setName(entity.getName());
+                em.persist(result.get(0));
+                return result.get(0);
+            }
+        });
     }
 
     /**
@@ -75,14 +141,30 @@ public class DomainApis {
      *
      * @return - deleted policy
      */
-    @Path("/{domainid}/policies/{policyid}")
+    @Path("/{domainId}/policies/{policyId}")
     @DELETE
-    public PolicyEntity deletePolicy(@PathParam("domainid") Long domainid, @PathParam("policyid") Long policyid,
+    public void deletePolicy(@PathParam("domainId") Long domainId, @PathParam("policyId") Long policyId,
             PolicyEntity entity) {
 
-        logger.info("Deleting Policies Entity ...");
-        //TODO Sudhir: Add db calls here
-        return null;
+        logger.info("Deleting for Policies Entity Id...:" + policyId);
+
+        this.txControl.required(new Callable<Void>() {
+
+            @Override
+            public Void call() throws Exception {
+
+                DomainEntity result = em.find(DomainEntity.class, domainId);
+                if (result == null) {
+                    return null;
+                }
+                PolicyEntity policyresult = em.find(PolicyEntity.class, policyId);
+                if (policyresult == null) {
+                    return null;
+                }
+                em.remove(policyresult);
+                return null;
+            }
+        });
     }
 
     /**
@@ -90,26 +172,210 @@ public class DomainApis {
      *
      * @return - Policy Id's
      */
-    @Path("/{domainid}")
+    @Path("/{domainId}/policies")
     @GET
-    public List<String> getPolicyIds(@PathParam("domainid") Long domainid) {
+    public List<String> getPolicyIds(@PathParam("domainId") Long domainId) {
 
-        logger.info("Listing Policy Ids'");
-	    //TODO Sudhir: Add db calls here
-		return null;
+        logger.info("Listing Policy Ids'for domain Id ...:" + domainId);
+
+
+        return this.txControl.supports(new Callable<List<String>>() {
+
+            @Override
+            public List<String> call() throws Exception {
+
+                DomainEntity result = em.find(DomainEntity.class, domainId);
+                if (result == null) {
+                    throw new Exception("Domain Entity does not exists...");
+                    //TODO - to add RETURN 404 error:Sudhir
+                }
+                CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+                CriteriaQuery<PolicyEntity> query = criteriaBuilder.createQuery(PolicyEntity.class);
+                Root<PolicyEntity> r = query.from(PolicyEntity.class);
+                query.select(r).where(criteriaBuilder.and(criteriaBuilder.equal(r.get("domain").get("id"), domainId)));
+                List<PolicyEntity> policyList = em.createQuery(query).getResultList();
+                List<String> policies = new ArrayList<String>();
+                if (policyList.isEmpty()) {
+                    return policies;
+                }
+
+                for (PolicyEntity mgrPolicy : policyList) {
+                    policies.add(new String(mgrPolicy.getId()));
+                }
+                return policies;
+            }
+        });
     }
 
     /**
      * Gets the Policy for a given domain and the policy
      *
      * @return - Policy
+     * @throws Exception
      */
-    @Path("/{domainid}/policies/{policyid}")
+    @Path("/{domainId}/policies/{policyId}")
 	@GET
-    public PolicyEntity getPolicy(@PathParam("domainid") Long domainid, @PathParam("policyId") Long policyid) {
+    public PolicyEntity getPolicy(@PathParam("domainId") Long domainId, @PathParam("policyId") Long policyId)
+            throws Exception {
 
-        logger.info("getting Policy ");
-        //TODO Sudhir: Add db calls here
-		return null;
+        logger.info("getting Policy for Policy ID..:" + policyId);
+
+        return this.txControl.supports(new Callable<PolicyEntity>() {
+
+            @Override
+            public PolicyEntity call() throws Exception {
+                CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+                CriteriaQuery<PolicyEntity> query = criteriaBuilder.createQuery(PolicyEntity.class);
+                Root<PolicyEntity> r = query.from(PolicyEntity.class);
+                query.select(r).where(criteriaBuilder.and(criteriaBuilder.equal(r.get("domain").get("id"), domainId),
+                        criteriaBuilder.equal(r.get("id"), policyId)));
+                List<PolicyEntity> result = em.createQuery(query).getResultList();
+                if (result.isEmpty()) {
+                    throw new Exception("Policy or Domain Entity does not exists...");
+                    //TODO - Add 404 error response - Sudhir
+                }
+                return result.get(0);
+            }
+        });
+    }
+
+    /**
+     * Creates the Domain for a given ApplianceManagerConnector
+     *
+     * @return Domain
+     */
+    @POST
+    public String createDomain(DomainEntity entity) {
+
+        logger.info("Creating Domain Entity...:" + entity.getName());
+
+        return this.txControl.required(new Callable<DomainEntity>() {
+
+            @Override
+            public DomainEntity call() throws Exception {
+
+                CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+                CriteriaQuery<DomainEntity> query = criteriaBuilder.createQuery(DomainEntity.class);
+                Root<DomainEntity> r = query.from(DomainEntity.class);
+                query.select(r).where(criteriaBuilder.and(criteriaBuilder.equal(r.get("name"), entity.getName())));
+
+                List<DomainEntity> result = em.createQuery(query).getResultList();
+                if (!result.isEmpty()) {
+                    throw new Exception("Domain name already exists...");
+                    //TODO - to add RETURN 400 error:Sudhir
+                }
+                em.persist(entity);
+                return entity;
+            }
+        }).getId();
+    }
+
+    /**
+     * Updates the Domain for a given domain Id
+     *
+     * @return - updated Domain
+     */
+    @Path("/{domainId}")
+    @PUT
+    public DomainEntity updateDomain(@PathParam("domainId") Long domainId, DomainEntity entity) {
+
+        logger.info("Updating Domain Entity ID...:" + domainId);
+
+        return this.txControl.required(new Callable<DomainEntity>() {
+
+            @Override
+            public DomainEntity call() throws Exception {
+
+                DomainEntity result = em.find(DomainEntity.class, domainId);
+                if (result == null) {
+                    throw new Exception("Domain Entity does not exists...");
+                    //TODO - to add RETURN 404 error:Sudhir
+                }
+                result.setName(entity.getName());
+                em.persist(result);
+                return result;
+            }
+        });
+    }
+
+    /**
+     * Deletes the Domain for a given domain Id
+     *
+     * @return - deleted Domain
+     */
+    @Path("/{domainId}")
+    @DELETE
+    public void deleteDomain(@PathParam("domainId") Long domainId) {
+
+        logger.info("Deleting Domain Entity ID...:" + domainId);
+
+        this.txControl.required(new Callable<Void>() {
+
+            @Override
+            public Void call() throws Exception {
+
+                DomainEntity result = em.find(DomainEntity.class, domainId);
+                if (result == null) {
+                    return null;
+                }
+                em.remove(result);
+                return null;
+            }
+        });
+    }
+
+    /**
+     * Lists the Domain Id's for a given domain
+     *
+     * @return - Domain Id's
+     */
+    @GET
+    public List<String> getDomainIds() {
+
+        logger.info("Listing Domain Ids'");
+
+        return this.txControl.supports(new Callable<List<String>>() {
+
+            @Override
+            public List<String> call() throws Exception {
+
+                CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+                CriteriaQuery<DomainEntity> query = criteriaBuilder.createQuery(DomainEntity.class);
+                Root<DomainEntity> r = query.from(DomainEntity.class);
+                query.select(r);
+                List<DomainEntity> result = em.createQuery(query).getResultList();
+                List<String> domainList = new ArrayList<String>();
+                if (result.isEmpty()) {
+                    return domainList;
+                }
+
+                for (DomainEntity mgrDm : result) {
+                    domainList.add(new String(mgrDm.getId()));
+                }
+                return domainList;
+            }
+        });
+    }
+
+    /**
+     * Gets the Domain for a given domain Id
+     *
+     * @return - Domain
+     * @throws Exception
+     */
+    @Path("/{domainId}")
+    @GET
+    public DomainEntity getDomain(@PathParam("domainId") Long domainId) throws Exception {
+
+        logger.info("getting Domain for ID...:" + domainId);
+
+        return this.txControl.supports(new Callable<DomainEntity>() {
+
+            @Override
+            public DomainEntity call() throws Exception {
+
+                return em.find(DomainEntity.class, Long.valueOf(domainId));
+            }
+        });
     }
 }

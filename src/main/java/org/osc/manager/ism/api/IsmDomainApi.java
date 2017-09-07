@@ -16,37 +16,65 @@
  *******************************************************************************/
 package org.osc.manager.ism.api;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+
+import javax.persistence.EntityManager;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 
 import org.apache.log4j.Logger;
-import org.osc.manager.ism.model.Domain;
-import org.osc.manager.ism.model.DomainListElement;
+import org.osc.manager.ism.entities.DomainEntity;
 import org.osc.sdk.manager.api.ManagerDomainApi;
 import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
+import org.osgi.service.transaction.control.TransactionControl;
 
 public class IsmDomainApi implements ManagerDomainApi {
 
     Logger log = Logger.getLogger(IsmDomainApi.class);
+    private TransactionControl txControl;
+    private EntityManager em;
+    ApplianceManagerConnectorElement mc;
 
-    public IsmDomainApi(ApplianceManagerConnectorElement mc) throws Exception {
-
+    private IsmDomainApi(ApplianceManagerConnectorElement mc, TransactionControl txControl, EntityManager em)
+            throws Exception {
+        this.txControl = txControl;
+        this.em = em;
+        this.mc = mc;
     }
 
-    public static IsmDomainApi create(ApplianceManagerConnectorElement mc) throws Exception {
-        return new IsmDomainApi(mc);
+    public static IsmDomainApi create(ApplianceManagerConnectorElement mc, TransactionControl txControl,
+            EntityManager em) throws Exception {
+
+        return new IsmDomainApi(mc, txControl, em);
     }
 
     @Override
-    public Domain getDomain(String domainId) throws Exception {
-        return new Domain(0L, "Root-Domain");
+    public DomainEntity getDomain(String domainId) throws Exception {
+
+        return this.txControl.supports(new Callable<DomainEntity>() {
+            @Override
+            public DomainEntity call() throws Exception {
+
+                return em.find(DomainEntity.class, Long.parseLong(domainId));
+            }
+        });
     }
 
     @Override
-    public List<DomainListElement> listDomains() throws Exception {
-        List<DomainListElement> domainList = new ArrayList<DomainListElement>();
-        domainList.add(new DomainListElement(0L, "Root-Domain"));
-        return domainList;
-    }
+    public List<DomainEntity> listDomains() throws Exception {
 
+        return this.txControl.supports(new Callable<List<DomainEntity>>() {
+
+            @Override
+            public List<DomainEntity> call() throws Exception {
+                CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+                CriteriaQuery<DomainEntity> query = criteriaBuilder.createQuery(DomainEntity.class);
+                Root<DomainEntity> r = query.from(DomainEntity.class);
+                query.select(r);
+                return em.createQuery(query).getResultList();
+            }
+        });
+    }
 }

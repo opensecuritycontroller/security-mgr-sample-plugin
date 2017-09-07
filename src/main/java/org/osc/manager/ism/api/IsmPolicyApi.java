@@ -16,41 +16,85 @@
  *******************************************************************************/
 package org.osc.manager.ism.api;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+
+import javax.persistence.EntityManager;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 
 import org.apache.log4j.Logger;
-import org.osc.manager.ism.model.PolicyListElement;
+import org.osc.manager.ism.entities.DomainEntity;
+import org.osc.manager.ism.entities.PolicyEntity;
 import org.osc.sdk.manager.api.ManagerPolicyApi;
 import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
+import org.osgi.service.transaction.control.TransactionControl;
 
 public class IsmPolicyApi implements ManagerPolicyApi {
 
     Logger log = Logger.getLogger(IsmPolicyApi.class);
+    private TransactionControl txControl;
+    private EntityManager em;
+    ApplianceManagerConnectorElement mc;
 
-    private static ArrayList<PolicyListElement> policyList = new ArrayList<PolicyListElement>();
-    static {
-        policyList.add(new PolicyListElement(0L, "Platinum"));
-        policyList.add(new PolicyListElement(1L, "Gold"));
-        policyList.add(new PolicyListElement(2L, "Silver"));
-        policyList.add(new PolicyListElement(3L, "Bronze"));
+    private IsmPolicyApi(ApplianceManagerConnectorElement mc, TransactionControl txControl, EntityManager em)
+            throws Exception {
+        this.txControl = txControl;
+        this.em = em;
+        this.mc = mc;
     }
 
-    public IsmPolicyApi(ApplianceManagerConnectorElement mc) throws Exception {
-
-    }
-
-    public static IsmPolicyApi create(ApplianceManagerConnectorElement mc) throws Exception {
-        return new IsmPolicyApi(mc);
-    }
-
-    @Override
-    public PolicyListElement getPolicy(String policyId, String domainId) throws Exception {
-        return policyList.get(Integer.parseInt(policyId));
+    public static IsmPolicyApi create(ApplianceManagerConnectorElement mc, TransactionControl txControl,
+            EntityManager em) throws Exception {
+        return new IsmPolicyApi(mc, txControl, em);
     }
 
     @Override
-    public List<PolicyListElement> getPolicyList(String domainId) throws Exception {
-        return policyList;
+    public PolicyEntity getPolicy(String policyId, String domainId) throws Exception {
+
+        return this.txControl.supports(new Callable<PolicyEntity>() {
+
+            @Override
+            public PolicyEntity call() throws Exception {
+
+                CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+                CriteriaQuery<PolicyEntity> query = criteriaBuilder.createQuery(PolicyEntity.class);
+                Root<PolicyEntity> r = query.from(PolicyEntity.class);
+                query.select(r)
+                        .where(criteriaBuilder.and(
+                                criteriaBuilder.equal(r.get("domain").get("id"), Long.parseLong(domainId)),
+                                criteriaBuilder.equal(r.get("id"), Long.parseLong(policyId))));
+                List<PolicyEntity> result = em.createQuery(query).getResultList();
+                if (result.isEmpty()) {
+                    throw new Exception("Policy or Domain Entity does not exists...");
+                    //TODO - Add 404 error response - Sudhir
+                }
+                return result.get(0);
+            }
+        });
+    }
+
+    @Override
+    public List<PolicyEntity> getPolicyList(String domainId) throws Exception {
+
+        return this.txControl.supports(new Callable<List<PolicyEntity>>() {
+
+            @Override
+            public List<PolicyEntity> call() throws Exception {
+
+                DomainEntity result = em.find(DomainEntity.class, Long.parseLong(domainId));
+                if (result == null) {
+                    throw new Exception("Domain Entity does not exists...");
+                    //TODO - to add RETURN 404 error:Sudhir
+                }
+                CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+                CriteriaQuery<PolicyEntity> query = criteriaBuilder.createQuery(PolicyEntity.class);
+                Root<PolicyEntity> r = query.from(PolicyEntity.class);
+                query.select(r).where(criteriaBuilder
+                        .and(criteriaBuilder.equal(r.get("domain").get("id"), Long.parseLong(domainId))));
+                return em.createQuery(query).getResultList();
+            }
+        });
     }
 }
