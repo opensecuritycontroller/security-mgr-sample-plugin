@@ -34,6 +34,7 @@ import javax.sql.DataSource;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.servlet.ServletContainer;
+import org.osc.manager.rest.server.api.DeviceApis;
 import org.osc.manager.rest.server.api.DomainApis;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -60,6 +61,9 @@ public class SecurityManagerServletDelegate extends ResourceConfig implements Se
 
     @Reference
     private DomainApis domainApis;
+
+    @Reference
+    private DeviceApis deviceApis;
 
     @Reference(target = "(osgi.local.enabled=true)")
     private TransactionControl txControl;
@@ -95,8 +99,9 @@ public class SecurityManagerServletDelegate extends ResourceConfig implements Se
                 .getResource(this.txControl);
 
         this.domainApis.init(this.em, this.txControl);
+        this.deviceApis.init(this.em, this.txControl);
 
-        super.registerInstances(this.domainApis);
+        super.registerInstances(this.domainApis, this.deviceApis);
         this.container = new ServletContainer(this);
        }
 

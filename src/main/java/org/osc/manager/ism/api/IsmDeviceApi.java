@@ -26,10 +26,8 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
 import org.apache.log4j.Logger;
-import org.osc.manager.ism.entities.DeviceMember;
-import org.osc.manager.ism.entities.VSSDevice;
-import org.osc.manager.ism.model.Device;
-import org.osc.manager.ism.model.MemberDevice;
+import org.osc.manager.ism.entities.DeviceEntity;
+import org.osc.manager.ism.entities.DeviceMemberEntity;
 import org.osc.sdk.manager.api.ManagerDeviceApi;
 import org.osc.sdk.manager.element.ApplianceBootstrapInformationElement;
 import org.osc.sdk.manager.element.BootStrapInfoProviderElement;
@@ -44,9 +42,9 @@ public class IsmDeviceApi implements ManagerDeviceApi {
     Logger log = Logger.getLogger(IsmDeviceApi.class);
 
     private final VirtualSystemElement vs;
-    
+
     private final TransactionControl txControl;
-    
+
     private final EntityManager em;
 
     public IsmDeviceApi(VirtualSystemElement vs, TransactionControl txControl, EntityManager em) {
@@ -62,74 +60,119 @@ public class IsmDeviceApi implements ManagerDeviceApi {
 
     @Override
     public ManagerDeviceElement getDeviceById(String id) throws Exception {
-        return new Device(this.vs.getId(), this.vs.getName());
+
+        return this.txControl.supports(new Callable<DeviceEntity>() {
+
+            @Override
+            public DeviceEntity call() throws Exception {
+                return IsmDeviceApi.this.em.find(DeviceEntity.class, Long.valueOf(id));
+            }
+        });
     }
 
     @Override
     public String findDeviceByName(final String name) throws Exception {
-        
-        return txControl.supports(new Callable<String>() {
-            
+
+        return this.txControl.supports(new Callable<String>() {
+
             @Override
             public String call() throws Exception {
-                CriteriaBuilder cb = em.getCriteriaBuilder();
-                
-                CriteriaQuery<Long> q = cb.createQuery(Long.class);
-                Root<VSSDevice> r = q.from(VSSDevice.class);
-                q.select(r.get("id").as(Long.class)).where(cb.equal(r.get("name"), name));
-                
-                Long result = em.createQuery(q).getSingleResult();
-                return result == null ? null : result.toString();
+                CriteriaBuilder criteriaBuilder = IsmDeviceApi.this.em.getCriteriaBuilder();
+
+                CriteriaQuery<Long> query = criteriaBuilder.createQuery(Long.class);
+                Root<DeviceEntity> r = query.from(DeviceEntity.class);
+                query.select(r.get("id").as(Long.class)).where(criteriaBuilder.equal(r.get("name"), name));
+                List<Long> result = IsmDeviceApi.this.em.createQuery(query).getResultList();
+                return result.isEmpty() == true ? null : result.get(0).toString();
             }
         });
     }
 
     @Override
     public List<? extends ManagerDeviceElement> listDevices() throws Exception {
-        
-        return txControl.supports(new Callable<List<? extends ManagerDeviceElement>>() {
-            
+
+        return this.txControl.supports(new Callable<List<DeviceEntity>>() {
+
             @Override
-            public List<? extends ManagerDeviceElement> call() throws Exception {
-                CriteriaBuilder cb = em.getCriteriaBuilder();
-                
-                CriteriaQuery<VSSDevice> q = cb.createQuery(VSSDevice.class);
-                Root<VSSDevice> r = q.from(VSSDevice.class);
-                q.select(r);
-                
-                List<Device> devices = new ArrayList<Device>();
-                for (VSSDevice dev : em.createQuery(q).getResultList()) {
-                    devices.add(new Device(dev.getId(), dev.getName()));
-                }
-                return devices;
+            public List<DeviceEntity> call() throws Exception {
+
+                CriteriaBuilder criteriaBuilder = IsmDeviceApi.this.em.getCriteriaBuilder();
+                CriteriaQuery<DeviceEntity> query = criteriaBuilder.createQuery(DeviceEntity.class);
+                Root<DeviceEntity> r = query.from(DeviceEntity.class);
+                query.select(r);
+                return IsmDeviceApi.this.em.createQuery(query).getResultList();
             }
         });
     }
 
     @Override
     public String createVSSDevice() throws Exception {
-        return txControl.required(new Callable<VSSDevice>() {
+
+        return this.txControl.required(new Callable<DeviceEntity>() {
+
             @Override
-            public VSSDevice call() throws Exception {
-                VSSDevice device = new VSSDevice();
-                device.setId(vs.getId());
-                device.setName(vs.getName());
-                em.persist(device);
+            public DeviceEntity call() throws Exception {
+
+                CriteriaBuilder criteriaBuilder = IsmDeviceApi.this.em.getCriteriaBuilder();
+                CriteriaQuery<DeviceEntity> query = criteriaBuilder.createQuery(DeviceEntity.class);
+                Root<DeviceEntity> r = query.from(DeviceEntity.class);
+                query.select(r).where(
+                        criteriaBuilder.and(criteriaBuilder.equal(r.get("name"), IsmDeviceApi.this.vs.getName())));
+
+                List<DeviceEntity> result = IsmDeviceApi.this.em.createQuery(query).getResultList();
+                if (!result.isEmpty()) {
+                    throw new Exception("Device name already exists...");
+                    //TODO - to add RETURN 400 error:Sudhir
+                }
+                DeviceEntity device = new DeviceEntity();
+                device.setVsId(IsmDeviceApi.this.vs.getId());
+                device.setName(IsmDeviceApi.this.vs.getName());
+                IsmDeviceApi.this.em.persist(device);
                 return device;
             }
-        }).getId().toString();
+        }).getId();
     }
 
     @Override
     public void updateVSSDevice(ManagerDeviceElement device) throws Exception {
+
+        this.txControl.required(new Callable<Void>() {
+
+            @Override
+            public Void call() throws Exception {
+
+                DeviceEntity result = IsmDeviceApi.this.em.find(DeviceEntity.class, Long.parseLong(device.getId()));
+                if (result == null) {
+                    throw new Exception("Device Entity does not exists...");
+                    //TODO - to add RETURN 404 error:Sudhir
+                }
+                result.setName(device.getName());
+                IsmDeviceApi.this.em.persist(result);
+                return null;
+            }
+        });
     }
 
     @Override
     public void deleteVSSDevice() throws Exception {
-        txControl.required(new Callable<Void>() {
+
+        this.txControl.required(new Callable<Void>() {
+
             @Override
             public Void call() throws Exception {
-                em.remove(em.find(VSSDevice.class, vs.getId()));
+
+                CriteriaBuilder criteriaBuilder = IsmDeviceApi.this.em.getCriteriaBuilder();
+                CriteriaQuery<DeviceEntity> query = criteriaBuilder.createQuery(DeviceEntity.class);
+                Root<DeviceEntity> r = query.from(DeviceEntity.class);
+                query.select(r)
+                        .where(criteriaBuilder.and(
+                                criteriaBuilder.equal(r.get("vsId"), Long.toString(IsmDeviceApi.this.vs.getId()))));
+
+                List<DeviceEntity> result = IsmDeviceApi.this.em.createQuery(query).getResultList();
+                if (result.isEmpty()) {
+                    return null;
+                }
+                IsmDeviceApi.this.em.remove(result.get(0));
                 return null;
             }
         });
@@ -138,58 +181,119 @@ public class IsmDeviceApi implements ManagerDeviceApi {
     @Override
     public String createDeviceMember(final String name, String ipAddress, String vserverIpAddress, String contactIpAddress,
             String gateway, String prefixLength) throws Exception {
-        return txControl.required(new Callable<DeviceMember>() {
+
+        return this.txControl.required(new Callable<DeviceMemberEntity>() {
+
             @Override
-            public DeviceMember call() throws Exception {
-                VSSDevice device = em.find(VSSDevice.class, vs.getId());
-                
-                DeviceMember dm = new DeviceMember();
-                dm.setParent(device);
-                dm.setName(name);
-                em.persist(dm);
-                return dm;
+            public DeviceMemberEntity call() throws Exception {
+
+                CriteriaBuilder criteriaBuilder = IsmDeviceApi.this.em.getCriteriaBuilder();
+                CriteriaQuery<DeviceEntity> query = criteriaBuilder.createQuery(DeviceEntity.class);
+                Root<DeviceEntity> r = query.from(DeviceEntity.class);
+                query.select(r)
+                        .where(criteriaBuilder.and(criteriaBuilder.equal(r.get("vsId"), IsmDeviceApi.this.vs.getId())));
+                List<DeviceEntity> result = IsmDeviceApi.this.em.createQuery(query).getResultList();
+
+                if (result.isEmpty()) {
+                    throw new Exception("Device Entity does not exists...");
+                    //TODO - to add RETURN 404 error:Sudhir
+                }
+                CriteriaBuilder memberBuilder = IsmDeviceApi.this.em.getCriteriaBuilder();
+                CriteriaQuery<DeviceMemberEntity> memberQuery = memberBuilder.createQuery(DeviceMemberEntity.class);
+                Root<DeviceMemberEntity> res = memberQuery.from(DeviceMemberEntity.class);
+                memberQuery.select(res).where(memberBuilder.and(memberBuilder.equal(r.get("name"), name)));
+
+                List<DeviceMemberEntity> deviceMemberResult = IsmDeviceApi.this.em.createQuery(memberQuery)
+                        .getResultList();
+                if (!deviceMemberResult.isEmpty()) {
+                    throw new Exception("Device Member Entity name already exists...:");
+                    //TODO - to add RETURN 404 error:Sudhir
+                }
+                DeviceMemberEntity entity = new DeviceMemberEntity();
+                entity.setParent(result.get(0));
+                entity.setName(name);
+                IsmDeviceApi.this.em.persist(entity);
+                return entity;
             }
-        }).getId().toString();
+        }).getId();
     }
 
 
     @Override
     public String updateDeviceMember(ManagerDeviceMemberElement deviceElement, String name, String vserverIpAddress,
             String contactIpAddress, String ipAddress, String gateway, String prefixLength) throws Exception {
-        return deviceElement.getId();
+        return this.txControl.required(new Callable<DeviceMemberEntity>() {
+
+            @Override
+            public DeviceMemberEntity call() throws Exception {
+
+                CriteriaBuilder criteriaBuilder = IsmDeviceApi.this.em.getCriteriaBuilder();
+
+                CriteriaQuery<DeviceMemberEntity> query = criteriaBuilder.createQuery(DeviceMemberEntity.class);
+                Root<DeviceMemberEntity> r = query.from(DeviceMemberEntity.class);
+                query.select(r).where(criteriaBuilder.and(criteriaBuilder.equal(r.get("id"), deviceElement.getId())));
+
+                List<DeviceMemberEntity> result = IsmDeviceApi.this.em.createQuery(query).getResultList();
+                if (result.isEmpty()) {
+                    throw new Exception("The Device Member Entity does not exists...");
+                    //TODO - to add RETURN 404 error:Sudhir
+                }
+                result.get(0).setName(name);
+                IsmDeviceApi.this.em.persist(result.get(0));
+                return result.get(0);
+            }
+        }).getId();
     }
 
     @Override
     public void deleteDeviceMember(String id) throws Exception {
+
+        this.txControl.required(new Callable<Void>() {
+
+            @Override
+            public Void call() throws Exception {
+
+                DeviceMemberEntity memberResult = IsmDeviceApi.this.em.find(DeviceMemberEntity.class,
+                        Long.parseLong(id));
+                if (memberResult == null) {
+                    return null;
+                }
+                IsmDeviceApi.this.em.remove(memberResult);
+                return null;
+            }
+        });
     }
 
     @Override
     public ManagerDeviceMemberElement getDeviceMemberById(final String id) throws Exception {
-        return txControl.supports(new Callable<ManagerDeviceMemberElement>() {
-            
+        return this.txControl.supports(new Callable<DeviceMemberEntity>() {
+
             @Override
-            public ManagerDeviceMemberElement call() throws Exception {
-                DeviceMember result = em.find(DeviceMember.class, Long.valueOf(id));
-                return result == null ? null : new MemberDevice(result.getId(), result.getName());
+            public DeviceMemberEntity call() throws Exception {
+                CriteriaBuilder criteriaBuilder = IsmDeviceApi.this.em.getCriteriaBuilder();
+                CriteriaQuery<DeviceMemberEntity> query = criteriaBuilder.createQuery(DeviceMemberEntity.class);
+                Root<DeviceMemberEntity> r = query.from(DeviceMemberEntity.class);
+                query.select(r).where(
+                        criteriaBuilder.and(criteriaBuilder.equal(r.get("id"), id)));
+                List<DeviceMemberEntity> result = IsmDeviceApi.this.em.createQuery(query).getResultList();
+                return result.isEmpty() == true ? null : result.get(0);
             }
         });
     }
 
     @Override
     public ManagerDeviceMemberElement findDeviceMemberByName(final String name) throws Exception {
-        return txControl.supports(new Callable<ManagerDeviceMemberElement>() {
-            
+        return this.txControl.supports(new Callable<DeviceMemberEntity>() {
+
             @Override
-            public ManagerDeviceMemberElement call() throws Exception {
-                CriteriaBuilder cb = em.getCriteriaBuilder();
-                
-                CriteriaQuery<DeviceMember> q = cb.createQuery(DeviceMember.class);
-                Root<DeviceMember> r = q.from(DeviceMember.class);
-                q.select(r).where(cb.and(cb.equal(r.get("name"), name), cb.equal(
-                        r.get("parent").get("id"), vs.getId())));
-                
-                DeviceMember result = em.createQuery(q).getSingleResult();
-                return result == null ? null : new MemberDevice(result.getId(), result.getName());
+            public DeviceMemberEntity call() throws Exception {
+                CriteriaBuilder criteriaBuilder = IsmDeviceApi.this.em.getCriteriaBuilder();
+
+                CriteriaQuery<DeviceMemberEntity> query = criteriaBuilder.createQuery(DeviceMemberEntity.class);
+                Root<DeviceMemberEntity> r = query.from(DeviceMemberEntity.class);
+                query.select(r).where(criteriaBuilder.and(criteriaBuilder.equal(r.get("name"), name)));
+                List<DeviceMemberEntity> result = IsmDeviceApi.this.em.createQuery(query).getResultList();
+                return result.isEmpty() == true ? null : result.get(0);
             }
         });
     }
@@ -197,21 +301,17 @@ public class IsmDeviceApi implements ManagerDeviceApi {
     @Override
     public List<? extends ManagerDeviceMemberElement> listDeviceMembers() throws Exception {
 
-        return txControl.supports(new Callable<List<? extends ManagerDeviceMemberElement>>() {
-            
+        return this.txControl.supports(new Callable<List<DeviceMemberEntity>>() {
+
             @Override
-            public List<? extends ManagerDeviceMemberElement> call() throws Exception {
-                CriteriaBuilder cb = em.getCriteriaBuilder();
-                
-                CriteriaQuery<DeviceMember> q = cb.createQuery(DeviceMember.class);
-                Root<DeviceMember> r = q.from(DeviceMember.class);
-                q.select(r).where(cb.equal(r.get("parent").get("id"), vs.getId()));
-                
-                List<MemberDevice> devices = new ArrayList<MemberDevice>();
-                for (DeviceMember dev : em.createQuery(q).getResultList()) {
-                    devices.add(new MemberDevice(dev.getId(), dev.getName()));
-                }
-                return devices;
+            public List<DeviceMemberEntity> call() throws Exception {
+
+                CriteriaBuilder criteriaBuilder = IsmDeviceApi.this.em.getCriteriaBuilder();
+                CriteriaQuery<DeviceMemberEntity> query = criteriaBuilder.createQuery(DeviceMemberEntity.class);
+                Root<DeviceMemberEntity> r = query.from(DeviceMemberEntity.class);
+                query.select(r).where(criteriaBuilder
+                        .and(criteriaBuilder.equal(r.get("parent").get("vsId"), IsmDeviceApi.this.vs.getId())));
+                return IsmDeviceApi.this.em.createQuery(query).getResultList();
             }
         });
     }
