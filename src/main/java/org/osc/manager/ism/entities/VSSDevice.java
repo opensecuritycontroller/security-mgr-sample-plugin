@@ -29,16 +29,14 @@ import javax.persistence.OneToMany;
 public class VSSDevice {
 
     private Long id;
-    
+
     private String name;
-    
+
     private List<DeviceMember> deviceMembers;
-    
-    private List<SecurityGroup> securityGroups;
 
     @Id
     public Long getId() {
-        return id;
+        return this.id;
     }
 
     public void setId(Long id) {
@@ -46,7 +44,7 @@ public class VSSDevice {
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {
@@ -55,19 +53,10 @@ public class VSSDevice {
 
     @OneToMany(cascade=CascadeType.ALL, orphanRemoval=true, fetch=LAZY, mappedBy="parent")
     public List<DeviceMember> getDeviceMembers() {
-        return deviceMembers;
+        return this.deviceMembers;
     }
 
     public void setDeviceMembers(List<DeviceMember> deviceMembers) {
         this.deviceMembers = deviceMembers;
-    }
-
-    @OneToMany(cascade=CascadeType.ALL, orphanRemoval=true, fetch=LAZY, mappedBy="parent")
-    public List<SecurityGroup> getSecurityGroups() {
-        return securityGroups;
-    }
-    
-    public void setSecurityGroups(List<SecurityGroup> securityGroups) {
-        this.securityGroups = securityGroups;
     }
 }

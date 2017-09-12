@@ -56,9 +56,10 @@ property={
         EXTERNAL_SERVICE_NAME + "=SAMPLE_IPS",
         AUTHENTICATION_TYPE + "=BASIC_AUTH",
         NOTIFICATION_TYPE + "=NONE",
-        SYNC_SECURITY_GROUP + ":Boolean=false",
+        SYNC_SECURITY_GROUP + ":Boolean=true",
         PROVIDE_DEVICE_STATUS + ":Boolean=true",
-        SYNC_POLICY_MAPPING + ":Boolean=false"})
+        SYNC_POLICY_MAPPING + ":Boolean=true",
+        SUPPORT_MULTIPLE_POLICIES + ":Boolean=true"})
 
 public class IsmApplianceManagerApi implements ApplianceManagerApi {
 
@@ -116,13 +117,13 @@ public class IsmApplianceManagerApi implements ApplianceManagerApi {
     @Override
     public ManagerSecurityGroupInterfaceApi createManagerSecurityGroupInterfaceApi(ApplianceManagerConnectorElement mc,
             VirtualSystemElement vs) throws Exception {
-        return new IsmSecurityGroupInterfaceApi(vs, this.txControl, this.em);
+        return new IsmSecurityGroupInterfaceApi(vs, mc, this.txControl, this.em);
     }
 
     @Override
     public ManagerSecurityGroupApi createManagerSecurityGroupApi(ApplianceManagerConnectorElement mc,
             VirtualSystemElement vs) throws Exception {
-        throw new UnsupportedOperationException("Security Group sync is not supported.");
+        return new IsmSecurityGroupApi(vs, this.txControl, this.em);
     }
 
     @Override
