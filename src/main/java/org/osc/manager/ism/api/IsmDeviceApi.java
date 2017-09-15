@@ -39,8 +39,7 @@ import org.osgi.service.transaction.control.TransactionControl;
 
 public class IsmDeviceApi implements ManagerDeviceApi {
 
-    Logger log = Logger.getLogger(IsmDeviceApi.class);
-
+    private static final Logger LOG = Logger.getLogger(IsmDeviceApi.class);
     private final VirtualSystemElement vs;
 
     private final TransactionControl txControl;
@@ -108,6 +107,14 @@ public class IsmDeviceApi implements ManagerDeviceApi {
     @Override
     public String createVSSDevice() throws Exception {
 
+        DeviceEntity entity = new DeviceEntity();
+        entity.setVsId(this.vs.getId());
+        entity.setName(this.vs.getName());
+        return createDevice(entity);
+    }
+
+    public String createDevice(DeviceEntity entity) throws Exception {
+
         return this.txControl.required(new Callable<DeviceEntity>() {
 
             @Override
@@ -117,18 +124,16 @@ public class IsmDeviceApi implements ManagerDeviceApi {
                 CriteriaQuery<DeviceEntity> query = criteriaBuilder.createQuery(DeviceEntity.class);
                 Root<DeviceEntity> r = query.from(DeviceEntity.class);
                 query.select(r).where(
-                        criteriaBuilder.and(criteriaBuilder.equal(r.get("name"), IsmDeviceApi.this.vs.getName())));
+                        criteriaBuilder.and(criteriaBuilder.equal(r.get("name"), entity.getName())));
 
-                List<DeviceEntity> result = IsmDeviceApi.this.em.createQuery(query).getResultList();
-                if (!result.isEmpty()) {
-                    throw new Exception("Device name already exists...");
-                    //TODO - to add RETURN 400 error:Sudhir
+                List<DeviceEntity> devices = IsmDeviceApi.this.em.createQuery(query).getResultList();
+                if (!devices.isEmpty()) {
+                    String msg = String.format("Device Entity already exists" + "name: %s\n", entity.getName());
+                    LOG.error(msg);
+                    throw new IllegalArgumentException(msg);
                 }
-                DeviceEntity device = new DeviceEntity();
-                device.setVsId(IsmDeviceApi.this.vs.getId());
-                device.setName(IsmDeviceApi.this.vs.getName());
-                IsmDeviceApi.this.em.persist(device);
-                return device;
+                IsmDeviceApi.this.em.persist(entity);
+                return entity;
             }
         }).getId();
     }
@@ -143,8 +148,9 @@ public class IsmDeviceApi implements ManagerDeviceApi {
 
                 DeviceEntity result = IsmDeviceApi.this.em.find(DeviceEntity.class, Long.parseLong(device.getId()));
                 if (result == null) {
-                    throw new Exception("Device Entity does not exists...");
-                    //TODO - to add RETURN 404 error:Sudhir
+                    String msg = String.format("Cannot find the Device Entity " + "Id: %s\n", device.getId());
+                    LOG.error(msg);
+                    throw new IllegalArgumentException(msg);
                 }
                 result.setName(device.getName());
                 IsmDeviceApi.this.em.persist(result);
@@ -168,11 +174,13 @@ public class IsmDeviceApi implements ManagerDeviceApi {
                         .where(criteriaBuilder.and(
                                 criteriaBuilder.equal(r.get("vsId"), Long.toString(IsmDeviceApi.this.vs.getId()))));
 
-                List<DeviceEntity> result = IsmDeviceApi.this.em.createQuery(query).getResultList();
-                if (result.isEmpty()) {
+                List<DeviceEntity> devices = IsmDeviceApi.this.em.createQuery(query).getResultList();
+                if (devices.isEmpty()) {
+                    LOG.info("Attempt to delete device id:...." + IsmDeviceApi.this.vs.getId());
+                    LOG.info("..Device not found, no-op.");
                     return null;
                 }
-                IsmDeviceApi.this.em.remove(result.get(0));
+                IsmDeviceApi.this.em.remove(devices.get(0));
                 return null;
             }
         });
@@ -182,6 +190,16 @@ public class IsmDeviceApi implements ManagerDeviceApi {
     public String createDeviceMember(final String name, String ipAddress, String vserverIpAddress, String contactIpAddress,
             String gateway, String prefixLength) throws Exception {
 
+        DeviceEntity device = new DeviceEntity();
+        DeviceMemberEntity deviceMember = new DeviceMemberEntity();
+        deviceMember.setParent(device);
+        device.setId(null);
+        deviceMember.setName(name);
+        return createDeviceMember(deviceMember);
+    }
+
+    public String createDeviceMember(DeviceMemberEntity entity) throws Exception {
+
         return this.txControl.required(new Callable<DeviceMemberEntity>() {
 
             @Override
@@ -190,28 +208,41 @@ public class IsmDeviceApi implements ManagerDeviceApi {
                 CriteriaBuilder criteriaBuilder = IsmDeviceApi.this.em.getCriteriaBuilder();
                 CriteriaQuery<DeviceEntity> query = criteriaBuilder.createQuery(DeviceEntity.class);
                 Root<DeviceEntity> r = query.from(DeviceEntity.class);
-                query.select(r)
-                        .where(criteriaBuilder.and(criteriaBuilder.equal(r.get("vsId"), IsmDeviceApi.this.vs.getId())));
-                List<DeviceEntity> result = IsmDeviceApi.this.em.createQuery(query).getResultList();
+                if (entity.getParent().getId() != null) {
+                    query.select(r)
+                            .where(criteriaBuilder.and(criteriaBuilder.equal(r.get("id"), entity.getParent().getId())));
+                }
+                else {
+                    query.select(r).where(
+                            criteriaBuilder.and(criteriaBuilder.equal(r.get("vsId"), IsmDeviceApi.this.vs.getId())));
+                }
 
-                if (result.isEmpty()) {
-                    throw new Exception("Device Entity does not exists...");
-                    //TODO - to add RETURN 404 error:Sudhir
+                List<DeviceEntity> devices = IsmDeviceApi.this.em.createQuery(query).getResultList();
+                if (devices.isEmpty()) {
+                    String msg;
+                    if (entity.getParent().getId() != null) {
+                        msg = String.format("Cannot find the Device Entity " + "Id: %s\n",entity.getParent().getId());
+                    }
+                    else {
+                        msg = String.format("Cannot find the Device Entity " + "vsId: %s\n",
+                                IsmDeviceApi.this.vs.getId());
+                    }
+                    LOG.error(msg);
+                    throw new IllegalArgumentException(msg);
                 }
                 CriteriaBuilder memberBuilder = IsmDeviceApi.this.em.getCriteriaBuilder();
                 CriteriaQuery<DeviceMemberEntity> memberQuery = memberBuilder.createQuery(DeviceMemberEntity.class);
                 Root<DeviceMemberEntity> res = memberQuery.from(DeviceMemberEntity.class);
-                memberQuery.select(res).where(memberBuilder.and(memberBuilder.equal(r.get("name"), name)));
+                memberQuery.select(res).where(memberBuilder.and(memberBuilder.equal(r.get("name"), entity.getName())));
 
                 List<DeviceMemberEntity> deviceMemberResult = IsmDeviceApi.this.em.createQuery(memberQuery)
                         .getResultList();
                 if (!deviceMemberResult.isEmpty()) {
-                    throw new Exception("Device Member Entity name already exists...:");
-                    //TODO - to add RETURN 404 error:Sudhir
+                    String msg = String.format("Device Member Entity already exists " + "name: %s\n", entity.getName());
+                    LOG.error(msg);
+                    throw new IllegalArgumentException(msg);
                 }
-                DeviceMemberEntity entity = new DeviceMemberEntity();
-                entity.setParent(result.get(0));
-                entity.setName(name);
+                entity.setParent(devices.get(0));
                 IsmDeviceApi.this.em.persist(entity);
                 return entity;
             }
@@ -222,6 +253,16 @@ public class IsmDeviceApi implements ManagerDeviceApi {
     @Override
     public String updateDeviceMember(ManagerDeviceMemberElement deviceElement, String name, String vserverIpAddress,
             String contactIpAddress, String ipAddress, String gateway, String prefixLength) throws Exception {
+
+        DeviceMemberEntity deviceMember = new DeviceMemberEntity();
+        deviceMember.setId(Long.parseLong(deviceElement.getId()));
+        deviceMember.setName(name);
+        return updateDeviceMember(deviceMember);
+        // TODO - Sudhir Add other information like gateway, ipAddress
+    }
+
+    public String updateDeviceMember(DeviceMemberEntity deviceElement) throws Exception {
+
         return this.txControl.required(new Callable<DeviceMemberEntity>() {
 
             @Override
@@ -235,10 +276,12 @@ public class IsmDeviceApi implements ManagerDeviceApi {
 
                 List<DeviceMemberEntity> result = IsmDeviceApi.this.em.createQuery(query).getResultList();
                 if (result.isEmpty()) {
-                    throw new Exception("The Device Member Entity does not exists...");
-                    //TODO - to add RETURN 404 error:Sudhir
+                    String msg = String.format("Cannot find the Device Member Entity " + "Id: %s\n",
+                            deviceElement.getId());
+                    LOG.error(msg);
+                    throw new IllegalArgumentException(msg);
                 }
-                result.get(0).setName(name);
+                result.get(0).setName(deviceElement.getName());
                 IsmDeviceApi.this.em.persist(result.get(0));
                 return result.get(0);
             }
@@ -256,6 +299,8 @@ public class IsmDeviceApi implements ManagerDeviceApi {
                 DeviceMemberEntity memberResult = IsmDeviceApi.this.em.find(DeviceMemberEntity.class,
                         Long.parseLong(id));
                 if (memberResult == null) {
+                    LOG.info("Attempt to delete device member id:...." + Long.parseLong(id));
+                    LOG.info("..device member not found, no-op.");
                     return null;
                 }
                 IsmDeviceApi.this.em.remove(memberResult);
@@ -301,6 +346,11 @@ public class IsmDeviceApi implements ManagerDeviceApi {
     @Override
     public List<? extends ManagerDeviceMemberElement> listDeviceMembers() throws Exception {
 
+        return listDeviceMembers(null);
+    }
+
+    public List<? extends ManagerDeviceMemberElement> listDeviceMembers(Long parentId) throws Exception {
+
         return this.txControl.supports(new Callable<List<DeviceMemberEntity>>() {
 
             @Override
@@ -309,8 +359,13 @@ public class IsmDeviceApi implements ManagerDeviceApi {
                 CriteriaBuilder criteriaBuilder = IsmDeviceApi.this.em.getCriteriaBuilder();
                 CriteriaQuery<DeviceMemberEntity> query = criteriaBuilder.createQuery(DeviceMemberEntity.class);
                 Root<DeviceMemberEntity> r = query.from(DeviceMemberEntity.class);
-                query.select(r).where(criteriaBuilder
-                        .and(criteriaBuilder.equal(r.get("parent").get("vsId"), IsmDeviceApi.this.vs.getId())));
+                if (parentId != null) {
+                    query.select(r)
+                            .where(criteriaBuilder.and(criteriaBuilder.equal(r.get("parent").get("id"), parentId)));
+                } else {
+                    query.select(r).where(criteriaBuilder
+                            .and(criteriaBuilder.equal(r.get("parent").get("vsId"), IsmDeviceApi.this.vs.getId())));
+                }
                 return IsmDeviceApi.this.em.createQuery(query).getResultList();
             }
         });

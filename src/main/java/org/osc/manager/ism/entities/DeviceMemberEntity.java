@@ -29,7 +29,7 @@ import javax.persistence.Table;
 import org.osc.sdk.manager.element.ManagerDeviceMemberElement;
 
 @Entity
-@Table(name = "MEMBERDEVICE")
+@Table(name = "DEVICE_MEMBER")
 public class DeviceMemberEntity implements ManagerDeviceMemberElement {
 
     @Id
