@@ -16,18 +16,16 @@
  *******************************************************************************/
 package org.osc.manager.ism.model;
 
-import java.util.Set;
-
 import org.osc.sdk.manager.element.ManagerSecurityGroupInterfaceElement;
 
 public class SecurityGroupInterface extends BaseIdNameObject implements ManagerSecurityGroupInterfaceElement {
 
-    private Set<String> policyIds;
+    private String policyId;
     private String tag;
 
     public SecurityGroupInterface(Long id, String name, String policyId, String tag) {
         super(id, name);
-        this.policyIds.add(policyId);
+        this.policyId = policyId;
         this.tag = tag;
     }
 
@@ -37,18 +35,13 @@ public class SecurityGroupInterface extends BaseIdNameObject implements ManagerS
     }
 
     @Override
-    public String getTag() {
-        return this.tag;
+    public String getPolicyId() {
+        return policyId;
     }
 
-	@Override
-	public String getManagerSecurityGroupId() {
-		return null;
-	}
-
-	@Override
-	public Set<String> getManagerPolicyIds() {
-		return this.policyIds;
-	}
+    @Override
+    public String getTag() {
+        return tag;
+    }
 
 }

@@ -16,9 +16,9 @@ alter table SecurityGroup add constraint if not exists FK_SECURITY_GROUP_VSS_DEV
 
 alter table POLICY add constraint if not exists FK_PO_DOMAIN foreign key (domain_fk) references DOMAIN;
 
-alter table DOMAIN add constraint if not exists DOMAIN_NAME UNIQUE (name);
+alter table DOMAIN add constraint DOMAIN_NAME UNIQUE (name);
 
-alter table POLICY add constraint if not exists POLICY_NAME UNIQUE (name);
+alter table POLICY add constraint POLICY_NAME UNIQUE (name);
 
 alter table MEMBERDEVICE add constraint if not exists FK_DEVICE foreign key (device_fk) references DEVICE;
 
