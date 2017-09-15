@@ -58,8 +58,7 @@ property={
         NOTIFICATION_TYPE + "=NONE",
         SYNC_SECURITY_GROUP + ":Boolean=false",
         PROVIDE_DEVICE_STATUS + ":Boolean=true",
-        SYNC_POLICY_MAPPING + ":Boolean=false",
-        SUPPORT_MULTIPLE_POLICIES + ":Boolean=false"})
+        SYNC_POLICY_MAPPING + ":Boolean=false"})
 
 public class IsmApplianceManagerApi implements ApplianceManagerApi {
 
