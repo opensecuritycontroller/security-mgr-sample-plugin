@@ -30,7 +30,6 @@ import org.apache.log4j.Logger;
 import org.osc.manager.ism.entities.SecurityGroupInterface;
 import org.osc.sdk.manager.api.ManagerSecurityGroupInterfaceApi;
 import org.osc.sdk.manager.element.ManagerSecurityGroupInterfaceElement;
-import org.osc.sdk.manager.element.SecurityGroupInterfaceElement;
 import org.osc.sdk.manager.element.VirtualSystemElement;
 import org.osgi.service.transaction.control.TransactionControl;
 
@@ -49,52 +48,42 @@ public class IsmSecurityGroupInterfaceApi implements ManagerSecurityGroupInterfa
         this.em = em;
     }
 
-	@Override
-	public String createSecurityGroupInterface(SecurityGroupInterfaceElement sgiElement) throws Exception {
-		String existingSGIId = findSecurityGroupInterfaceByName(sgiElement.getName());
-		if (existingSGIId != null) {
-			return existingSGIId;
-		}
+    @Override
+    public String createSecurityGroupInterface(String name, String policyId, String tag) throws Exception {
+        String existingSGIId = findSecurityGroupInterfaceByName(name);
+        if (existingSGIId != null) {
+            return existingSGIId;
+        }
 
-		return this.txControl.supports(new Callable<String>() {
-			private String policyId;
+        return this.txControl.supports(new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                SecurityGroupInterface newSGI = new SecurityGroupInterface(name, policyId, tag);
+                IsmSecurityGroupInterfaceApi.this.em.persist(newSGI);
+                if (newSGI.getId() == null) {
+                    String message = String.format("The identifier of the created security group interface with name %s should not be null.", name);
+                    LOGGER.error(message);
+                    throw new IllegalStateException(message);
+                }
 
-			@Override
-			public String call() throws Exception {
-				if (sgiElement.getManagerPolicyIds() != null && !sgiElement.getManagerPolicyIds().isEmpty()) {
-					this.policyId = sgiElement.getManagerPolicyIds().iterator().next();
-				}
-				SecurityGroupInterface newSGI = new SecurityGroupInterface(sgiElement.getName(),
-						this.policyId, sgiElement.getTag());
-				IsmSecurityGroupInterfaceApi.this.em.persist(newSGI);
-				if (newSGI.getId() == null) {
-					String message = String.format(
-							"The identifier of the created security group interface with name %s should not be null.",
-							sgiElement.getName());
-					LOGGER.error(message);
-					throw new IllegalStateException(message);
-				}
-
-				return newSGI.getId().toString();
-			}
-		});
-	}
+                return newSGI.getId().toString();
+            }
+        });
+    }
 
     @Override
-    public void updateSecurityGroupInterface(SecurityGroupInterfaceElement sgiElement) throws Exception {
-        SecurityGroupInterface existingSgi = getSecurityGroupInterface(sgiElement.getSecurityGroupInterfaceId());
+    public void updateSecurityGroupInterface(String id, String name, String policyId, String tag) throws Exception {
+        SecurityGroupInterface existingSgi = getSecurityGroupInterface(id);
 
         if (existingSgi == null) {
-            String message = String.format(SGI_NOT_FOUND_MESSAGE, sgiElement.getSecurityGroupInterfaceId());
+            String message = String.format(SGI_NOT_FOUND_MESSAGE, id);
             LOGGER.error(message);
             throw new EntityNotFoundException(message);
         }
 
-        existingSgi.setName(sgiElement.getName());
-		if (sgiElement.getManagerPolicyIds() != null && !sgiElement.getManagerPolicyIds().isEmpty()) {
-			existingSgi.setPolicyId(sgiElement.getManagerPolicyIds().iterator().next());
-		}
-        existingSgi.setTag(sgiElement.getTag());
+        existingSgi.setName(name);
+        existingSgi.setPolicyId(policyId);
+        existingSgi.setTag(tag);
 
         this.txControl.supports(new Callable<Void>() {
             @Override
