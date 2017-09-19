@@ -72,8 +72,8 @@ public class DeviceApis {
     @POST
     public String createDevice(DeviceEntity entity) throws Exception {
 
-        LOG.info("Creating Device Entity with Name:...." + entity.getName());
-        LOG.info("and with VS ID:...." + entity.getVsId());
+        LOG.info(String.format("Creating device entity for (name %s ; VSid %s)", "" + entity.getName(),
+                "" + entity.getVsId()));
         return this.api.createDevice(entity);
     }
 
@@ -87,7 +87,7 @@ public class DeviceApis {
     @PUT
     public DeviceEntity updateDevice(@PathParam("deviceId") Long deviceId, DeviceEntity entity) throws Exception {
 
-        LOG.info("Updating Device Entity ID...:" + deviceId);
+        LOG.info(String.format("Updating the device for id %s ", "" + Long.toString(deviceId)));
         entity.setId(deviceId);
         this.api.updateVSSDevice(entity);
         return entity;
@@ -103,7 +103,7 @@ public class DeviceApis {
     @DELETE
     public void deleteDevice(@PathParam("deviceId") Long deviceId) throws Exception {
 
-        LOG.info("Deleting Device Entity ID...:" + deviceId);
+        LOG.info(String.format("Deleting the device for id %s ", "" + Long.toString(deviceId)));
         this.txControl.required(new Callable<Void>() {
 
             @Override
@@ -111,11 +111,10 @@ public class DeviceApis {
 
                 DeviceEntity result = DeviceApis.this.em.find(DeviceEntity.class, deviceId);
                 if (result == null) {
-                    LOG.info("Attempt to delete device id:...." + deviceId);
-                    LOG.info("..Device not found, no-op.");
+                    LOG.info(String.format("Attempt to delete device for id %s and device not found, no-op.",
+                            "" + Long.toString(deviceId)));
                     return null;
                 }
-
                 DeviceApis.this.em.remove(result);
                 return null;
             }
@@ -131,7 +130,7 @@ public class DeviceApis {
     @GET
     public List<String> getDeviceIds() throws Exception {
 
-        LOG.info("Listing Device Ids'");
+        LOG.info("Listing device ids'");
 
         List<? extends ManagerDeviceElement> devices = this.api.listDevices();
         List<String> deviceList = new ArrayList<String>();
@@ -152,7 +151,7 @@ public class DeviceApis {
     @GET
     public DeviceEntity getDevice(@PathParam("deviceId") Long deviceId) throws Exception {
 
-        LOG.info("getting Device for ID...:" + deviceId);
+        LOG.info(String.format("Getting the device for id %s ", "" + Long.toString(deviceId)));
         return (DeviceEntity) this.api.getDeviceById(Long.toString(deviceId));
     }
 
@@ -166,11 +165,8 @@ public class DeviceApis {
     @POST
     public String createDeviceMember(@PathParam("deviceId") Long deviceId, DeviceMemberEntity entity) throws Exception {
 
-        LOG.info("Creating Device Members...:" + entity.getName());
-        DeviceEntity device = new DeviceEntity();
-        entity.setParent(device);
-        device.setId(deviceId);
-        return this.api.createDeviceMember(entity);
+        LOG.info(String.format("Creating the device with name %s ", "" + entity.getName()));
+        return this.api.createDeviceMember(entity, deviceId, null);
     }
 
     /**
@@ -184,46 +180,28 @@ public class DeviceApis {
     public DeviceMemberEntity updateDeviceMember(@PathParam("deviceId") Long deviceId,
             @PathParam("memberId") Long memberId, DeviceMemberEntity entity) throws Exception {
 
-        LOG.info("Updating for Device Member with Device Member Id...:" + memberId);
-        LOG.info("and Device Id...:" + deviceId);
+        LOG.info(String.format("Updating the device member with (memberid %s ; deviceid %s)",
+                "" + Long.toString(memberId), "" + Long.toString(deviceId)));
         entity.setId(memberId);
-        this.api.updateDeviceMember(entity);
+        this.api.updateDeviceMember(entity, deviceId, null);
         return entity;
     }
 
     /**
      * Deletes the Device Member for a given device Id and the member Id
      *
+     * @throws Exception
+     *
      *
      */
     @Path("/{deviceId}/members/{memberId}")
     @DELETE
     public void deleteDeviceMember(@PathParam("deviceId") Long deviceId, @PathParam("memberId") Long memberId,
-            DeviceMemberEntity entity) {
+            DeviceMemberEntity entity) throws Exception {
 
-        LOG.info("Deleting the Device Member with device member Id...:" + memberId);
-
-        this.txControl.required(new Callable<Void>() {
-
-            @Override
-            public Void call() throws Exception {
-
-                DeviceEntity result = DeviceApis.this.em.find(DeviceEntity.class, deviceId);
-                if (result == null) {
-                    LOG.info("Attempt to delete device member, device id:...." + deviceId);
-                    LOG.info("..device not found, no-op.");
-                    return null;
-                }
-                DeviceMemberEntity memberResult = DeviceApis.this.em.find(DeviceMemberEntity.class, memberId);
-                if (memberResult == null) {
-                    LOG.info("Attempt to delete device member id:...." + memberId);
-                    LOG.info("..device member not found, no-op.");
-                    return null;
-                }
-                DeviceApis.this.em.remove(memberResult);
-                return null;
-            }
-        });
+        LOG.info(String.format("Deleting the device member with (memberid %s ; deviceid %s)",
+                "" + Long.toString(memberId), "" + Long.toString(deviceId)));
+        this.api.deleteDeviceMember(deviceId, null, memberId);
     }
 
     /**
@@ -237,10 +215,10 @@ public class DeviceApis {
     @GET
     public List<String> getDeviceMembersIds(@PathParam("deviceId") Long deviceId) throws Exception {
 
-        LOG.info("Listing Device Members Ids'for device Id ...:" + deviceId);
+        LOG.info(String.format("Getting the device members ids for deviceid %s ", "" + Long.toString(deviceId)));
         List<DeviceMemberEntity> deviceMembers = new ArrayList<DeviceMemberEntity>();
         List<String> members = new ArrayList<String>();
-        deviceMembers = (List<DeviceMemberEntity>) this.api.listDeviceMembers(deviceId);
+        deviceMembers = (List<DeviceMemberEntity>) this.api.listDeviceMembers(deviceId, null);
         if (!deviceMembers.isEmpty()) {
             members = deviceMembers.stream().map(DeviceMemberEntity::getId).collect(Collectors.toList());
         }
@@ -258,7 +236,8 @@ public class DeviceApis {
     public DeviceMemberEntity getDeviceMember(@PathParam("deviceId") Long deviceId,
             @PathParam("memberId") Long memberId) throws Exception {
 
-        LOG.info("getting Device Member for Member ID..:" + memberId);
-        return (DeviceMemberEntity) this.api.getDeviceMemberById(Long.toString(memberId));
+        LOG.info(String.format("getting the device member with (memberid %s ; deviceid %s)",
+                "" + Long.toString(memberId), "" + Long.toString(deviceId)));
+        return this.api.getDeviceMemberById(deviceId, null, memberId);
     }
 }
