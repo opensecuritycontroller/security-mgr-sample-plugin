@@ -32,17 +32,13 @@ import org.osc.sdk.manager.element.ManagerDeviceElement;
 @Entity
 @Table(name = "DEVICE")
 public class DeviceEntity implements ManagerDeviceElement {
-
     @Id
     @GeneratedValue
     private Long id;
-
     @Column(name = "name", unique = true, nullable = false)
     private String name;
-
     @Column(name = "vsId")
     private Long vsId;
-
     @OneToMany(mappedBy = "parent", fetch = FetchType.EAGER)
     private List<DeviceMemberEntity> deviceMembers = new ArrayList<DeviceMemberEntity>();
 

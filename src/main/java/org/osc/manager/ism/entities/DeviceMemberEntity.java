@@ -35,10 +35,8 @@ public class DeviceMemberEntity implements ManagerDeviceMemberElement {
     @Id
     @GeneratedValue
     private Long id;
-
     @Column(name = "name", unique = true, nullable = false)
     private String name;
-
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "device_fk", nullable = false, foreignKey = @ForeignKey(name = "FK_DEVICE"))
     private DeviceEntity parent;
