@@ -38,6 +38,7 @@ import org.osc.sdk.manager.api.ManagerDeviceApi;
 import org.osc.sdk.manager.element.ApplianceSoftwareVersionElement;
 import org.osc.sdk.manager.element.DistributedApplianceElement;
 import org.osc.sdk.manager.element.DomainElement;
+import org.osc.sdk.manager.element.ManagerDeviceMemberElement;
 import org.osc.sdk.manager.element.VirtualSystemElement;
 import org.osc.sdk.manager.element.VirtualizationConnectorElement;
 
@@ -140,10 +141,10 @@ public class OSGiIntegrationTest {
                 mavenBundle("com.fasterxml.jackson.jaxrs", "jackson-jaxrs-json-provider").versionAsInProject(),
                 mavenBundle("com.fasterxml.jackson.core", "jackson-core").versionAsInProject(),
                 mavenBundle("com.fasterxml.jackson.core", "jackson-databind").versionAsInProject(),
-                mavenBundle("com.fasterxml.jackson.jaxrs", "jackson-jaxrs-base").versionAsInProject(),                
+                mavenBundle("com.fasterxml.jackson.jaxrs", "jackson-jaxrs-base").versionAsInProject(),
                 mavenBundle("com.fasterxml.jackson.core", "jackson-annotations").versionAsInProject(),
-                
-                
+
+
                 // Hibernate
                 systemPackage("javax.xml.stream;version=1.0"),
                 systemPackage("javax.xml.stream.events;version=1.0"),
@@ -181,16 +182,22 @@ public class OSGiIntegrationTest {
 
         ManagerDeviceApi managerDeviceApi = this.api.createManagerDeviceApi(null, vse);
 
-        assertEquals("1", managerDeviceApi.createVSSDevice());
+        assertNotNull(managerDeviceApi.createVSSDevice());
+
+        assertEquals(1, managerDeviceApi.listDevices().size());
 
         assertNotNull(managerDeviceApi.createDeviceMember(DEVICE_MEMBER_TEST, null, null, null, null, null));
+
     }
+
 
     @After
     public void stop() throws Exception {
-        VirtualSystemElement vse = new VSElement(1L, VSS_TEST);
 
+        VirtualSystemElement vse = new VSElement(1L, VSS_TEST);
         ManagerDeviceApi managerDeviceApi = this.api.createManagerDeviceApi(null, vse);
+        ManagerDeviceMemberElement member = managerDeviceApi.findDeviceMemberByName(DEVICE_MEMBER_TEST);
+        managerDeviceApi.deleteDeviceMember(member.getId());
         managerDeviceApi.deleteVSSDevice();
         assertEquals(Collections.emptyList(), managerDeviceApi.listDevices());
     }
@@ -204,7 +211,7 @@ public class OSGiIntegrationTest {
 
         assertEquals(1, managerDeviceApi.listDevices().size());
 
-        assertEquals("1", managerDeviceApi.findDeviceByName(VSS_TEST));
+        assertNotNull(managerDeviceApi.findDeviceByName(VSS_TEST));
         assertEquals(0, managerDeviceApi.listDeviceMembers().size());
 
         vs = new VSElement(1L, VSS_TEST);
