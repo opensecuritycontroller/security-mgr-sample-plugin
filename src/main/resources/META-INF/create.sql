@@ -25,4 +25,3 @@ alter table DEVICE_MEMBER add constraint if not exists FK_DEVICE foreign key (de
 alter table DEVICE add constraint DEVICE_NAME UNIQUE (name);
 
 alter table DEVICE_MEMBER add constraint DEVICEMEMBER_NAME UNIQUE (name);
-
