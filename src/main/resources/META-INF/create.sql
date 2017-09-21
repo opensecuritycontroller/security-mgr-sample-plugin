@@ -10,7 +10,7 @@ create table if not exists POLICY ( id bigint not null, name varchar(255), domai
 
 create table if not exists DEVICE ( id bigint not null, name varchar(255), vsId bigint not null,primary key (id) );
 
-create table if not exists DEVICE_MEMBER (id bigint not null, name varchar(255), device_fk bigint, primary key (id) );
+create table if not exists DEVICE_MEMBER (id bigint not null, name varchar(255), device_fk bigint, version varchar(255), rx bigint, txSva bigint, dropSva bigint, applianceIp varchar(255), applianceName varchar(255), managerIp varchar(255), brokerIp varchar(255), applianceGateway varchar(255), applianceSubnetMask varchar(255), publicIp varchar(255), primary key (id) );
  
 alter table SecurityGroup add constraint if not exists FK_SECURITY_GROUP_VSS_DEVICE foreign key (parent_id) references VSSDevice;
 
@@ -22,6 +22,6 @@ alter table POLICY add constraint if not exists POLICY_NAME UNIQUE (name);
 
 alter table DEVICE_MEMBER add constraint if not exists FK_DEVICE foreign key (device_fk) references DEVICE;
 
-alter table DEVICE add constraint DEVICE_NAME UNIQUE (name);
+alter table DEVICE add constraint if not exists DEVICE_NAME UNIQUE (name);
 
-alter table DEVICE_MEMBER add constraint DEVICEMEMBER_NAME UNIQUE (name);
+alter table DEVICE_MEMBER add constraint if not exists DEVICEMEMBER_NAME UNIQUE (name);
