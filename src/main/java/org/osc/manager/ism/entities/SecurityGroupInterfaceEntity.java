@@ -46,7 +46,7 @@ public class SecurityGroupInterfaceEntity implements ManagerSecurityGroupInterfa
 	@Column(name = "name", unique = true, nullable = false)
     private String name;
 
-	@ManyToMany(fetch = FetchType.LAZY)
+	@ManyToMany(fetch = FetchType.EAGER)
 	@JoinTable(name = "SECURITY_GROUP_INTERFACE_POLICY",
 			joinColumns = @JoinColumn(name = "sgi_fk", referencedColumnName = "id"),
 			inverseJoinColumns = @JoinColumn(name = "policy_fk", referencedColumnName = "id"))
