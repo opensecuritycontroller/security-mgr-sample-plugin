@@ -16,6 +16,9 @@
  *******************************************************************************/
 package org.osc.manager.ism.entities;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -23,6 +26,7 @@ import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
@@ -41,6 +45,9 @@ public class PolicyEntity implements ManagerPolicyElement {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "domain_fk", nullable = false, foreignKey = @ForeignKey(name = "FK_PO_DOMAIN"))
     private DomainEntity domain;
+
+	@ManyToMany(fetch = FetchType.EAGER, mappedBy = "policies")
+	private Set<SecurityGroupInterfaceEntity> securityGroupInterfaces = new HashSet<>();
 
     @Override
     public String getId() {
@@ -70,4 +77,18 @@ public class PolicyEntity implements ManagerPolicyElement {
     public void setDomain(DomainEntity domain) {
         this.domain = domain;
     }
+
+	public Set<SecurityGroupInterfaceEntity> getSecurityGroupInterfaces() {
+		return this.securityGroupInterfaces;
+	}
+
+	public void setSecurityGroupInterfaces(Set<SecurityGroupInterfaceEntity> securityGroupInterfaces) {
+		this.securityGroupInterfaces = securityGroupInterfaces;
+	}
+
+	@Override
+	public String getDomainId() {
+		return this.domain.getId();
+	}
+
 }
