@@ -132,8 +132,8 @@ public class DeviceApis {
 
     @Path("/{deviceId}/members/{memberId}")
     @DELETE
-    public void deleteDeviceMember(@PathParam("deviceId") Long deviceId, @PathParam("memberId") Long memberId,
-            DeviceMemberEntity entity) throws Exception {
+    public void deleteDeviceMember(@PathParam("deviceId") Long deviceId, @PathParam("memberId") Long memberId)
+            throws Exception {
         LOG.info(String.format("Deleting the device member with (memberid %s ; deviceid %s)",
                 "" + Long.toString(memberId), "" + Long.toString(deviceId)));
         this.api.deleteDeviceMember(deviceId, null, memberId);

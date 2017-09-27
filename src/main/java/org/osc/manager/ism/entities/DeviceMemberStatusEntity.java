@@ -32,10 +32,29 @@ public class DeviceMemberStatusEntity implements ManagerDeviceMemberStatusElemen
     private String brokerIp;
     private String applianceGateway;
     private String applianceSubnetMask;
-    private Boolean isDiscovered;
-    private Boolean isInspectionReady;
+    private Boolean discovered;
+    private Boolean inspectionReady;
     private String publicIp;
     private DistributedApplianceInstanceElement distributedApplianceInstanceElement;
+
+    public DeviceMemberStatusEntity() {
+    }
+
+    public DeviceMemberStatusEntity(DeviceMemberEntity element, DistributedApplianceInstanceElement dai) {
+        this.applianceGateway = element.getApplianceGateway();
+        this.applianceIp = element.getApplianceIp();
+        this.applianceSubnetMask = element.getApplianceSubnetMask();
+        this.brokerIp = element.getBrokerIp();
+        this.managerIp = element.getManagerIp();
+        this.publicIp = element.getPublicIp();
+        this.rx = element.getRx();
+        this.txSva = element.getTxSva();
+        this.dropSva = element.getDropSva();
+        this.version = element.getVersion();
+        this.discovered = element.isDiscovered();
+        this.inspectionReady = element.isInspectionReady();
+        this.distributedApplianceInstanceElement = dai;
+    }
 
     @Override
     public String getVersion() {
@@ -134,20 +153,20 @@ public class DeviceMemberStatusEntity implements ManagerDeviceMemberStatusElemen
 
     @Override
     public Boolean isDiscovered() {
-        return this.isDiscovered;
+        return this.discovered;
     }
 
     @Override
     public Boolean isInspectionReady() {
-        return this.isInspectionReady;
+        return this.inspectionReady;
     }
 
-    public void setDiscovered(Boolean isDiscovered) {
-        this.isDiscovered = isDiscovered;
+    public void setDiscovered(Boolean discovered) {
+        this.discovered = discovered;
     }
 
-    public void setInspectionReady(Boolean isInspectionReady) {
-        this.isInspectionReady = isInspectionReady;
+    public void setInspectionReady(Boolean inspectionReady) {
+        this.inspectionReady = inspectionReady;
     }
 
     @Override

@@ -39,7 +39,7 @@ public class DeviceEntity implements ManagerDeviceElement {
     private String name;
     @Column(name = "vsId")
     private Long vsId;
-    @OneToMany(mappedBy = "parent", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "deviceId", fetch = FetchType.EAGER)
     private List<DeviceMemberEntity> deviceMembers = new ArrayList<DeviceMemberEntity>();
 
     @Override

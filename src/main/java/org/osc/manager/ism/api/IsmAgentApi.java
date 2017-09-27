@@ -31,13 +31,12 @@ import org.osc.sdk.manager.element.ManagerDeviceMemberStatusElement;
 import org.osc.sdk.manager.element.VirtualSystemElement;
 import org.osgi.service.transaction.control.TransactionControl;
 
-@SuppressWarnings("unused")
 public final class IsmAgentApi implements ManagerDeviceMemberApi {
-    private static final Logger LOG = Logger.getLogger(IsmAgentApi.class);
+    private static Logger LOG = Logger.getLogger(IsmAgentApi.class);
     private IsmDeviceApi api;
-    private final TransactionControl txControl;
-    private final EntityManager em;
-    private final VirtualSystemElement vs;
+    private TransactionControl txControl;
+    private EntityManager em;
+    private VirtualSystemElement vs;
 
     public IsmAgentApi(ApplianceManagerConnectorElement mc, VirtualSystemElement vs, TransactionControl txControl,
             EntityManager em) throws Exception {
@@ -55,33 +54,28 @@ public final class IsmAgentApi implements ManagerDeviceMemberApi {
     @Override
     public List<ManagerDeviceMemberStatusElement> getFullStatus(List<DistributedApplianceInstanceElement> list) {
         List<ManagerDeviceMemberStatusElement> response = new ArrayList<>();
-        if (list != null) {
-            for (DistributedApplianceInstanceElement dai : list) {
-                DeviceMemberEntity member = null;
-                try {
-                    member = (DeviceMemberEntity) this.api.findDeviceMemberByName(dai.getName());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                if (member != null) {
-                    DeviceMemberStatusEntity memberStatus = new DeviceMemberStatusEntity();
-                    memberStatus.setDistributedApplianceInstanceElement(dai);
-                    memberStatus.setApplianceGateway(member.getApplianceGateway());
-                    memberStatus.setApplianceIp(member.getApplianceIp());
-                    memberStatus.setApplianceSubnetMask(member.getApplianceSubnetMask());
-                    memberStatus.setBrokerIp(member.getBrokerIp());
-                    memberStatus.setManagerIp(member.getManagerIp());
-                    memberStatus.setPublicIp(member.getPublicIp());
-                    memberStatus.setRx(member.getRx());
-                    memberStatus.setTxSva(member.getTxSva());
-                    memberStatus.setDropSva(member.getDropSva());
-                    memberStatus.setVersion(member.getVersion());
-                    memberStatus.setDiscovered(Boolean.TRUE);
-                    memberStatus.setInspectionReady(Boolean.TRUE);
-                    response.add(memberStatus);
-                }
+        if (list == null) {
+            String msg = String.format("Dai is null");
+            LOG.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        for (DistributedApplianceInstanceElement dai : list) {
+            DeviceMemberEntity member = null;
+
+            try {
+                member = (DeviceMemberEntity) this.api.findDeviceMemberByName(dai.getName());
+            } catch (Exception e) {
+                LOG.error(String.format("Finding device member name %s", dai.getName()), e);
+                return null;
+            }
+
+            if (member != null) {
+                DeviceMemberStatusEntity memberStatus = new DeviceMemberStatusEntity(member, dai);
+                response.add(memberStatus);
             }
         }
+
         return response;
     }
 

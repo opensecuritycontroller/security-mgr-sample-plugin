@@ -27,7 +27,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
 import org.osc.sdk.manager.element.ManagerDeviceMemberElement;
 
@@ -57,17 +56,31 @@ public class DeviceMemberEntity implements ManagerDeviceMemberElement {
     private String applianceGateway;
     @Column(name = "applianceSubnetMask")
     private String applianceSubnetMask;
-    @Transient
-    @Column(name = "isDiscovered")
-    private Boolean isDiscovered;
-    @Transient
-    @Column(name = "isInspectionReady")
-    private Boolean isInspectionReady;
+    @Column(name = "discovered")
+    private Boolean discovered;
+    @Column(name = "inspectionReady")
+    private Boolean inspectionReady;
     @Column(name = "publicIp")
     private String publicIp;
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "device_fk", nullable = false, foreignKey = @ForeignKey(name = "FK_DEVICE"))
-    private DeviceEntity parent;
+    private DeviceEntity deviceId;
+
+    public void updateDeviceMember(DeviceMemberEntity element) {
+        this.name = element.name;
+        this.applianceGateway = element.applianceGateway;
+        this.applianceIp = element.applianceIp;
+        this.applianceSubnetMask = element.applianceSubnetMask;
+        this.brokerIp = element.brokerIp;
+        this.managerIp = element.managerIp;
+        this.publicIp = element.publicIp;
+        this.rx = element.rx;
+        this.txSva = element.txSva;
+        this.dropSva = element.dropSva;
+        this.version = element.version;
+        this.discovered = element.discovered;
+        this.inspectionReady = element.inspectionReady;
+    }
 
     @Override
     public String getId() {
@@ -90,12 +103,12 @@ public class DeviceMemberEntity implements ManagerDeviceMemberElement {
         this.name = name;
     }
 
-    public DeviceEntity getParent() {
-        return this.parent;
+    public DeviceEntity getDeviceId() {
+        return this.deviceId;
     }
 
-    public void setParent(DeviceEntity parent) {
-        this.parent = parent;
+    public void setDeviceId(DeviceEntity deviceId) {
+        this.deviceId = deviceId;
     }
 
     public String getVersion() {
@@ -175,19 +188,19 @@ public class DeviceMemberEntity implements ManagerDeviceMemberElement {
     }
 
     public Boolean isDiscovered() {
-        return this.isDiscovered;
+        return this.discovered;
     }
 
     public Boolean isInspectionReady() {
-        return this.isInspectionReady;
+        return this.inspectionReady;
     }
 
-    public void setDiscovered(Boolean isDiscovered) {
-        this.isDiscovered = isDiscovered;
+    public void setDiscovered(Boolean discovered) {
+        this.discovered = discovered;
     }
 
-    public void setInspectionReady(Boolean isInspectionReady) {
-        this.isInspectionReady = isInspectionReady;
+    public void setInspectionReady(Boolean inspectionReady) {
+        this.inspectionReady = inspectionReady;
     }
 
     public String getPublicIp() {
