@@ -52,15 +52,13 @@ public final class IsmAgentApi implements ManagerDeviceMemberApi {
     }
 
     @Override
-    public List<ManagerDeviceMemberStatusElement> getFullStatus(List<DistributedApplianceInstanceElement> list) {
+    public List<ManagerDeviceMemberStatusElement> getFullStatus(List<DistributedApplianceInstanceElement> daiList) {
         List<ManagerDeviceMemberStatusElement> response = new ArrayList<>();
-        if (list == null) {
-            String msg = String.format("Dai is null");
-            LOG.error(msg);
-            throw new IllegalArgumentException(msg);
+        if (daiList == null) {
+            throw new IllegalArgumentException("The provided DAIs should not be null");
         }
 
-        for (DistributedApplianceInstanceElement dai : list) {
+        for (DistributedApplianceInstanceElement dai : daiList) {
             DeviceMemberEntity member = null;
 
             try {
