@@ -196,6 +196,8 @@ public class OSGiIntegrationTest {
 
         vs.setMgrId(Long.parseLong(deviceId));
 
+        managerDeviceApi = this.api.createManagerDeviceApi(null, vs);
+
         assertEquals(1, managerDeviceApi.listDevices().size());
 
         assertNotNull(managerDeviceApi.createDeviceMember(DEVICE_MEMBER_TEST, null, null, null, null, null));
@@ -212,11 +214,11 @@ public class OSGiIntegrationTest {
 
     @After
     public void stop() throws Exception {
-        //TODO - Tests needs to be added - Sudhir
+        // TODO: SUDHIR -Tests needs to be added
     }
 
     @Test
     public void testRegistered() throws Exception {
-        //TODO - Tests needs to be added - Sudhir
+        // TODO: SUDHIR -Tests needs to be added
     }
 }

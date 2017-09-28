@@ -67,7 +67,7 @@ public class DeviceMemberEntity implements ManagerDeviceMemberElement, ManagerDe
     private String publicIp;
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "device_fk", nullable = false, foreignKey = @ForeignKey(name = "FK_DEVICE"))
-    private DeviceEntity deviceId;
+    private DeviceEntity device;
     @Transient
     private DistributedApplianceInstanceElement dai;
 
@@ -109,12 +109,12 @@ public class DeviceMemberEntity implements ManagerDeviceMemberElement, ManagerDe
         this.name = name;
     }
 
-    public DeviceEntity getDeviceId() {
-        return this.deviceId;
+    public DeviceEntity getDevice() {
+        return this.device;
     }
 
-    public void setDeviceId(DeviceEntity deviceId) {
-        this.deviceId = deviceId;
+    public void setDevice(DeviceEntity device) {
+        this.device = device;
     }
 
     @Override
@@ -240,13 +240,13 @@ public class DeviceMemberEntity implements ManagerDeviceMemberElement, ManagerDe
     }
 
     public void setDistributedApplianceInstanceElement(DistributedApplianceInstanceElement dai) {
-        // TODO - remove DistributedApplianceElement - Sudhir
+        // TODO: SUDHIR -remove DistributedApplianceElement
         this.dai = dai;
     }
 
     @Override
     public DistributedApplianceInstanceElement getDistributedApplianceInstanceElement() {
-        // TODO - remove DistributedApplianceElement - Sudhir
+        // TODO: SUDHIR -remove DistributedApplianceElement
         return this.dai;
     }
 }

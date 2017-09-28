@@ -115,7 +115,7 @@ public class DeviceApis {
     @POST
     public String createDeviceMember(@PathParam("deviceId") Long deviceId, DeviceMemberEntity entity) throws Exception {
         LOG.info(String.format("Creating the device with name %s ", "" + entity.getName()));
-        return this.api.createDeviceMember(entity, deviceId, null);
+        return this.api.createDeviceMember(entity, deviceId);
     }
 
     @Path("/{deviceId}/members/{memberId}")
@@ -125,7 +125,7 @@ public class DeviceApis {
         LOG.info(String.format("Updating the device member with (memberid %s ; deviceid %s)",
                 "" + Long.toString(memberId), "" + Long.toString(deviceId)));
         entity.setId(memberId);
-        this.api.updateDeviceMember(entity, deviceId, null);
+        this.api.updateDeviceMember(entity, deviceId);
         return entity;
     }
 
@@ -135,7 +135,7 @@ public class DeviceApis {
             throws Exception {
         LOG.info(String.format("Deleting the device member with (memberid %s ; deviceid %s)",
                 "" + Long.toString(memberId), "" + Long.toString(deviceId)));
-        this.api.deleteDeviceMember(deviceId, null, memberId);
+        this.api.deleteDeviceMember(deviceId, memberId);
     }
 
     @SuppressWarnings("unchecked")
@@ -145,7 +145,7 @@ public class DeviceApis {
         LOG.info(String.format("Getting the device members ids for deviceid %s ", "" + Long.toString(deviceId)));
         List<DeviceMemberEntity> deviceMembers = new ArrayList<DeviceMemberEntity>();
         List<String> members = new ArrayList<String>();
-        deviceMembers = (List<DeviceMemberEntity>) this.api.listDeviceMembers(deviceId, null);
+        deviceMembers = (List<DeviceMemberEntity>) this.api.listDeviceMembers(deviceId);
         if (!deviceMembers.isEmpty()) {
             members = deviceMembers.stream().map(DeviceMemberEntity::getId).collect(Collectors.toList());
         }
@@ -158,6 +158,6 @@ public class DeviceApis {
             @PathParam("memberId") Long memberId) throws Exception {
         LOG.info(String.format("getting the device member with (memberid %s ; deviceid %s)",
                 "" + Long.toString(memberId), "" + Long.toString(deviceId)));
-        return this.api.getDeviceMemberById(deviceId, null, memberId);
+        return this.api.getDeviceMemberById(deviceId, memberId);
     }
 }
