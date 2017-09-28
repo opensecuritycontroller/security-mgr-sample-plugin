@@ -10,7 +10,7 @@ create table if not exists DOMAIN ( id bigint not null, name varchar(255), prima
 
 create table if not exists POLICY ( id bigint not null, name varchar(255), domain_fk bigint,primary key (id) );
 
-create table if not exists DEVICE ( id bigint not null, name varchar(255), vsId bigint not null,primary key (id) );
+create table if not exists DEVICE ( id bigint not null, name varchar(255), primary key (id) );
 
 create table if not exists DEVICE_MEMBER (id bigint not null, name varchar(255), device_fk bigint, version varchar(255), rx bigint, txSva bigint, dropSva bigint, applianceIp varchar(255), applianceName varchar(255), managerIp varchar(255), brokerIp varchar(255), applianceGateway varchar(255), applianceSubnetMask varchar(255), publicIp varchar(255), discovered boolean, inspectionReady boolean, primary key (id) );
  

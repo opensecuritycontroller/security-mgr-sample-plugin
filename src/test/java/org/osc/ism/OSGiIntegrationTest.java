@@ -46,11 +46,13 @@ import org.osc.sdk.manager.element.VirtualizationConnectorElement;
 @ExamReactorStrategy(PerMethod.class)
 public class OSGiIntegrationTest {
 
-    public static final class VSElement implements VirtualSystemElement {
+    public static class VSElement implements VirtualSystemElement {
 
-        private final Long id;
+        private Long id;
 
-        private final String name;
+        private String name;
+
+        private Long mgrId;
 
         public VSElement(Long id, String name) {
             this.id = id;
@@ -69,7 +71,7 @@ public class OSGiIntegrationTest {
 
         @Override
         public String getMgrId() {
-            return null;
+            return Long.toString(this.mgrId);
         }
 
         @Override
@@ -95,6 +97,10 @@ public class OSGiIntegrationTest {
         @Override
         public ApplianceSoftwareVersionElement getApplianceSoftwareVersion() {
             return null;
+        }
+
+        public void setMgrId(Long mgrId) {
+            this.mgrId = mgrId;
         }
     }
 
@@ -178,46 +184,39 @@ public class OSGiIntegrationTest {
     @Before
     public void start() throws Exception {
 
-        VirtualSystemElement vse = new VSElement(1L, VSS_TEST);
+        VSElement vs = new VSElement(1L, VSS_TEST);
+        VirtualSystemElement vse = vs;
+        String deviceId;
 
         ManagerDeviceApi managerDeviceApi = this.api.createManagerDeviceApi(null, vse);
 
-        assertNotNull(managerDeviceApi.createVSSDevice());
+        deviceId = managerDeviceApi.createVSSDevice();
+
+        assertNotNull(deviceId);
+
+        vs.setMgrId(Long.parseLong(deviceId));
 
         assertEquals(1, managerDeviceApi.listDevices().size());
 
         assertNotNull(managerDeviceApi.createDeviceMember(DEVICE_MEMBER_TEST, null, null, null, null, null));
 
+        ManagerDeviceMemberElement member = managerDeviceApi.findDeviceMemberByName(DEVICE_MEMBER_TEST);
+
+        managerDeviceApi.deleteDeviceMember(member.getId());
+
+        managerDeviceApi.deleteVSSDevice();
+
+        assertEquals(Collections.emptyList(), managerDeviceApi.listDevices());
     }
 
 
     @After
     public void stop() throws Exception {
-
-        VirtualSystemElement vse = new VSElement(1L, VSS_TEST);
-        ManagerDeviceApi managerDeviceApi = this.api.createManagerDeviceApi(null, vse);
-        ManagerDeviceMemberElement member = managerDeviceApi.findDeviceMemberByName(DEVICE_MEMBER_TEST);
-        managerDeviceApi.deleteDeviceMember(member.getId());
-        managerDeviceApi.deleteVSSDevice();
-        assertEquals(Collections.emptyList(), managerDeviceApi.listDevices());
+        //TODO - Tests needs to be added - Sudhir
     }
 
     @Test
     public void testRegistered() throws Exception {
-
-        VirtualSystemElement vs = new VSElement(0L, "abc");
-
-        ManagerDeviceApi managerDeviceApi = this.api.createManagerDeviceApi(null, vs);
-
-        assertEquals(1, managerDeviceApi.listDevices().size());
-
-        assertNotNull(managerDeviceApi.findDeviceByName(VSS_TEST));
-        assertEquals(0, managerDeviceApi.listDeviceMembers().size());
-
-        vs = new VSElement(1L, VSS_TEST);
-        managerDeviceApi = this.api.createManagerDeviceApi(null, vs);
-        assertEquals(1, managerDeviceApi.listDeviceMembers().size());
-
-        assertNotNull(managerDeviceApi.findDeviceMemberByName(DEVICE_MEMBER_TEST));
+        //TODO - Tests needs to be added - Sudhir
     }
 }

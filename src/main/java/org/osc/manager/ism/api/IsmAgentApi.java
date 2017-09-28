@@ -23,7 +23,6 @@ import javax.persistence.EntityManager;
 
 import org.apache.log4j.Logger;
 import org.osc.manager.ism.entities.DeviceMemberEntity;
-import org.osc.manager.ism.entities.DeviceMemberStatusEntity;
 import org.osc.sdk.manager.api.ManagerDeviceMemberApi;
 import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
 import org.osc.sdk.manager.element.DistributedApplianceInstanceElement;
@@ -59,18 +58,21 @@ public final class IsmAgentApi implements ManagerDeviceMemberApi {
         }
 
         for (DistributedApplianceInstanceElement dai : daiList) {
-            DeviceMemberEntity member = null;
+            DeviceMemberEntity member;
 
             try {
                 member = (DeviceMemberEntity) this.api.findDeviceMemberByName(dai.getName());
             } catch (Exception e) {
                 LOG.error(String.format("Finding device member name %s", dai.getName()), e);
-                return null;
+                DeviceMemberEntity memberStatus = new DeviceMemberEntity();
+                memberStatus.setName(dai.getName());
+                response.add(memberStatus);
+                return response;
             }
 
             if (member != null) {
-                DeviceMemberStatusEntity memberStatus = new DeviceMemberStatusEntity(member, dai);
-                response.add(memberStatus);
+                member.setDistributedApplianceInstanceElement(dai);
+                response.add(member);
             }
         }
 

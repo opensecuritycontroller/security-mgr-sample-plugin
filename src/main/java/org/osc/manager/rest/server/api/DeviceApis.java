@@ -59,8 +59,7 @@ public class DeviceApis {
 
     @POST
     public String createDevice(DeviceEntity entity) throws Exception {
-        LOG.info(String.format("Creating device entity for (name %s ; VSid %s)", "" + entity.getName(),
-                "" + entity.getVsId()));
+        LOG.info(String.format("Creating device entity for name %s", "" + entity.getName()));
         return this.api.createDevice(entity);
     }
 

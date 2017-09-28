@@ -27,12 +27,15 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
+import org.osc.sdk.manager.element.DistributedApplianceInstanceElement;
 import org.osc.sdk.manager.element.ManagerDeviceMemberElement;
+import org.osc.sdk.manager.element.ManagerDeviceMemberStatusElement;
 
 @Entity
 @Table(name = "DEVICE_MEMBER")
-public class DeviceMemberEntity implements ManagerDeviceMemberElement {
+public class DeviceMemberEntity implements ManagerDeviceMemberElement, ManagerDeviceMemberStatusElement {
     @Id
     @GeneratedValue
     private Long id;
@@ -65,6 +68,8 @@ public class DeviceMemberEntity implements ManagerDeviceMemberElement {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "device_fk", nullable = false, foreignKey = @ForeignKey(name = "FK_DEVICE"))
     private DeviceEntity deviceId;
+    @Transient
+    private DistributedApplianceInstanceElement dai;
 
     public void updateDeviceMember(DeviceMemberEntity element) {
         this.name = element.name;
@@ -80,6 +85,7 @@ public class DeviceMemberEntity implements ManagerDeviceMemberElement {
         this.version = element.version;
         this.discovered = element.discovered;
         this.inspectionReady = element.inspectionReady;
+        this.dai = element.dai;
     }
 
     @Override
@@ -111,42 +117,52 @@ public class DeviceMemberEntity implements ManagerDeviceMemberElement {
         this.deviceId = deviceId;
     }
 
+    @Override
     public String getVersion() {
         return this.version;
     }
 
+    @Override
     public Long getRx() {
         return this.rx;
     }
 
+    @Override
     public Long getTxSva() {
         return this.txSva;
     }
 
+    @Override
     public Long getDropSva() {
         return this.dropSva;
     }
 
+    @Override
     public String getApplianceIp() {
         return this.applianceIp;
     }
 
+    @Override
     public String getManagerIp() {
         return this.managerIp;
     }
 
+    @Override
     public String getBrokerIp() {
         return this.brokerIp;
     }
 
+    @Override
     public String getApplianceGateway() {
         return this.applianceGateway;
     }
 
+    @Override
     public String getApplianceSubnetMask() {
         return this.applianceSubnetMask;
     }
 
+    @Override
     public Date getCurrentServerTime() {
         return new Date();
     }
@@ -187,10 +203,12 @@ public class DeviceMemberEntity implements ManagerDeviceMemberElement {
         this.publicIp = publicIp;
     }
 
+    @Override
     public Boolean isDiscovered() {
         return this.discovered;
     }
 
+    @Override
     public Boolean isInspectionReady() {
         return this.inspectionReady;
     }
@@ -203,6 +221,7 @@ public class DeviceMemberEntity implements ManagerDeviceMemberElement {
         this.inspectionReady = inspectionReady;
     }
 
+    @Override
     public String getPublicIp() {
         return this.publicIp;
     }
@@ -213,5 +232,21 @@ public class DeviceMemberEntity implements ManagerDeviceMemberElement {
 
     public void setBrokerIp(String brokerIp) {
         this.brokerIp = brokerIp;
+    }
+
+    @Override
+    public String getApplianceName() {
+        return this.name;
+    }
+
+    public void setDistributedApplianceInstanceElement(DistributedApplianceInstanceElement dai) {
+        // TODO - remove DistributedApplianceElement - Sudhir
+        this.dai = dai;
+    }
+
+    @Override
+    public DistributedApplianceInstanceElement getDistributedApplianceInstanceElement() {
+        // TODO - remove DistributedApplianceElement - Sudhir
+        return this.dai;
     }
 }
