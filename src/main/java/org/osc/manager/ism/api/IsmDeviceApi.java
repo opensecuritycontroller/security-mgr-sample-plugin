@@ -352,9 +352,6 @@ public class IsmDeviceApi implements ManagerDeviceApi {
         CriteriaQuery<DeviceMemberEntity> query = criteriaBuilder.createQuery(DeviceMemberEntity.class);
         Root<DeviceMemberEntity> r = query.from(DeviceMemberEntity.class);
 
-        query.select(r).where(criteriaBuilder.and((criteriaBuilder.equal(r.get("device").get("id"), deviceId)),
-                criteriaBuilder.equal(r.get("id"), memberId)));
-
         if (memName != null) {
             query.select(r)
             .where(criteriaBuilder.and((criteriaBuilder.equal(r.get("device").get("id"), deviceId)),

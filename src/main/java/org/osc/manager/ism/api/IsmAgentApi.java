@@ -58,16 +58,15 @@ public final class IsmAgentApi implements ManagerDeviceMemberApi {
         }
 
         for (DistributedApplianceInstanceElement dai : daiList) {
-            DeviceMemberEntity member;
+            DeviceMemberEntity member = null;
 
             try {
                 member = (DeviceMemberEntity) this.api.findDeviceMemberByName(dai.getName());
             } catch (Exception e) {
-                LOG.error(String.format("Finding device member name %s", dai.getName()), e);
+                LOG.error(String.format("Cannot find device by name %s", dai.getName()), e);
                 DeviceMemberEntity memberStatus = new DeviceMemberEntity();
                 memberStatus.setName(dai.getName());
                 response.add(memberStatus);
-                return response;
             }
 
             if (member != null) {
