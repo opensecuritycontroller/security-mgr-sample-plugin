@@ -108,7 +108,6 @@ public class IsmApplianceManagerApi implements ApplianceManagerApi {
 
     }
 
-
     @Override
     public ManagerDeviceApi createManagerDeviceApi(ApplianceManagerConnectorElement mc, VirtualSystemElement vs) throws Exception {
         return new IsmDeviceApi(vs, this.txControl, this.em);
@@ -138,7 +137,7 @@ public class IsmApplianceManagerApi implements ApplianceManagerApi {
 
     @Override
     public ManagerDeviceMemberApi createManagerDeviceMemberApi(ApplianceManagerConnectorElement mc, VirtualSystemElement vs) throws Exception {
-        return IsmAgentApi.create(mc, vs);
+        return IsmAgentApi.create(mc, vs, this.txControl, this.em);
     }
 
     @Override

@@ -37,9 +37,7 @@ public class DeviceEntity implements ManagerDeviceElement {
     private Long id;
     @Column(name = "name", unique = true, nullable = false)
     private String name;
-    @Column(name = "vsId")
-    private Long vsId;
-    @OneToMany(mappedBy = "parent", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "device", fetch = FetchType.EAGER)
     private List<DeviceMemberEntity> deviceMembers = new ArrayList<DeviceMemberEntity>();
 
     @Override
@@ -52,14 +50,6 @@ public class DeviceEntity implements ManagerDeviceElement {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public Long getVsId() {
-        return this.vsId;
-    }
-
-    public void setVsId(Long id) {
-        this.vsId = id;
     }
 
     @Override

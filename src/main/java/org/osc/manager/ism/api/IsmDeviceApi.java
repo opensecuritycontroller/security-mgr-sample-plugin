@@ -39,31 +39,10 @@ import org.osgi.service.transaction.control.TransactionControl;
 
 public class IsmDeviceApi implements ManagerDeviceApi {
 
-    private static final Logger LOG = Logger.getLogger(IsmDeviceApi.class);
-    private final VirtualSystemElement vs;
-    private final TransactionControl txControl;
-    private final EntityManager em;
-
-    private List<DeviceMemberEntity> validateDeviceMembers(Long parentId, Long vsId, Long memberId, String childName) {
-        CriteriaBuilder criteriaBuilder = IsmDeviceApi.this.em.getCriteriaBuilder();
-        CriteriaQuery<DeviceMemberEntity> query = criteriaBuilder.createQuery(DeviceMemberEntity.class);
-        Root<DeviceMemberEntity> r = query.from(DeviceMemberEntity.class);
-        if (parentId != null) {
-            query.select(r).where(criteriaBuilder.and((criteriaBuilder.equal(r.get("parent").get("id"), parentId)),
-                    criteriaBuilder.equal(r.get("id"), memberId)));
-        } else {
-            if (childName != null) {
-                query.select(r)
-                .where(criteriaBuilder.and(
-                        (criteriaBuilder.equal(r.get("parent").get("vsId"), IsmDeviceApi.this.vs.getId())),
-                        (criteriaBuilder.equal(r.get("name"), childName))));
-            } else {
-                query.select(r).where(criteriaBuilder.and((criteriaBuilder.equal(r.get("parent").get("vsId"), vsId)),
-                        criteriaBuilder.equal(r.get("id"), memberId)));
-            }
-        }
-        return IsmDeviceApi.this.em.createQuery(query).getResultList();
-    }
+    private static Logger LOG = Logger.getLogger(IsmDeviceApi.class);
+    private VirtualSystemElement vs;
+    private TransactionControl txControl;
+    private EntityManager em;
 
     public IsmDeviceApi(VirtualSystemElement vs, TransactionControl txControl, EntityManager em) {
         this.vs = vs;
@@ -95,7 +74,9 @@ public class IsmDeviceApi implements ManagerDeviceApi {
                 CriteriaQuery<Long> query = criteriaBuilder.createQuery(Long.class);
                 Root<DeviceEntity> r = query.from(DeviceEntity.class);
                 query.select(r.get("id").as(Long.class)).where(criteriaBuilder.equal(r.get("name"), name));
+
                 List<Long> result = IsmDeviceApi.this.em.createQuery(query).getResultList();
+
                 return result.isEmpty() == true ? null : result.get(0).toString();
             }
         });
@@ -110,6 +91,7 @@ public class IsmDeviceApi implements ManagerDeviceApi {
                 CriteriaQuery<DeviceEntity> query = criteriaBuilder.createQuery(DeviceEntity.class);
                 Root<DeviceEntity> r = query.from(DeviceEntity.class);
                 query.select(r);
+
                 return IsmDeviceApi.this.em.createQuery(query).getResultList();
             }
         });
@@ -118,22 +100,19 @@ public class IsmDeviceApi implements ManagerDeviceApi {
     @Override
     public String createVSSDevice() throws Exception {
         DeviceEntity entity = new DeviceEntity();
-        entity.setVsId(this.vs.getId());
         entity.setName(this.vs.getName());
+
         return createDevice(entity);
     }
 
     public String createDevice(DeviceEntity entity) throws Exception {
         return this.txControl.required(new Callable<DeviceEntity>() {
+
             @Override
             public DeviceEntity call() throws Exception {
-                CriteriaBuilder criteriaBuilder = IsmDeviceApi.this.em.getCriteriaBuilder();
-                CriteriaQuery<DeviceEntity> query = criteriaBuilder.createQuery(DeviceEntity.class);
-                Root<DeviceEntity> r = query.from(DeviceEntity.class);
-                query.select(r).where(
-                        criteriaBuilder.and(criteriaBuilder.equal(r.get("name"), entity.getName())));
-                List<DeviceEntity> devices = IsmDeviceApi.this.em.createQuery(query).getResultList();
-                if (!devices.isEmpty()) {
+                String device = findDeviceByName(entity.getName());
+
+                if (device != null) {
                     String msg = String.format("Device already exists name: %s\n", entity.getName());
                     LOG.error(msg);
                     throw new IllegalArgumentException(msg);
@@ -150,13 +129,16 @@ public class IsmDeviceApi implements ManagerDeviceApi {
             @Override
             public Void call() throws Exception {
                 DeviceEntity result = IsmDeviceApi.this.em.find(DeviceEntity.class, Long.parseLong(device.getId()));
+
                 if (result == null) {
                     String msg = String.format("Cannot find the device id: %s\n", device.getId());
                     LOG.error(msg);
                     throw new IllegalArgumentException(msg);
                 }
+
                 result.setName(device.getName());
-                IsmDeviceApi.this.em.persist(result);
+                IsmDeviceApi.this.em.merge(result);
+
                 return null;
             }
         });
@@ -167,19 +149,17 @@ public class IsmDeviceApi implements ManagerDeviceApi {
         this.txControl.required(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
-                CriteriaBuilder criteriaBuilder = IsmDeviceApi.this.em.getCriteriaBuilder();
-                CriteriaQuery<DeviceEntity> query = criteriaBuilder.createQuery(DeviceEntity.class);
-                Root<DeviceEntity> r = query.from(DeviceEntity.class);
-                query.select(r)
-                .where(criteriaBuilder.and(
-                        criteriaBuilder.equal(r.get("vsId"), Long.toString(IsmDeviceApi.this.vs.getId()))));
-                List<DeviceEntity> devices = IsmDeviceApi.this.em.createQuery(query).getResultList();
-                if (devices.isEmpty()) {
-                    LOG.info(String.format("Attempt to delete device for VS id %s and device not found, no-op.",
-                            "" + IsmDeviceApi.this.vs.getId()));
+                DeviceEntity device = IsmDeviceApi.this.em.find(DeviceEntity.class,
+                        Long.parseLong(IsmDeviceApi.this.vs.getMgrId()));
+
+                if (device == null) {
+                    LOG.info(String.format("Attempt to delete device for VS mgrid %s and device not found, no-op.",
+                            "" + IsmDeviceApi.this.vs.getMgrId()));
                     return null;
                 }
-                IsmDeviceApi.this.em.remove(devices.get(0));
+
+                IsmDeviceApi.this.em.remove(device);
+
                 return null;
             }
         });
@@ -188,49 +168,42 @@ public class IsmDeviceApi implements ManagerDeviceApi {
     @Override
     public String createDeviceMember(final String name, String ipAddress, String vserverIpAddress, String contactIpAddress,
             String gateway, String prefixLength) throws Exception {
-        DeviceEntity device = new DeviceEntity();
         DeviceMemberEntity deviceMember = new DeviceMemberEntity();
-        deviceMember.setParent(device);
-        device.setId(null);
+        updateMember(deviceMember, vserverIpAddress, contactIpAddress, ipAddress, gateway, prefixLength);
         deviceMember.setName(name);
-        return createDeviceMember(deviceMember, null, this.vs.getId());
+        return createDeviceMember(deviceMember, Long.parseLong(this.vs.getMgrId()));
     }
 
-    public String createDeviceMember(DeviceMemberEntity entity, Long parentId, Long vsId) throws Exception {
+    public String createDeviceMember(DeviceMemberEntity entity, Long deviceId) throws Exception {
         return this.txControl.required(new Callable<DeviceMemberEntity>() {
             @Override
             public DeviceMemberEntity call() throws Exception {
-                CriteriaBuilder criteriaBuilder = IsmDeviceApi.this.em.getCriteriaBuilder();
-                CriteriaQuery<DeviceEntity> query = criteriaBuilder.createQuery(DeviceEntity.class);
-                Root<DeviceEntity> r = query.from(DeviceEntity.class);
-                if (parentId != null) {
-                    query.select(r)
-                    .where(criteriaBuilder.and(criteriaBuilder.equal(r.get("id"), parentId)));
-                } else {
-                    query.select(r).where(
-                            criteriaBuilder.and(criteriaBuilder.equal(r.get("vsId"), vsId)));
-                }
-                List<DeviceEntity> devices = IsmDeviceApi.this.em.createQuery(query).getResultList();
-                if (devices.isEmpty()) {
-                    String msg = String.format("Cannot find the device for id: %s, VS id: %s\n",
-                            entity.getParent().getId(), IsmDeviceApi.this.vs.getId());
+                DeviceEntity device;
+
+                device = IsmDeviceApi.this.em.find(DeviceEntity.class, deviceId);
+
+                if (device == null) {
+                    String msg = String.format("Cannot find the device for id: %s", deviceId);
                     LOG.error(msg);
                     throw new IllegalArgumentException(msg);
                 }
+
                 CriteriaBuilder memberBuilder = IsmDeviceApi.this.em.getCriteriaBuilder();
                 CriteriaQuery<DeviceMemberEntity> memberQuery = memberBuilder.createQuery(DeviceMemberEntity.class);
                 Root<DeviceMemberEntity> res = memberQuery.from(DeviceMemberEntity.class);
                 memberQuery.select(res)
-                .where(memberBuilder.and((memberBuilder.equal(r.get("name"), entity.getName()))));
+                .where(memberBuilder.and((memberBuilder.equal(res.get("name"), entity.getName()))));
                 List<DeviceMemberEntity> deviceMemberResult = IsmDeviceApi.this.em.createQuery(memberQuery)
                         .getResultList();
+
                 if (!deviceMemberResult.isEmpty()) {
                     String msg = String.format("Device member already exists name: %s\n", entity.getName());
                     LOG.error(msg);
                     throw new IllegalArgumentException(msg);
                 }
-                entity.setParent(devices.get(0));
+                entity.setDevice(device);
                 IsmDeviceApi.this.em.persist(entity);
+
                 return entity;
             }
         }).getId();
@@ -242,45 +215,50 @@ public class IsmDeviceApi implements ManagerDeviceApi {
         DeviceMemberEntity deviceMember = new DeviceMemberEntity();
         deviceMember.setId(Long.parseLong(deviceElement.getId()));
         deviceMember.setName(name);
-        return updateDeviceMember(deviceMember, null, this.vs.getId());
-        // TODO - Sudhir Add other information like gateway, ipAddress
+        updateMember(deviceMember, vserverIpAddress, contactIpAddress, ipAddress, gateway, prefixLength);
+        return updateDeviceMember(deviceMember, Long.parseLong(this.vs.getMgrId()));
     }
 
-    public String updateDeviceMember(DeviceMemberEntity deviceElement, Long parentId, Long vsId) throws Exception {
+    public String updateDeviceMember(DeviceMemberEntity deviceElement, Long deviceId) throws Exception {
         return this.txControl.required(new Callable<DeviceMemberEntity>() {
             @Override
             public DeviceMemberEntity call() throws Exception {
-                List<DeviceMemberEntity> result = validateDeviceMembers(parentId, vsId,
-                        Long.parseLong(deviceElement.getId()), null);
-                if (result.isEmpty()) {
+                DeviceMemberEntity result = getDeviceMember(deviceId, Long.parseLong(deviceElement.getId()), null);
+
+                if (result == null) {
                     String msg = String.format("Cannot find the device member id: %s\n",
                             deviceElement.getId());
                     LOG.error(msg);
                     throw new IllegalArgumentException(msg);
                 }
-                result.get(0).setName(deviceElement.getName());
-                IsmDeviceApi.this.em.persist(result.get(0));
-                return result.get(0);
+
+                result.updateDeviceMember(deviceElement);
+                IsmDeviceApi.this.em.merge(result);
+
+                return result;
             }
         }).getId();
     }
 
     @Override
     public void deleteDeviceMember(String id) throws Exception {
-        deleteDeviceMember(null, this.vs.getId(), Long.parseLong(id));
+        deleteDeviceMember(Long.parseLong(this.vs.getMgrId()), Long.parseLong(id));
     }
 
-    public void deleteDeviceMember(Long parentId, Long vsId, Long memberId) throws Exception {
+    public void deleteDeviceMember(Long deviceId, Long memberId) throws Exception {
         this.txControl.required(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
-                List<DeviceMemberEntity> memberResult = validateDeviceMembers(parentId, vsId, memberId, null);
-                if (memberResult.isEmpty()) {
+                DeviceMemberEntity memberResult = getDeviceMember(deviceId, memberId, null);
+
+                if (memberResult == null) {
                     LOG.info(String.format("Attempt to delete device member for id %s and device not found, no-op.",
                             "" + Long.toString(memberId)));
                     return null;
                 }
-                IsmDeviceApi.this.em.remove(memberResult.get(0));
+
+                IsmDeviceApi.this.em.remove(memberResult);
+
                 return null;
             }
         });
@@ -288,15 +266,16 @@ public class IsmDeviceApi implements ManagerDeviceApi {
 
     @Override
     public ManagerDeviceMemberElement getDeviceMemberById(final String id) throws Exception {
-        return getDeviceMemberById(null, this.vs.getId(), Long.parseLong(id));
+        return getDeviceMemberById(Long.parseLong(this.vs.getMgrId()), Long.parseLong(id));
     }
 
-    public DeviceMemberEntity getDeviceMemberById(Long parentId, Long vsId, Long memberId) throws Exception {
+    public DeviceMemberEntity getDeviceMemberById(Long deviceId, Long memberId) throws Exception {
         return this.txControl.supports(new Callable<DeviceMemberEntity>() {
             @Override
             public DeviceMemberEntity call() throws Exception {
-                List<DeviceMemberEntity> result = validateDeviceMembers(parentId, vsId, memberId, null);
-                return result.isEmpty() == true ? null : result.get(0);
+                DeviceMemberEntity result = getDeviceMember(deviceId, memberId, null);
+
+                return result;
             }
         });
     }
@@ -306,31 +285,29 @@ public class IsmDeviceApi implements ManagerDeviceApi {
         return this.txControl.supports(new Callable<DeviceMemberEntity>() {
             @Override
             public DeviceMemberEntity call() throws Exception {
-                List<DeviceMemberEntity> result = validateDeviceMembers(null, IsmDeviceApi.this.vs.getId(), null, name);
-                return result.isEmpty() == true ? null : result.get(0);
+                DeviceMemberEntity result = getDeviceMember(Long.parseLong(IsmDeviceApi.this.vs.getMgrId()), null,
+                        name);
+
+                return result;
             }
         });
     }
 
     @Override
     public List<? extends ManagerDeviceMemberElement> listDeviceMembers() throws Exception {
-        return listDeviceMembers(null, this.vs.getId());
+        return listDeviceMembers(Long.parseLong(this.vs.getMgrId()));
     }
 
-    public List<? extends ManagerDeviceMemberElement> listDeviceMembers(Long parentId, Long vsId) throws Exception {
+    public List<? extends ManagerDeviceMemberElement> listDeviceMembers(Long deviceId) throws Exception {
         return this.txControl.supports(new Callable<List<DeviceMemberEntity>>() {
             @Override
             public List<DeviceMemberEntity> call() throws Exception {
                 CriteriaBuilder criteriaBuilder = IsmDeviceApi.this.em.getCriteriaBuilder();
                 CriteriaQuery<DeviceMemberEntity> query = criteriaBuilder.createQuery(DeviceMemberEntity.class);
                 Root<DeviceMemberEntity> r = query.from(DeviceMemberEntity.class);
-                if (parentId != null) {
-                    query.select(r)
-                    .where(criteriaBuilder.and(criteriaBuilder.equal(r.get("parent").get("id"), parentId)));
-                } else {
-                    query.select(r).where(criteriaBuilder
-                            .and(criteriaBuilder.equal(r.get("parent").get("vsId"), vsId)));
-                }
+                query.select(r)
+                .where(criteriaBuilder.and(criteriaBuilder.equal(r.get("device").get("id"), deviceId)));
+
                 return IsmDeviceApi.this.em.createQuery(query).getResultList();
             }
         });
@@ -368,5 +345,33 @@ public class IsmDeviceApi implements ManagerDeviceApi {
                 return new ArrayList<BootstrapFileElement>();
             }
         };
+    }
+
+    private DeviceMemberEntity getDeviceMember(Long deviceId, Long memberId, String memName) {
+        CriteriaBuilder criteriaBuilder = IsmDeviceApi.this.em.getCriteriaBuilder();
+        CriteriaQuery<DeviceMemberEntity> query = criteriaBuilder.createQuery(DeviceMemberEntity.class);
+        Root<DeviceMemberEntity> r = query.from(DeviceMemberEntity.class);
+
+        if (memName != null) {
+            query.select(r)
+            .where(criteriaBuilder.and((criteriaBuilder.equal(r.get("device").get("id"), deviceId)),
+                    (criteriaBuilder.equal(r.get("name"), memName))));
+        } else {
+            query.select(r).where(criteriaBuilder.and((criteriaBuilder.equal(r.get("device").get("id"), deviceId)),
+                    criteriaBuilder.equal(r.get("id"), memberId)));
+        }
+
+        List<DeviceMemberEntity> result = IsmDeviceApi.this.em.createQuery(query).getResultList();
+
+        return result.isEmpty() == true ? null : result.get(0);
+    }
+
+    private void updateMember(DeviceMemberEntity deviceMember, String vserverIpAddress, String contactIpAddress,
+            String ipAddress, String gateway, String prefixLength) {
+        deviceMember.setPublicIp(ipAddress);
+        deviceMember.setManagerIp(vserverIpAddress);
+        deviceMember.setApplianceIp(contactIpAddress);
+        deviceMember.setApplianceGateway(gateway);
+        deviceMember.setApplianceSubnetMask(prefixLength);
     }
 }
