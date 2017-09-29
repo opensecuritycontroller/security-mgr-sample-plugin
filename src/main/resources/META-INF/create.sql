@@ -31,3 +31,9 @@ alter table SECURITY_GROUP_INTERFACE add constraint if not exists FK_SECURITY_GR
 alter table SECURITY_GROUP_INTERFACE_POLICY add constraint if not exists FK_SGI_POLICY_SGI foreign key (sgi_fk) references SECURITY_GROUP_INTERFACE;
                     
 alter table SECURITY_GROUP_INTERFACE_POLICY add constraint if not exists FK_SGI_POLICY_POLICY foreign key (policy_fk) references POLICY;
+
+MERGE INTO Domain VALUES (1, 'Default');
+
+MERGE INTO Policy VALUES (2, 'Even', (SELECT MIN(id) from Domain WHERE NAME='Default'));
+
+MERGE INTO Policy VALUES (3, 'Odd', (SELECT MIN(id) from Domain WHERE NAME='Default'));
