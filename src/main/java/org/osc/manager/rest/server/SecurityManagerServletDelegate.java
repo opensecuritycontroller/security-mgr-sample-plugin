@@ -36,6 +36,7 @@ import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.osc.manager.rest.server.api.DeviceApis;
 import org.osc.manager.rest.server.api.DomainApis;
+import org.osc.manager.rest.server.api.SecurityApis;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -50,10 +51,10 @@ import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 
         HTTP_WHITEBOARD_SERVLET_NAME + "=" + "OSC-API", HTTP_WHITEBOARD_SERVLET_PATTERN + "=/testplugin/*",
         HTTP_WHITEBOARD_CONTEXT_SELECT + "=(" + HTTP_WHITEBOARD_CONTEXT_NAME + "=" + "OSC-API"
-        + ")",
-        HTTP_WHITEBOARD_TARGET + "=(" + "org.apache.felix.http.name" + "=" + "OSC-API" + ")"
+                + ")",
+                HTTP_WHITEBOARD_TARGET + "=(" + "org.apache.felix.http.name" + "=" + "OSC-API" + ")"
 
- })
+})
 
 public class SecurityManagerServletDelegate extends ResourceConfig implements Servlet {
 
@@ -64,6 +65,9 @@ public class SecurityManagerServletDelegate extends ResourceConfig implements Se
 
     @Reference
     private DeviceApis deviceApis;
+
+    @Reference
+    private SecurityApis securityApis;
 
     @Reference(target = "(osgi.local.enabled=true)")
     private TransactionControl txControl;
@@ -100,10 +104,11 @@ public class SecurityManagerServletDelegate extends ResourceConfig implements Se
 
         this.domainApis.init(this.em, this.txControl);
         this.deviceApis.init(this.em, this.txControl);
+        this.securityApis.init(this.em, this.txControl);
 
-        super.registerInstances(this.domainApis, this.deviceApis);
+        super.registerInstances(this.domainApis, this.deviceApis, this.securityApis);
         this.container = new ServletContainer(this);
-       }
+    }
 
     @Override
     public void destroy() {

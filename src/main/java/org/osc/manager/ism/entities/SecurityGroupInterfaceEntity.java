@@ -33,101 +33,111 @@ import javax.persistence.Table;
 
 import org.osc.sdk.manager.element.ManagerPolicyElement;
 import org.osc.sdk.manager.element.ManagerSecurityGroupInterfaceElement;
+import org.osc.sdk.manager.element.SecurityGroupInterfaceElement;
 
 @Entity
 @Table(name = "SECURITY_GROUP_INTERFACE")
-public class SecurityGroupInterfaceEntity implements ManagerSecurityGroupInterfaceElement {
-
-	@Id
+public class SecurityGroupInterfaceEntity
+implements ManagerSecurityGroupInterfaceElement, SecurityGroupInterfaceElement {
+    @Id
     @GeneratedValue
     @Column(name = "id")
-	private Long id;
+    private Long id;
 
-	@Column(name = "name", unique = true, nullable = false)
+    @Column(name = "name", unique = true, nullable = false)
     private String name;
 
-	@ManyToMany(fetch = FetchType.EAGER)
-	@JoinTable(name = "SECURITY_GROUP_INTERFACE_POLICY",
-			joinColumns = @JoinColumn(name = "sgi_fk", referencedColumnName = "id"),
-			inverseJoinColumns = @JoinColumn(name = "policy_fk", referencedColumnName = "id"))
-	private Set<PolicyEntity> policies = new HashSet<>();
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "SECURITY_GROUP_INTERFACE_POLICY",
+    joinColumns = @JoinColumn(name = "sgi_fk", referencedColumnName = "id"),
+    inverseJoinColumns = @JoinColumn(name = "policy_fk", referencedColumnName = "id"))
+    private Set<PolicyEntity> policies = new HashSet<>();
 
-	@Column(name = "tag", nullable = true)
+    @Column(name = "tag", nullable = true)
     private String tag;
 
-	@OneToOne(fetch = FetchType.EAGER)
-	@JoinColumn(name = "security_group_fk", nullable = true, foreignKey = @ForeignKey(name = "FK_SECURITY_GROUP"))
-	private SecurityGroupEntity securityGroup;
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "security_group_fk", nullable = true, foreignKey = @ForeignKey(name = "FK_SECURITY_GROUP"))
+    private SecurityGroupEntity securityGroup;
 
-	public SecurityGroupInterfaceEntity() {
-	}
+    public SecurityGroupInterfaceEntity() {
+    }
 
-	public SecurityGroupInterfaceEntity(String name, Set<PolicyEntity> policies, String tag, SecurityGroupEntity mgrSecurityGroup) {
-		this.name = name;
-		this.policies = policies;
-		this.tag = tag;
-		this.securityGroup = mgrSecurityGroup;
-	}
+    public SecurityGroupInterfaceEntity(String name, Set<PolicyEntity> policies, String tag, SecurityGroupEntity mgrSecurityGroup) {
+        this.name = name;
+        this.policies = policies;
+        this.tag = tag;
+        this.securityGroup = mgrSecurityGroup;
+    }
 
-	public Long getId() {
-		return this.id;
-	}
+    public Long getId() {
+        return this.id;
+    }
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-	@Override
-	public String getName() {
-		return this.name;
-	}
+    @Override
+    public String getName() {
+        return this.name;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public Set<PolicyEntity> getPolicies() {
-		return this.policies;
-	}
+    public Set<PolicyEntity> getPolicies() {
+        return this.policies;
+    }
 
-	public void setPolicies(Set<PolicyEntity> policies) {
-		this.policies = policies;
-	}
+    public void setPolicies(Set<PolicyEntity> policies) {
+        this.policies = policies;
+    }
 
-	@Override
-	public String getTag() {
-		return this.tag;
-	}
+    @Override
+    public String getTag() {
+        return this.tag;
+    }
 
-	public void setTag(String tag) {
-		this.tag = tag;
-	}
+    public void setTag(String tag) {
+        this.tag = tag;
+    }
 
-	public SecurityGroupEntity getSecurityGroup() {
-		return this.securityGroup;
-	}
+    public SecurityGroupEntity getSecurityGroup() {
+        return this.securityGroup;
+    }
 
-	public void setSecurityGroup(SecurityGroupEntity securityGroup) {
-		this.securityGroup = securityGroup;
-	}
+    public void setSecurityGroup(SecurityGroupEntity securityGroup) {
+        this.securityGroup = securityGroup;
+    }
 
-	@Override
-	public Set<ManagerPolicyElement> getManagerPolicyElements() {
-		Set<ManagerPolicyElement> managerPolicyElements = new HashSet<>();
-		for (PolicyEntity policy : this.policies) {
-			managerPolicyElements.add(policy);
-		}
-		return managerPolicyElements;
-	}
+    @Override
+    public Set<ManagerPolicyElement> getManagerPolicyElements() {
+        Set<ManagerPolicyElement> managerPolicyElements = new HashSet<>();
+        for (PolicyEntity policy : this.policies) {
+            managerPolicyElements.add(policy);
+        }
+        return managerPolicyElements;
+    }
 
-	@Override
-	public String getSecurityGroupInterfaceId() {
-		return getId() == null ? null : getId().toString();
-	}
+    @Override
+    public String getSecurityGroupInterfaceId() {
+        return getId() == null ? null : getId().toString();
+    }
 
-	@Override
-	public String getSecurityGroupId() {
-		return getSecurityGroup().getId() == null ? null : getSecurityGroup().getId().toString();
-	}
+    @Override
+    public String getSecurityGroupId() {
+        return getSecurityGroup().getId() == null ? null : getSecurityGroup().getId().toString();
+    }
 
+    @Override
+    public String getManagerSecurityGroupInterfaceId() {
+        return getSecurityGroupInterfaceId();
+    }
+
+    @Override
+    public String getManagerSecurityGroupId() {
+        return getSecurityGroupId();
+    }
 }
