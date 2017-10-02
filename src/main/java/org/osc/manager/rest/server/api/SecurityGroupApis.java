@@ -42,12 +42,12 @@ import org.osc.sdk.manager.element.SecurityGroupInterfaceElement;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.transaction.control.TransactionControl;
 
-@Component(service = SecurityApis.class)
+@Component(service = SecurityGroupApis.class)
 @Path(SecurityManagerServerRestConstants.SERVER_API_PATH_PREFIX + "/securitygroups")
 @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-public class SecurityApis {
-    private static Logger LOG = Logger.getLogger(SecurityApis.class);
+public class SecurityGroupApis {
+    private static Logger LOG = Logger.getLogger(SecurityGroupApis.class);
     private EntityManager em;
     private TransactionControl txControl;
     private IsmSecurityGroupApi sgApi;
@@ -83,7 +83,7 @@ public class SecurityApis {
     @DELETE
     public void deleteSecurityGroup(@PathParam("sgId") Long sgId) throws Exception {
         LOG.info(String.format("Deleting the security group for id %s ", Long.toString(sgId)));
-        SecurityApis.this.sgApi.deleteSecurityGroup(Long.toString(sgId));
+        SecurityGroupApis.this.sgApi.deleteSecurityGroup(Long.toString(sgId));
     }
 
     @GET
@@ -135,7 +135,7 @@ public class SecurityApis {
             throws Exception {
         LOG.info(String.format("Deleting the security group interface with sgid %s ; sginterfaceid %s",
                 Long.toString(sgId), Long.toString(sgIntfId)));
-        SecurityApis.this.sgiApi.deleteSecurityGroupInterface(Long.toString(sgIntfId));
+        SecurityGroupApis.this.sgiApi.deleteSecurityGroupInterface(Long.toString(sgIntfId));
     }
 
     @Path("/{sgId}/sgIntf")
