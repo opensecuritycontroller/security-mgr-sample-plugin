@@ -32,8 +32,12 @@ alter table SECURITY_GROUP_INTERFACE_POLICY add constraint if not exists FK_SGI_
                     
 alter table SECURITY_GROUP_INTERFACE_POLICY add constraint if not exists FK_SGI_POLICY_POLICY foreign key (policy_fk) references POLICY;
 
-MERGE INTO Domain VALUES (1, 'Default');
+alter table domain MODIFY column id BIGINT auto_increment;
 
-MERGE INTO Policy VALUES (2, 'Even', (SELECT MIN(id) from Domain WHERE NAME='Default'));
+alter table policy MODIFY column id BIGINT auto_increment;
 
-MERGE INTO Policy VALUES (3, 'Odd', (SELECT MIN(id) from Domain WHERE NAME='Default'));
+INSERT INTO Domain (name) select * from (select 'Default') as tmp WHERE NOT EXISTS (SELECT name from domain where name='Default');
+
+INSERT INTO Policy (name, domain_fk) select * from (select 'Odd', SELECT MIN(id) from Domain WHERE NAME='Default') as tmp WHERE NOT EXISTS (SELECT name from Policy where name='Odd');
+
+INSERT INTO Policy (name, domain_fk) select * from (select 'Even', SELECT MIN(id) from Domain WHERE NAME='Default') as tmp WHERE NOT EXISTS (SELECT name from Policy where name='Even');
