@@ -1,8 +1,8 @@
 create sequence if not exists hibernate_sequence start with 1 increment by 1;
 
-create table if not exists SECURITY_GROUP ( id bigint not null, name varchar(255), primary key (id) );
+create table if not exists SECURITY_GROUP ( id bigint not null AUTO_INCREMENT, name varchar(255), primary key (id) );
 
-create table if not exists SECURITY_GROUP_INTERFACE ( id bigint not null, name varchar(255), tag varchar(255), security_group_fk bigint, primary key (id) );
+create table if not exists SECURITY_GROUP_INTERFACE ( id bigint not null AUTO_INCREMENT, name varchar(255), tag varchar(255), security_group_fk bigint, primary key (id) );
 
 create table if not exists SECURITY_GROUP_INTERFACE_POLICY ( sgi_fk bigint not null, policy_fk bigint not null, primary key (sgi_fk, policy_fk));
  
@@ -31,10 +31,6 @@ alter table SECURITY_GROUP_INTERFACE add constraint if not exists FK_SECURITY_GR
 alter table SECURITY_GROUP_INTERFACE_POLICY add constraint if not exists FK_SGI_POLICY_SGI foreign key (sgi_fk) references SECURITY_GROUP_INTERFACE;
                     
 alter table SECURITY_GROUP_INTERFACE_POLICY add constraint if not exists FK_SGI_POLICY_POLICY foreign key (policy_fk) references POLICY;
-
-alter table domain MODIFY column id BIGINT auto_increment;
-
-alter table policy MODIFY column id BIGINT auto_increment;
 
 INSERT INTO Domain (name) select * from (select 'Default') as tmp WHERE NOT EXISTS (SELECT name from domain where name='Default');
 
