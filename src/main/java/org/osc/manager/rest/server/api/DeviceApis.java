@@ -125,7 +125,7 @@ public class DeviceApis {
         LOG.info(String.format("Updating the device member with (memberid %s ; deviceid %s)",
                 "" + Long.toString(memberId), "" + Long.toString(deviceId)));
         entity.setId(memberId);
-        this.api.updateDeviceMember(entity, deviceId);
+        this.api.updateDeviceMember(entity, deviceId, false);
         return entity;
     }
 
