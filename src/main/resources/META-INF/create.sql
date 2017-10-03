@@ -1,14 +1,14 @@
 create sequence if not exists hibernate_sequence start with 1 increment by 1;
 
-create table if not exists SECURITY_GROUP ( id bigint not null AUTO_INCREMENT, name varchar(255), primary key (id) );
+create table if not exists SECURITY_GROUP ( id bigint not null, name varchar(255), primary key (id) );
 
-create table if not exists SECURITY_GROUP_INTERFACE ( id bigint not null AUTO_INCREMENT, name varchar(255), tag varchar(255), security_group_fk bigint, primary key (id) );
+create table if not exists SECURITY_GROUP_INTERFACE ( id bigint not null, name varchar(255), tag varchar(255), security_group_fk bigint, primary key (id) );
 
 create table if not exists SECURITY_GROUP_INTERFACE_POLICY ( sgi_fk bigint not null, policy_fk bigint not null, primary key (sgi_fk, policy_fk));
  
-create table if not exists DOMAIN ( id bigint not null, name varchar(255), primary key (id));
+create table if not exists DOMAIN ( id bigint not null AUTO_INCREMENT, name varchar(255), primary key (id));
 
-create table if not exists POLICY ( id bigint not null, name varchar(255), domain_fk bigint,primary key (id) );
+create table if not exists POLICY ( id bigint not null AUTO_INCREMENT, name varchar(255), domain_fk bigint,primary key (id) );
 
 create table if not exists DEVICE ( id bigint not null, name varchar(255), primary key (id) );
 
