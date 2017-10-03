@@ -71,16 +71,13 @@ public class DeviceMemberEntity implements ManagerDeviceMemberElement, ManagerDe
     @Transient
     private DistributedApplianceInstanceElement dai;
 
-    public void updateDeviceMember(DeviceMemberEntity element, Boolean init) {
+    public void updateDeviceMember(DeviceMemberEntity element) {
         this.name = element.name;
         this.applianceGateway = element.applianceGateway;
         this.applianceIp = element.applianceIp;
         this.applianceSubnetMask = element.applianceSubnetMask;
         this.managerIp = element.managerIp;
         this.publicIp = element.publicIp;
-        if (this.version != null && init == true) {
-            return;
-        }
         this.brokerIp = element.brokerIp;
         this.rx = element.rx;
         this.txSva = element.txSva;

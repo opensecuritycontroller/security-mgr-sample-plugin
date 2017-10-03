@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ThreadLocalRandom;
 
 import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -172,8 +171,8 @@ public class IsmDeviceApi implements ManagerDeviceApi {
     public String createDeviceMember(final String name, String ipAddress, String vserverIpAddress, String contactIpAddress,
             String gateway, String prefixLength) throws Exception {
         DeviceMemberEntity deviceMember = new DeviceMemberEntity();
-        updateMember(deviceMember, vserverIpAddress, contactIpAddress, ipAddress, gateway, prefixLength);
         deviceMember.setName(name);
+        updateMember(deviceMember, vserverIpAddress, contactIpAddress, ipAddress, gateway, prefixLength);
         return createDeviceMember(deviceMember, Long.parseLong(this.vs.getMgrId()));
     }
 
@@ -218,11 +217,12 @@ public class IsmDeviceApi implements ManagerDeviceApi {
         DeviceMemberEntity deviceMember = new DeviceMemberEntity();
         deviceMember.setId(Long.parseLong(deviceElement.getId()));
         deviceMember.setName(name);
+        setDefaultMemberState(deviceMember);
         updateMember(deviceMember, vserverIpAddress, contactIpAddress, ipAddress, gateway, prefixLength);
-        return updateDeviceMember(deviceMember, Long.parseLong(this.vs.getMgrId()), true);
+        return updateDeviceMember(deviceMember, Long.parseLong(this.vs.getMgrId()));
     }
 
-    public String updateDeviceMember(DeviceMemberEntity deviceElement, Long deviceId, Boolean init) throws Exception {
+    public String updateDeviceMember(DeviceMemberEntity deviceElement, Long deviceId) throws Exception {
         return this.txControl.required(new Callable<DeviceMemberEntity>() {
             @Override
             public DeviceMemberEntity call() throws Exception {
@@ -234,7 +234,7 @@ public class IsmDeviceApi implements ManagerDeviceApi {
                     LOG.error(msg);
                     throw new IllegalArgumentException(msg);
                 }
-                result.updateDeviceMember(deviceElement, init);
+                result.updateDeviceMember(deviceElement);
                 IsmDeviceApi.this.em.merge(result);
 
                 return result;
@@ -375,14 +375,40 @@ public class IsmDeviceApi implements ManagerDeviceApi {
         deviceMember.setApplianceIp(contactIpAddress);
         deviceMember.setApplianceGateway(gateway);
         deviceMember.setApplianceSubnetMask(prefixLength);
-        SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd-hh:mm");
-        String buildTime = format.format(new Date());
-        String ver = String.format("1.2(Build %d, %s)", 1234, buildTime);
-        deviceMember.setDiscovered(Boolean.TRUE);
-        deviceMember.setInspectionReady(Boolean.TRUE);
-        deviceMember.setVersion(ver);
-        deviceMember.setBrokerIp(contactIpAddress);
-        deviceMember.setRx(ThreadLocalRandom.current().nextLong(10000, 100000));
-        deviceMember.setDropSva(ThreadLocalRandom.current().nextLong(0, 1000));
+        if (deviceMember.getVersion() == null) {
+            SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd-hh:mm");
+            String buildTime = format.format(new Date());
+            String ver = String.format("1.2(Build %d, %s)", 1234, buildTime);
+            deviceMember.setDiscovered(Boolean.TRUE);
+            deviceMember.setInspectionReady(Boolean.TRUE);
+            deviceMember.setVersion(ver);
+            deviceMember.setBrokerIp(null);
+            deviceMember.setRx(null);
+            deviceMember.setDropSva(null);
+        }
     }
+
+    private void setDefaultMemberState(DeviceMemberEntity deviceMember) {
+
+        DeviceMemberEntity result =  this.txControl.required(new Callable<DeviceMemberEntity>() {
+            @Override
+            public DeviceMemberEntity call() throws Exception {
+                return getDeviceMember(Long.parseLong(IsmDeviceApi.this.vs.getMgrId()),
+                        Long.parseLong(deviceMember.getId()),
+                        null);
+            };
+        });
+
+        if (result != null) {
+            if (result.getVersion() != null) {
+                deviceMember.setVersion(result.getVersion());
+                deviceMember.setDiscovered(result.isDiscovered());
+                deviceMember.setInspectionReady(result.isInspectionReady());
+                deviceMember.setBrokerIp(result.getBrokerIp());
+                deviceMember.setRx(result.getRx());
+                deviceMember.setDropSva(result.getDropSva());
+            }
+        }
+    }
+
 }
