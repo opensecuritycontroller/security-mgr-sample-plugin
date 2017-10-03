@@ -24,15 +24,16 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
-import org.apache.log4j.Logger;
 import org.osc.manager.ism.entities.DomainEntity;
+import org.osc.manager.ism.utils.LogProvider;
 import org.osc.sdk.manager.api.ManagerDomainApi;
 import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
 import org.osgi.service.transaction.control.TransactionControl;
+import org.slf4j.Logger;
 
 public class IsmDomainApi implements ManagerDomainApi {
 
-    Logger log = Logger.getLogger(IsmDomainApi.class);
+    private static final Logger LOG = LogProvider.getLogger(IsmDomainApi.class);
     private TransactionControl txControl;
     private EntityManager em;
     ApplianceManagerConnectorElement mc;
@@ -57,7 +58,7 @@ public class IsmDomainApi implements ManagerDomainApi {
             @Override
             public DomainEntity call() throws Exception {
 
-                return em.find(DomainEntity.class, Long.parseLong(domainId));
+                return IsmDomainApi.this.em.find(DomainEntity.class, Long.parseLong(domainId));
             }
         });
     }
@@ -69,11 +70,11 @@ public class IsmDomainApi implements ManagerDomainApi {
 
             @Override
             public List<DomainEntity> call() throws Exception {
-                CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+                CriteriaBuilder criteriaBuilder = IsmDomainApi.this.em.getCriteriaBuilder();
                 CriteriaQuery<DomainEntity> query = criteriaBuilder.createQuery(DomainEntity.class);
                 Root<DomainEntity> r = query.from(DomainEntity.class);
                 query.select(r);
-                return em.createQuery(query).getResultList();
+                return IsmDomainApi.this.em.createQuery(query).getResultList();
             }
         });
     }
