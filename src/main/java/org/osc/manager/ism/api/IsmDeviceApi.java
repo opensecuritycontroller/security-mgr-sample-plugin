@@ -16,7 +16,9 @@
  *******************************************************************************/
 package org.osc.manager.ism.api;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -169,8 +171,8 @@ public class IsmDeviceApi implements ManagerDeviceApi {
     public String createDeviceMember(final String name, String ipAddress, String vserverIpAddress, String contactIpAddress,
             String gateway, String prefixLength) throws Exception {
         DeviceMemberEntity deviceMember = new DeviceMemberEntity();
-        updateMember(deviceMember, vserverIpAddress, contactIpAddress, ipAddress, gateway, prefixLength);
         deviceMember.setName(name);
+        updateMember(deviceMember, vserverIpAddress, contactIpAddress, ipAddress, gateway, prefixLength);
         return createDeviceMember(deviceMember, Long.parseLong(this.vs.getMgrId()));
     }
 
@@ -215,6 +217,7 @@ public class IsmDeviceApi implements ManagerDeviceApi {
         DeviceMemberEntity deviceMember = new DeviceMemberEntity();
         deviceMember.setId(Long.parseLong(deviceElement.getId()));
         deviceMember.setName(name);
+        setDefaultMemberState(deviceMember);
         updateMember(deviceMember, vserverIpAddress, contactIpAddress, ipAddress, gateway, prefixLength);
         return updateDeviceMember(deviceMember, Long.parseLong(this.vs.getMgrId()));
     }
@@ -231,7 +234,6 @@ public class IsmDeviceApi implements ManagerDeviceApi {
                     LOG.error(msg);
                     throw new IllegalArgumentException(msg);
                 }
-
                 result.updateDeviceMember(deviceElement);
                 IsmDeviceApi.this.em.merge(result);
 
@@ -373,5 +375,40 @@ public class IsmDeviceApi implements ManagerDeviceApi {
         deviceMember.setApplianceIp(contactIpAddress);
         deviceMember.setApplianceGateway(gateway);
         deviceMember.setApplianceSubnetMask(prefixLength);
+        if (deviceMember.getVersion() == null) {
+            SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd-hh:mm");
+            String buildTime = format.format(new Date());
+            String ver = String.format("1.2(Build %d, %s)", 1234, buildTime);
+            deviceMember.setDiscovered(Boolean.TRUE);
+            deviceMember.setInspectionReady(Boolean.TRUE);
+            deviceMember.setVersion(ver);
+            deviceMember.setBrokerIp(null);
+            deviceMember.setRx(null);
+            deviceMember.setDropSva(null);
+        }
     }
+
+    private void setDefaultMemberState(DeviceMemberEntity deviceMember) {
+
+        DeviceMemberEntity result =  this.txControl.required(new Callable<DeviceMemberEntity>() {
+            @Override
+            public DeviceMemberEntity call() throws Exception {
+                return getDeviceMember(Long.parseLong(IsmDeviceApi.this.vs.getMgrId()),
+                        Long.parseLong(deviceMember.getId()),
+                        null);
+            };
+        });
+
+        if (result != null) {
+            if (result.getVersion() != null) {
+                deviceMember.setVersion(result.getVersion());
+                deviceMember.setDiscovered(result.isDiscovered());
+                deviceMember.setInspectionReady(result.isInspectionReady());
+                deviceMember.setBrokerIp(result.getBrokerIp());
+                deviceMember.setRx(result.getRx());
+                deviceMember.setDropSva(result.getDropSva());
+            }
+        }
+    }
+
 }
