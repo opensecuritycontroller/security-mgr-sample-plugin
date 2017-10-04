@@ -17,7 +17,10 @@
 package org.osc.manager.ism.entities;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -39,6 +42,10 @@ public class DeviceEntity implements ManagerDeviceElement {
     private String name;
     @OneToMany(mappedBy = "device", fetch = FetchType.EAGER)
     private List<DeviceMemberEntity> deviceMembers = new ArrayList<DeviceMemberEntity>();
+    @OneToMany(mappedBy = "sgDevice", fetch = FetchType.EAGER)
+    private Set<SecurityGroupEntity> securityGroups;
+    @OneToMany(mappedBy = "sgiDevice", fetch = FetchType.EAGER)
+    private Set<SecurityGroupInterfaceEntity> securityGroupInterfaces;
 
     @Override
     public String getId() {
@@ -67,5 +74,21 @@ public class DeviceEntity implements ManagerDeviceElement {
 
     public void setDeviceMembers(DeviceMemberEntity deviceMembers) {
         this.deviceMembers.add(deviceMembers);
+    }
+
+    public void setSecurityGroups(Collection<SecurityGroupEntity> securityGroups) {
+        this.securityGroups = new HashSet<>(securityGroups);
+    }
+
+    public Set<SecurityGroupEntity> getSecurityGroups() {
+        return this.securityGroups;
+    }
+
+    public void setSecurityGroupInterfaces(Collection<SecurityGroupInterfaceEntity> sgi) {
+        this.securityGroupInterfaces = new HashSet<>(sgi);
+    }
+
+    public Set<SecurityGroupInterfaceEntity> getSecurityGroupInterfaces() {
+        return this.securityGroupInterfaces;
     }
 }

@@ -37,6 +37,7 @@ import org.glassfish.jersey.servlet.ServletContainer;
 import org.osc.manager.rest.server.api.DeviceApis;
 import org.osc.manager.rest.server.api.DomainApis;
 import org.osc.manager.rest.server.api.SecurityGroupApis;
+import org.osc.manager.rest.server.api.SecurityGroupInterfaceApis;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -67,7 +68,10 @@ public class SecurityManagerServletDelegate extends ResourceConfig implements Se
     private DeviceApis deviceApis;
 
     @Reference
-    private SecurityGroupApis securityApis;
+    private SecurityGroupApis securityGroupApis;
+
+    @Reference
+    private SecurityGroupInterfaceApis securityGroupInterfaceApis;
 
     @Reference(target = "(osgi.local.enabled=true)")
     private TransactionControl txControl;
@@ -104,9 +108,11 @@ public class SecurityManagerServletDelegate extends ResourceConfig implements Se
 
         this.domainApis.init(this.em, this.txControl);
         this.deviceApis.init(this.em, this.txControl);
-        this.securityApis.init(this.em, this.txControl);
+        this.securityGroupApis.init(this.em, this.txControl);
+        this.securityGroupInterfaceApis.init(this.em, this.txControl);
 
-        super.registerInstances(this.domainApis, this.deviceApis, this.securityApis);
+        super.registerInstances(this.domainApis, this.deviceApis, this.securityGroupApis,
+                this.securityGroupInterfaceApis);
         this.container = new ServletContainer(this);
     }
 

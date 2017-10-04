@@ -25,6 +25,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
 import org.apache.log4j.Logger;
+import org.osc.manager.ism.entities.DeviceEntity;
 import org.osc.manager.ism.entities.SecurityGroupEntity;
 import org.osc.sdk.manager.api.ManagerSecurityGroupApi;
 import org.osc.sdk.manager.element.ManagerSecurityGroupElement;
@@ -34,13 +35,12 @@ import org.osgi.service.transaction.control.TransactionControl;
 
 public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
 
-    private static final Logger LOGGER = Logger.getLogger(IsmSecurityGroupApi.class);
+    private static Logger LOGGER = Logger.getLogger(IsmSecurityGroupApi.class);
     private VirtualSystemElement vs;
-
-    private final TransactionControl txControl;
-    private final EntityManager em;
-
+    private TransactionControl txControl;
+    private EntityManager em;
     private static final String SG_NOT_FOUND_MESSAGE = "A security group with id %s was not found.";
+    private IsmDeviceApi api;
 
     public IsmSecurityGroupApi(VirtualSystemElement vs, TransactionControl txControl, EntityManager em) {
         super();
@@ -57,7 +57,21 @@ public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
     @Override
     public String createSecurityGroup(String name, String oscSgId, SecurityGroupMemberListElement memberList)
             throws Exception {
-        // TODO Sudhir: Please handle the memberList
+        // TODO : SUDHIR - Please handle the memberList
+        return createSecurityGroup(IsmSecurityGroupApi.this.vs.getMgrId(), name, oscSgId, memberList);
+    }
+
+    public String createSecurityGroup(String deviceId, String name, String oscSgId,
+            SecurityGroupMemberListElement memberList)
+                    throws Exception {
+        this.api = new IsmDeviceApi(null, this.txControl, this.em);
+        DeviceEntity dev = (DeviceEntity) this.api.getDeviceById(deviceId);
+        if (dev == null) {
+            String msg = String.format("Cannot find the device id: %s\n", deviceId);
+            LOGGER.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
         SecurityGroupEntity existingSG = findSecurityGroupByName(name);
         if (existingSG != null) {
             throw new Exception(String.format("Security Group with name %s already exists", name));
@@ -66,6 +80,7 @@ public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
             @Override
             public String call() throws Exception {
                 SecurityGroupEntity newSG = new SecurityGroupEntity(name);
+                newSG.setSgDevice(dev);
                 IsmSecurityGroupApi.this.em.persist(newSG);
                 return newSG.getSGId();
             }
@@ -75,7 +90,12 @@ public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
     @Override
     public void updateSecurityGroup(String mgrSecurityGroupId, String name, SecurityGroupMemberListElement memberList)
             throws Exception {
-        SecurityGroupEntity existingSg = getSecurityGroup(mgrSecurityGroupId);
+        updateSecurityGroup(this.vs.getMgrId(), mgrSecurityGroupId, name, memberList);
+    }
+
+    public void updateSecurityGroup(String deviceId, String mgrSecurityGroupId, String name,
+            SecurityGroupMemberListElement memberList) throws Exception {
+        SecurityGroupEntity existingSg = getSecurityGroup(deviceId, mgrSecurityGroupId);
         if (existingSg == null) {
             String message = String.format(SG_NOT_FOUND_MESSAGE, mgrSecurityGroupId);
             throw new Exception(message);
@@ -92,10 +112,14 @@ public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
 
     @Override
     public void deleteSecurityGroup(String mgrSecurityGroupId) throws Exception {
+        deleteSecurityGroup(IsmSecurityGroupApi.this.vs.getMgrId(), mgrSecurityGroupId);
+    }
+
+    public void deleteSecurityGroup(String deviceId, String mgrSecurityGroupId) throws Exception {
         this.txControl.required(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
-                SecurityGroupEntity existingSg = getSecurityGroup(mgrSecurityGroupId);
+                SecurityGroupEntity existingSg = getSecurityGroup(deviceId, mgrSecurityGroupId);
                 if (existingSg == null) {
                     throw new Exception(String.format(SG_NOT_FOUND_MESSAGE, mgrSecurityGroupId));
                 }
@@ -107,13 +131,18 @@ public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
 
     @Override
     public List<? extends ManagerSecurityGroupElement> getSecurityGroupList() throws Exception {
+        return getSecurityGroupList(this.vs.getMgrId());
+    }
+
+    public List<? extends ManagerSecurityGroupElement> getSecurityGroupList(String deviceId) throws Exception {
         return this.txControl.supports(new Callable<List<? extends ManagerSecurityGroupElement>>() {
             @Override
             public List<? extends ManagerSecurityGroupElement> call() throws Exception {
-                CriteriaBuilder criteriaBuilder  = IsmSecurityGroupApi.this.em.getCriteriaBuilder();
-                CriteriaQuery<SecurityGroupEntity> query = criteriaBuilder .createQuery(SecurityGroupEntity.class);
+                CriteriaBuilder criteriaBuilder = IsmSecurityGroupApi.this.em.getCriteriaBuilder();
+                CriteriaQuery<SecurityGroupEntity> query = criteriaBuilder.createQuery(SecurityGroupEntity.class);
                 Root<SecurityGroupEntity> r = query.from(SecurityGroupEntity.class);
-                query.select(r);
+                query.select(r)
+                .where(criteriaBuilder.and(criteriaBuilder.equal(r.get("sgDevice").get("id"), deviceId)));
                 return IsmSecurityGroupApi.this.em.createQuery(query).getResultList();
             }
         });
@@ -121,19 +150,35 @@ public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
 
     @Override
     public ManagerSecurityGroupElement getSecurityGroupById(String mgrSecurityGroupId) throws Exception {
-        SecurityGroupEntity sg = getSecurityGroup(mgrSecurityGroupId);
+        SecurityGroupEntity sg = getSecurityGroup(this.vs.getMgrId(), mgrSecurityGroupId);
         return sg;
     }
 
-    public SecurityGroupEntity getSecurityGroup(final String mgrSecurityGroupId) throws Exception {
+    public SecurityGroupEntity getSecurityGroup(String deviceId, final String mgrSecurityGroupId) throws Exception {
         if (mgrSecurityGroupId == null) {
             return null;
         }
         return this.txControl.supports(new Callable<SecurityGroupEntity>() {
             @Override
             public SecurityGroupEntity call() throws Exception {
-                return IsmSecurityGroupApi.this.em.find(SecurityGroupEntity.class, Long.valueOf(mgrSecurityGroupId));
+                CriteriaBuilder criteriaBuilder = IsmSecurityGroupApi.this.em.getCriteriaBuilder();
+                CriteriaQuery<SecurityGroupEntity> query = criteriaBuilder.createQuery(SecurityGroupEntity.class);
+                Root<SecurityGroupEntity> r = query.from(SecurityGroupEntity.class);
+                query.select(r)
+                        .where(criteriaBuilder.and((criteriaBuilder.equal(r.get("sgDevice").get("id"), deviceId)),
+                                criteriaBuilder.equal(r.get("id"), mgrSecurityGroupId)));
+                List<SecurityGroupEntity> result = IsmSecurityGroupApi.this.em.createQuery(query).getResultList();
+                return result.isEmpty() == true ? null : result.get(0);
             }
+        });
+    }
+
+    @Override
+    public void close() {
+        LOGGER.info("Closing connection to the database");
+        this.txControl.required(() -> {
+            this.em.close();
+            return null;
         });
     }
 
@@ -155,14 +200,4 @@ public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
             }
         });
     }
-
-    @Override
-    public void close() {
-        LOGGER.info("Closing connection to the database");
-        this.txControl.required(() -> {
-            this.em.close();
-            return null;
-        });
-    }
-
 }

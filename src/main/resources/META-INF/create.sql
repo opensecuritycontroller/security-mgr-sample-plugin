@@ -1,8 +1,8 @@
 create sequence if not exists hibernate_sequence start with 1 increment by 1;
 
-create table if not exists SECURITY_GROUP ( id bigint not null, name varchar(255), primary key (id) );
+create table if not exists SECURITY_GROUP ( id bigint not null, name varchar(255),device_sg_fk bigint, primary key (id) );
 
-create table if not exists SECURITY_GROUP_INTERFACE ( id bigint not null, name varchar(255), tag varchar(255), security_group_fk bigint, primary key (id) );
+create table if not exists SECURITY_GROUP_INTERFACE ( id bigint not null, name varchar(255), tag varchar(255), security_group_fk bigint,device_sgi_fk bigint, primary key (id) );
 
 create table if not exists SECURITY_GROUP_INTERFACE_POLICY ( sgi_fk bigint not null, policy_fk bigint not null, primary key (sgi_fk, policy_fk));
  
@@ -26,7 +26,11 @@ alter table DEVICE add constraint if not exists DEVICE_NAME UNIQUE (name);
 
 alter table DEVICE_MEMBER add constraint if not exists DEVICEMEMBER_NAME UNIQUE (name);
 
+alter table SECURITY_GROUP add constraint if not exists FK_SG_DEVICE foreign key (device_sg_fk) references DEVICE;
+
 alter table SECURITY_GROUP_INTERFACE add constraint if not exists FK_SECURITY_GROUP foreign key (security_group_fk) references SECURITY_GROUP;
+
+alter table SECURITY_GROUP_INTERFACE add constraint if not exists FK_SGI_DEVICE foreign key (device_sgi_fk) references DEVICE;
 
 alter table SECURITY_GROUP_INTERFACE_POLICY add constraint if not exists FK_SGI_POLICY_SGI foreign key (sgi_fk) references SECURITY_GROUP_INTERFACE;
                     
@@ -37,3 +41,4 @@ INSERT INTO Domain (name) select * from (select 'Default') as tmp WHERE NOT EXIS
 INSERT INTO Policy (name, domain_fk) select * from (select 'Odd', SELECT MIN(id) from Domain WHERE NAME='Default') as tmp WHERE NOT EXISTS (SELECT name from Policy where name='Odd');
 
 INSERT INTO Policy (name, domain_fk) select * from (select 'Even', SELECT MIN(id) from Domain WHERE NAME='Default') as tmp WHERE NOT EXISTS (SELECT name from Policy where name='Even');
+

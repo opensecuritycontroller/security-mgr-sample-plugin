@@ -33,12 +33,9 @@ import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
 import org.osc.manager.ism.api.IsmSecurityGroupApi;
-import org.osc.manager.ism.api.IsmSecurityGroupInterfaceApi;
 import org.osc.manager.ism.entities.SecurityGroupEntity;
-import org.osc.manager.ism.entities.SecurityGroupInterfaceEntity;
 import org.osc.manager.rest.server.SecurityManagerServerRestConstants;
 import org.osc.sdk.manager.element.ManagerSecurityGroupElement;
-import org.osc.sdk.manager.element.SecurityGroupInterfaceElement;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.transaction.control.TransactionControl;
 
@@ -48,16 +45,10 @@ import org.osgi.service.transaction.control.TransactionControl;
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class SecurityGroupApis {
     private static Logger LOG = Logger.getLogger(SecurityGroupApis.class);
-    private EntityManager em;
-    private TransactionControl txControl;
     private IsmSecurityGroupApi sgApi;
-    private IsmSecurityGroupInterfaceApi sgiApi;
 
     public void init(EntityManager em, TransactionControl txControl) throws Exception {
-        this.em = em;
-        this.txControl = txControl;
         this.sgApi = new IsmSecurityGroupApi(null, txControl, em);
-        this.sgiApi = new IsmSecurityGroupInterfaceApi(null, null, txControl, em);
     }
 
     @Path("/{oscSgId}")
@@ -66,30 +57,33 @@ public class SecurityGroupApis {
             throws Exception {
         LOG.info(String.format("Creating security group  with name %s", entity.getName()));
         // TODO : SUDHIR - Add SecurityGroupMember
-        return this.sgApi.createSecurityGroup(entity.getName(), oscSgId, null);
+        return this.sgApi.createSecurityGroup(entity.getSgDevice().getId(), entity.getName(), oscSgId, null);
     }
 
-    @Path("/{sgId}")
+    @Path("/{deviceId}/sg/{sgId}")
     @PUT
     public SecurityGroupEntity updateSecurityGroup(@PathParam("sgId") Long sgId, SecurityGroupEntity entity)
             throws Exception {
         LOG.info(String.format("Updating the security group for id %s ", Long.toString(sgId)));
         // TODO : SUDHIR - Add SecurityGroupMember
-        this.sgApi.updateSecurityGroup(Long.toString(sgId), entity.getName(), null);
+        this.sgApi.updateSecurityGroup(entity.getSgDevice().getId(), Long.toString(sgId), entity.getName(), null);
         return entity;
     }
 
-    @Path("/{sgId}")
+    @Path("/{deviceId}/sg/{sgId}")
     @DELETE
-    public void deleteSecurityGroup(@PathParam("sgId") Long sgId) throws Exception {
+    public void deleteSecurityGroup(@PathParam("sgId") Long sgId, @PathParam("deviceId") Long deviceId)
+            throws Exception {
         LOG.info(String.format("Deleting the security group for id %s ", Long.toString(sgId)));
-        SecurityGroupApis.this.sgApi.deleteSecurityGroup(Long.toString(sgId));
+        SecurityGroupApis.this.sgApi.deleteSecurityGroup(Long.toString(deviceId), Long.toString(sgId));
     }
 
+    @Path("/{deviceId}/sg")
     @GET
-    public List<String> getSecurityGroupIds() throws Exception {
+    public List<String> getSecurityGroupIds(@PathParam("deviceId") Long deviceId) throws Exception {
         LOG.info("Listing security group ids'");
-        List<? extends ManagerSecurityGroupElement> securityGroups = this.sgApi.getSecurityGroupList();
+        List<? extends ManagerSecurityGroupElement> securityGroups = this.sgApi
+                .getSecurityGroupList(Long.toString(deviceId));
         List<String> sgList = new ArrayList<String>();
         if (!securityGroups.isEmpty()) {
             sgList = securityGroups.stream().map(ManagerSecurityGroupElement::getSGId).collect(Collectors.toList());
@@ -97,64 +91,11 @@ public class SecurityGroupApis {
         return sgList;
     }
 
-    @Path("/{sgId}")
+    @Path("/{deviceId}/sg/{sgId}")
     @GET
-    public SecurityGroupEntity getSecurityGroup(@PathParam("sgId") Long sgId) throws Exception {
+    public SecurityGroupEntity getSecurityGroup(@PathParam("sgId") Long sgId, @PathParam("deviceId") Long deviceId)
+            throws Exception {
         LOG.info(String.format("Getting the security group for id %s ", Long.toString(sgId)));
-        return this.sgApi.getSecurityGroup(Long.toString(sgId));
-    }
-
-    @Path("/{sgId}/sgIntf")
-    @POST
-    public String createSecurityGroupInterface(@PathParam("sgId") Long sgId, SecurityGroupInterfaceEntity entity)
-            throws Exception {
-        LOG.info(String.format("Creating the security group interface with name %s ", entity.getName()));
-        SecurityGroupEntity sgElement = new SecurityGroupEntity();
-        sgElement.setId(sgId);
-        entity.setSecurityGroup(sgElement);
-        return this.sgiApi.createSecurityGroupInterface(entity);
-    }
-
-    @Path("/{sgId}/sgIntf/{sgIntfId}")
-    @PUT
-    public SecurityGroupInterfaceElement updateSecurityGroupInterface(@PathParam("sgId") Long sgId,
-            @PathParam("sgIntfId") Long sgIntfId, SecurityGroupInterfaceEntity entity) throws Exception {
-        LOG.info(String.format("Updating the security group interface with sgid %s ; sginterfaceid %s",
-                Long.toString(sgId), Long.toString(sgIntfId)));
-        SecurityGroupEntity sgElement = new SecurityGroupEntity();
-        sgElement.setId(sgId);
-        entity.setSecurityGroup(sgElement);
-        entity.setId(sgIntfId);
-        this.sgiApi.updateSecurityGroupInterface(entity);
-        return entity;
-    }
-
-    @Path("/{sgId}/sgIntf/{sgIntfId}")
-    @DELETE
-    public void deleteSecurityGroupInterface(@PathParam("sgId") Long sgId, @PathParam("sgIntfId") Long sgIntfId)
-            throws Exception {
-        LOG.info(String.format("Deleting the security group interface with sgid %s ; sginterfaceid %s",
-                Long.toString(sgId), Long.toString(sgIntfId)));
-        SecurityGroupApis.this.sgiApi.deleteSecurityGroupInterface(Long.toString(sgIntfId));
-    }
-
-    @Path("/{sgId}/sgIntf")
-    @GET
-    public String getSecurityGroupInterfaceId(@PathParam("sgId") Long sgId) throws Exception {
-        LOG.info("Listing security group interface id'");
-        SecurityGroupInterfaceEntity sgiElement = this.sgiApi.getSecurityGroupInterfaceBySgId(Long.toString(sgId),
-                null);
-        return sgiElement == null ? null : sgiElement.getId().toString();
-    }
-
-    @Path("/{sgId}/sgIntf/{sgIntfId}")
-    @GET
-    public SecurityGroupInterfaceEntity getSecurityGroupInterface(@PathParam("sgId") Long sgId,
-            @PathParam("sgIntfId") Long sgIntfId) throws Exception {
-        LOG.info(String.format("getting the security group interface with sgid %s ; sginterfaceid %s)",
-                Long.toString(sgId), Long.toString(sgIntfId)));
-        SecurityGroupInterfaceEntity sgiElement = this.sgiApi.getSecurityGroupInterfaceBySgId(Long.toString(sgId),
-                Long.toString(sgIntfId));
-        return sgiElement == null ? null : sgiElement;
+        return this.sgApi.getSecurityGroup(Long.toString(deviceId), Long.toString(sgId));
     }
 }
