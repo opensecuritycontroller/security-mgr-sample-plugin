@@ -76,9 +76,9 @@ public class DeviceMemberEntity implements ManagerDeviceMemberElement, ManagerDe
         this.applianceGateway = element.applianceGateway;
         this.applianceIp = element.applianceIp;
         this.applianceSubnetMask = element.applianceSubnetMask;
-        this.brokerIp = element.brokerIp;
         this.managerIp = element.managerIp;
         this.publicIp = element.publicIp;
+        this.brokerIp = element.brokerIp;
         this.rx = element.rx;
         this.txSva = element.txSva;
         this.dropSva = element.dropSva;
