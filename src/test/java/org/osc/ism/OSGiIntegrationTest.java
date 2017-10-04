@@ -123,8 +123,7 @@ public class OSGiIntegrationTest {
 
                 mavenBundle("org.osc.api", "security-mgr-api").versionAsInProject(),
                 mavenBundle("javax.websocket", "javax.websocket-api").versionAsInProject(),
-                mavenBundle("slf4j-api", "slf4j-api").versionAsInProject(),
-                mavenBundle("slf4j-simple", "slf4j-simple").versionAsInProject(),
+                mavenBundle("org.slf4j", "slf4j-api").versionAsInProject(),
 
                 mavenBundle("org.apache.aries.jpa", "org.apache.aries.jpa.container").versionAsInProject(),
                 mavenBundle("org.apache.aries.tx-control", "tx-control-service-local").versionAsInProject(),
