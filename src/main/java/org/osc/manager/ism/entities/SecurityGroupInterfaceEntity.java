@@ -63,7 +63,7 @@ implements ManagerSecurityGroupInterfaceElement, SecurityGroupInterfaceElement {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "device_sgi_fk", nullable = false, foreignKey = @ForeignKey(name = "FK_SGI_DEVICE"))
-    private DeviceEntity sgiDevice;
+    private DeviceEntity device;
 
     public SecurityGroupInterfaceEntity() {
     }
@@ -146,11 +146,11 @@ implements ManagerSecurityGroupInterfaceElement, SecurityGroupInterfaceElement {
         return getSecurityGroupId();
     }
 
-    public DeviceEntity getSgiDevice() {
-        return this.sgiDevice;
+    public DeviceEntity getDevice() {
+        return this.device;
     }
 
-    public void setSgiDevice(DeviceEntity device) {
-        this.sgiDevice = device;
+    public void setDevice(DeviceEntity device) {
+        this.device = device;
     }
 }

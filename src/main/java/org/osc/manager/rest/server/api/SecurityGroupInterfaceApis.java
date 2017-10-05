@@ -62,10 +62,10 @@ public class SecurityGroupInterfaceApis {
             sgElement.setId(entity.getSecurityGroup().getId());
             entity.setSecurityGroup(sgElement);
         }
-        return this.sgiApi.createSecurityGroupInterface(entity.getSgiDevice().getId(), entity);
+        return this.sgiApi.createSecurityGroupInterface(entity.getDevice().getId(), entity);
     }
 
-    @Path("/{deviceId}/sgi/{sgIntfId}")
+    @Path("/{deviceId}/securitygroupinterfaces/{sgIntfId}")
     @PUT
     public SecurityGroupInterfaceElement updateSecurityGroupInterface(@PathParam("sgIntfId") Long sgIntfId,
             @PathParam("deviceId") Long deviceId, SecurityGroupInterfaceEntity entity) throws Exception {
@@ -75,7 +75,7 @@ public class SecurityGroupInterfaceApis {
         return entity;
     }
 
-    @Path("/{deviceId}/sgi/{sgIntfId}")
+    @Path("/{deviceId}/securitygroupinterfaces/{sgIntfId}")
     @DELETE
     public void deleteSecurityGroupInterface(@PathParam("sgIntfId") Long sgIntfId, @PathParam("deviceId") Long deviceId)
             throws Exception {
@@ -83,7 +83,7 @@ public class SecurityGroupInterfaceApis {
         this.sgiApi.deleteSecurityGroupInterface(Long.toString(deviceId), Long.toString(sgIntfId));
     }
 
-    @Path("/{deviceId}/sgi")
+    @Path("/{deviceId}/securitygroupinterfaces")
     @GET
     public List<String> getSecurityGroupInterfaceIds(@PathParam("deviceId") Long deviceId)
             throws Exception {
@@ -98,7 +98,7 @@ public class SecurityGroupInterfaceApis {
         return sgiList;
     }
 
-    @Path("/{deviceId}/sgi/{sgIntfId}")
+    @Path("/{deviceId}/securitygroupinterfaces/{sgIntfId}")
     @GET
     public SecurityGroupInterfaceEntity getSecurityGroupInterface(@PathParam("sgIntfId") Long sgIntfId,
             @PathParam("deviceId") Long deviceId) throws Exception {

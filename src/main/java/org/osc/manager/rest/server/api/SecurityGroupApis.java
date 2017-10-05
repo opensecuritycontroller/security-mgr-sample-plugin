@@ -57,20 +57,20 @@ public class SecurityGroupApis {
             throws Exception {
         LOG.info(String.format("Creating security group  with name %s", entity.getName()));
         // TODO : SUDHIR - Add SecurityGroupMember
-        return this.sgApi.createSecurityGroup(entity.getSgDevice().getId(), entity.getName(), oscSgId, null);
+        return this.sgApi.createSecurityGroup(entity.getDevice().getId(), entity.getName(), oscSgId, null);
     }
 
-    @Path("/{deviceId}/sg/{sgId}")
+    @Path("/{deviceId}/securitygroups/{sgId}")
     @PUT
     public SecurityGroupEntity updateSecurityGroup(@PathParam("sgId") Long sgId, SecurityGroupEntity entity)
             throws Exception {
         LOG.info(String.format("Updating the security group for id %s ", Long.toString(sgId)));
         // TODO : SUDHIR - Add SecurityGroupMember
-        this.sgApi.updateSecurityGroup(entity.getSgDevice().getId(), Long.toString(sgId), entity.getName(), null);
+        this.sgApi.updateSecurityGroup(entity.getDevice().getId(), Long.toString(sgId), entity.getName(), null);
         return entity;
     }
 
-    @Path("/{deviceId}/sg/{sgId}")
+    @Path("/{deviceId}/securitygroups/{sgId}")
     @DELETE
     public void deleteSecurityGroup(@PathParam("sgId") Long sgId, @PathParam("deviceId") Long deviceId)
             throws Exception {
@@ -78,7 +78,7 @@ public class SecurityGroupApis {
         SecurityGroupApis.this.sgApi.deleteSecurityGroup(Long.toString(deviceId), Long.toString(sgId));
     }
 
-    @Path("/{deviceId}/sg")
+    @Path("/{deviceId}/securitygroups")
     @GET
     public List<String> getSecurityGroupIds(@PathParam("deviceId") Long deviceId) throws Exception {
         LOG.info("Listing security group ids'");
@@ -91,7 +91,7 @@ public class SecurityGroupApis {
         return sgList;
     }
 
-    @Path("/{deviceId}/sg/{sgId}")
+    @Path("/{deviceId}/securitygroups/{sgId}")
     @GET
     public SecurityGroupEntity getSecurityGroup(@PathParam("sgId") Long sgId, @PathParam("deviceId") Long deviceId)
             throws Exception {

@@ -68,13 +68,13 @@ public class IsmSecurityGroupInterfaceApi implements ManagerSecurityGroupInterfa
         return createSecurityGroupInterface(this.vs.getMgrId(), sgiElement);
     }
 
-    public String createSecurityGroupInterface(String deviceId, SecurityGroupInterfaceElement sgiElement)
+    public String createSecurityGroupInterface(String mgrDeviceId, SecurityGroupInterfaceElement sgiElement)
             throws Exception {
 
         this.api = new IsmDeviceApi(null, this.txControl, this.em);
-        DeviceEntity dev = (DeviceEntity) this.api.getDeviceById(deviceId);
+        DeviceEntity dev = (DeviceEntity) this.api.getDeviceById(mgrDeviceId);
         if (dev == null) {
-            String msg = String.format("Cannot find the device id: %s\n", deviceId);
+            String msg = String.format("Cannot find the device id: %s\n", mgrDeviceId);
             LOGGER.error(msg);
             throw new IllegalArgumentException(msg);
         }
@@ -88,10 +88,17 @@ public class IsmSecurityGroupInterfaceApi implements ManagerSecurityGroupInterfa
             @Override
             public String call() throws Exception {
 
-                SecurityGroupEntity sg = getSecurityGroupbyId(deviceId, sgiElement.getManagerSecurityGroupId());
+                SecurityGroupEntity sg = getSecurityGroupbyId(mgrDeviceId, sgiElement.getManagerSecurityGroupId());
+                SecurityGroupInterfaceEntity sgi = getSecurityGroupInterface(mgrDeviceId,
+                        sgiElement.getManagerSecurityGroupId(), sgiElement.getName());
+                if (sgi != null) {
+                    String msg = String.format("SGI already exists name: %s\n", sgiElement.getName());
+                    LOGGER.error(msg);
+                    throw new IllegalArgumentException(msg);
+                }
                 SecurityGroupInterfaceEntity newSGI = new SecurityGroupInterfaceEntity(sgiElement.getName(), policies,
                         sgiElement.getTag(), sg);
-                newSGI.setSgiDevice(dev);
+                newSGI.setDevice(dev);
                 IsmSecurityGroupInterfaceApi.this.em.persist(newSGI);
                 return newSGI.getSecurityGroupInterfaceId();
             }
@@ -103,18 +110,25 @@ public class IsmSecurityGroupInterfaceApi implements ManagerSecurityGroupInterfa
         updateSecurityGroupInterface(this.vs.getMgrId(), sgiElement);
     }
 
-    public void updateSecurityGroupInterface(String deviceId, SecurityGroupInterfaceElement sgiElement)
+    public void updateSecurityGroupInterface(String mgrDeviceId, SecurityGroupInterfaceElement sgiElement)
             throws Exception {
 
-        SecurityGroupInterfaceEntity existingSgi = getSecurityGroupInterface(deviceId,
+        SecurityGroupInterfaceEntity existingSgi = getSecurityGroupInterface(mgrDeviceId,
                 sgiElement.getManagerSecurityGroupInterfaceId());
         if (existingSgi == null) {
             String message = String.format(SGI_NOT_FOUND_MESSAGE, sgiElement.getManagerSecurityGroupInterfaceId());
-            throw new Exception(message);
+            throw new IllegalArgumentException(message);
+        }
+        SecurityGroupInterfaceEntity sgi = getSecurityGroupInterface(mgrDeviceId,
+                sgiElement.getManagerSecurityGroupId(), sgiElement.getName());
+        if (sgi != null) {
+            String msg = String.format("SGI already exists name: %s\n", sgiElement.getName());
+            LOGGER.error(msg);
+            throw new IllegalArgumentException(msg);
         }
         existingSgi.setName(sgiElement.getName());
         existingSgi.setPolicies(getPoliciesById(sgiElement));
-        existingSgi.setSecurityGroup(getSecurityGroupbyId(deviceId, sgiElement.getManagerSecurityGroupId()));
+        existingSgi.setSecurityGroup(getSecurityGroupbyId(mgrDeviceId, sgiElement.getManagerSecurityGroupId()));
         existingSgi.setTag(sgiElement.getTag());
         this.txControl.required(new Callable<Void>() {
             @Override
@@ -130,13 +144,13 @@ public class IsmSecurityGroupInterfaceApi implements ManagerSecurityGroupInterfa
         deleteSecurityGroupInterface(this.vs.getMgrId(), id);
     }
 
-    public void deleteSecurityGroupInterface(String deviceId, String id) throws Exception {
+    public void deleteSecurityGroupInterface(String mgrDeviceId, String mgrSecurityGroupId) throws Exception {
         this.txControl.required(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
-                SecurityGroupInterfaceEntity existingSgi = getSecurityGroupInterface(deviceId, id);
+                SecurityGroupInterfaceEntity existingSgi = getSecurityGroupInterface(mgrDeviceId, mgrSecurityGroupId);
                 if (existingSgi == null) {
-                    LOGGER.info(String.format(SGI_NOT_FOUND_MESSAGE, id));
+                    LOGGER.warn(String.format(SGI_NOT_FOUND_MESSAGE, mgrSecurityGroupId));
                     return null;
                 }
                 IsmSecurityGroupInterfaceApi.this.em.remove(existingSgi);
@@ -146,37 +160,15 @@ public class IsmSecurityGroupInterfaceApi implements ManagerSecurityGroupInterfa
     }
 
     @Override
-    public ManagerSecurityGroupInterfaceElement getSecurityGroupInterfaceById(String id) throws Exception {
-        SecurityGroupInterfaceEntity sgi = getSecurityGroupInterface(this.vs.getMgrId(), id);
-        return sgi;
-    }
-
-    public ManagerSecurityGroupInterfaceElement getSecurityGroupInterfaceById(String deviceId, String id)
+    public ManagerSecurityGroupInterfaceElement getSecurityGroupInterfaceById(String mgrSecurityGroupId)
             throws Exception {
-        SecurityGroupInterfaceEntity sgi = getSecurityGroupInterface(deviceId, id);
-        return sgi;
+        return getSecurityGroupInterface(this.vs.getMgrId(), mgrSecurityGroupId);
     }
 
-    private SecurityGroupInterfaceEntity getSecurityGroupInterface(String deviceId, String id) throws Exception {
-        if (id == null) {
-            return null;
-        }
-        return this.txControl.supports(new Callable<SecurityGroupInterfaceEntity>() {
-
-            @Override
-            public SecurityGroupInterfaceEntity call() throws Exception {
-                CriteriaBuilder criteriaBuilder = IsmSecurityGroupInterfaceApi.this.em.getCriteriaBuilder();
-                CriteriaQuery<SecurityGroupInterfaceEntity> query = criteriaBuilder
-                        .createQuery(SecurityGroupInterfaceEntity.class);
-                Root<SecurityGroupInterfaceEntity> r = query.from(SecurityGroupInterfaceEntity.class);
-                query.select(r)
-                .where(criteriaBuilder.and((criteriaBuilder.equal(r.get("sgiDevice").get("id"), deviceId)),
-                        criteriaBuilder.equal(r.get("id"), id)));
-                List<SecurityGroupInterfaceEntity> result = IsmSecurityGroupInterfaceApi.this.em.createQuery(query)
-                        .getResultList();
-                return result.isEmpty() == true ? null : result.get(0);
-            }
-        });
+    public ManagerSecurityGroupInterfaceElement getSecurityGroupInterfaceById(String mgrDeviceId,
+            String mgrSecurityGroupId)
+                    throws Exception {
+        return getSecurityGroupInterface(mgrDeviceId, mgrSecurityGroupId);
     }
 
     @Override
@@ -204,7 +196,7 @@ public class IsmSecurityGroupInterfaceApi implements ManagerSecurityGroupInterfa
         return listSecurityGroupInterfaces(this.vs.getMgrId());
     }
 
-    public List<? extends ManagerSecurityGroupInterfaceElement> listSecurityGroupInterfaces(String deviceId)
+    public List<? extends ManagerSecurityGroupInterfaceElement> listSecurityGroupInterfaces(String mgrDeviceId)
             throws Exception {
         return this.txControl.supports(new Callable<List<? extends ManagerSecurityGroupInterfaceElement>>() {
             @Override
@@ -213,18 +205,27 @@ public class IsmSecurityGroupInterfaceApi implements ManagerSecurityGroupInterfa
                 CriteriaQuery<SecurityGroupInterfaceEntity> query = criteriaBuilder
                         .createQuery(SecurityGroupInterfaceEntity.class);
                 Root<SecurityGroupInterfaceEntity> r = query.from(SecurityGroupInterfaceEntity.class);
-                query.select(r).where(criteriaBuilder.equal(r.get("sgiDevice").get("id"), deviceId));
+                query.select(r).where(criteriaBuilder.equal(r.get("device").get("id"), mgrDeviceId));
                 return IsmSecurityGroupInterfaceApi.this.em.createQuery(query).getResultList();
             }
         });
     }
 
-    private SecurityGroupEntity getSecurityGroupbyId(String deviceId, String sgId) throws Exception {
-        if (sgId == null) {
+    @Override
+    public void close() {
+        LOGGER.info("Closing connection to the database");
+        this.txControl.required(() -> {
+            this.em.close();
+            return null;
+        });
+    }
+
+    private SecurityGroupEntity getSecurityGroupbyId(String mgrDeviceId, String mgrSecurityGroupId) throws Exception {
+        if (mgrSecurityGroupId == null) {
             return null;
         }
         IsmSecurityGroupApi ismSecurityGroupApi = IsmSecurityGroupApi.create(this.vs, this.txControl, this.em);
-        return ismSecurityGroupApi.getSecurityGroup(deviceId, sgId);
+        return ismSecurityGroupApi.getSecurityGroup(mgrDeviceId, mgrSecurityGroupId);
     }
 
     private Set<PolicyEntity> getPoliciesById(SecurityGroupInterfaceElement sgiElement) throws Exception {
@@ -239,12 +240,36 @@ public class IsmSecurityGroupInterfaceApi implements ManagerSecurityGroupInterfa
         return policies;
     }
 
-    @Override
-    public void close() {
-        LOGGER.info("Closing connection to the database");
-        this.txControl.required(() -> {
-            this.em.close();
-            return null;
+    private SecurityGroupInterfaceEntity getSecurityGroupInterface(String mgrDeviceId, String mgrSecurityGroupId)
+            throws Exception {
+        return getSecurityGroupInterface(mgrDeviceId, mgrSecurityGroupId, null);
+    }
+
+    private SecurityGroupInterfaceEntity getSecurityGroupInterface(String mgrDeviceId, String mgrSecurityGroupId,
+            String name) throws Exception {
+        return this.txControl.supports(new Callable<SecurityGroupInterfaceEntity>() {
+
+            @Override
+            public SecurityGroupInterfaceEntity call() throws Exception {
+                CriteriaBuilder criteriaBuilder = IsmSecurityGroupInterfaceApi.this.em.getCriteriaBuilder();
+                CriteriaQuery<SecurityGroupInterfaceEntity> query = criteriaBuilder
+                        .createQuery(SecurityGroupInterfaceEntity.class);
+                Root<SecurityGroupInterfaceEntity> r = query.from(SecurityGroupInterfaceEntity.class);
+                if (name != null) {
+                    query.select(r)
+                    .where(criteriaBuilder.and((criteriaBuilder.equal(r.get("device").get("id"), mgrDeviceId)),
+                            (criteriaBuilder.equal(r.get("id"), mgrSecurityGroupId)),
+                            (criteriaBuilder.equal(r.get("name"), name))));
+                } else {
+                    query.select(r)
+                    .where(criteriaBuilder.and(
+                            (criteriaBuilder.equal(r.get("device").get("id"), mgrDeviceId)),
+                            criteriaBuilder.equal(r.get("id"), mgrSecurityGroupId)));
+                }
+                List<SecurityGroupInterfaceEntity> result = IsmSecurityGroupInterfaceApi.this.em.createQuery(query)
+                        .getResultList();
+                return result.isEmpty() == true ? null : result.get(0);
+            }
         });
     }
 }

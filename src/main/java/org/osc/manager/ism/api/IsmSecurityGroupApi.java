@@ -61,26 +61,26 @@ public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
         return createSecurityGroup(IsmSecurityGroupApi.this.vs.getMgrId(), name, oscSgId, memberList);
     }
 
-    public String createSecurityGroup(String deviceId, String name, String oscSgId,
+    public String createSecurityGroup(String mgrDeviceId, String name, String oscSgId,
             SecurityGroupMemberListElement memberList)
                     throws Exception {
         this.api = new IsmDeviceApi(null, this.txControl, this.em);
-        DeviceEntity dev = (DeviceEntity) this.api.getDeviceById(deviceId);
+        DeviceEntity dev = (DeviceEntity) this.api.getDeviceById(mgrDeviceId);
         if (dev == null) {
-            String msg = String.format("Cannot find the device id: %s\n", deviceId);
+            String msg = String.format("Cannot find the device id: %s\n", mgrDeviceId);
             LOGGER.error(msg);
             throw new IllegalArgumentException(msg);
         }
 
         SecurityGroupEntity existingSG = findSecurityGroupByName(name);
         if (existingSG != null) {
-            throw new Exception(String.format("Security Group with name %s already exists", name));
+            throw new IllegalArgumentException(String.format("Security Group with name %s already exists", name));
         }
         return this.txControl.required(new Callable<String>() {
             @Override
             public String call() throws Exception {
                 SecurityGroupEntity newSG = new SecurityGroupEntity(name);
-                newSG.setSgDevice(dev);
+                newSG.setDevice(dev);
                 IsmSecurityGroupApi.this.em.persist(newSG);
                 return newSG.getSGId();
             }
@@ -93,12 +93,12 @@ public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
         updateSecurityGroup(this.vs.getMgrId(), mgrSecurityGroupId, name, memberList);
     }
 
-    public void updateSecurityGroup(String deviceId, String mgrSecurityGroupId, String name,
+    public void updateSecurityGroup(String mgrDeviceId, String mgrSecurityGroupId, String name,
             SecurityGroupMemberListElement memberList) throws Exception {
-        SecurityGroupEntity existingSg = getSecurityGroup(deviceId, mgrSecurityGroupId);
+        SecurityGroupEntity existingSg = getSecurityGroup(mgrDeviceId, mgrSecurityGroupId);
         if (existingSg == null) {
             String message = String.format(SG_NOT_FOUND_MESSAGE, mgrSecurityGroupId);
-            throw new Exception(message);
+            throw new IllegalArgumentException(message);
         }
         existingSg.setName(name);
         this.txControl.required(new Callable<Void>() {
@@ -115,13 +115,14 @@ public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
         deleteSecurityGroup(IsmSecurityGroupApi.this.vs.getMgrId(), mgrSecurityGroupId);
     }
 
-    public void deleteSecurityGroup(String deviceId, String mgrSecurityGroupId) throws Exception {
+    public void deleteSecurityGroup(String mgrDeviceId, String mgrSecurityGroupId) throws Exception {
         this.txControl.required(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
-                SecurityGroupEntity existingSg = getSecurityGroup(deviceId, mgrSecurityGroupId);
+                SecurityGroupEntity existingSg = getSecurityGroup(mgrDeviceId, mgrSecurityGroupId);
                 if (existingSg == null) {
-                    throw new Exception(String.format(SG_NOT_FOUND_MESSAGE, mgrSecurityGroupId));
+                    LOGGER.warn(String.format(SG_NOT_FOUND_MESSAGE, mgrSecurityGroupId));
+                    return null;
                 }
                 IsmSecurityGroupApi.this.em.remove(existingSg);
                 return null;
@@ -134,7 +135,7 @@ public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
         return getSecurityGroupList(this.vs.getMgrId());
     }
 
-    public List<? extends ManagerSecurityGroupElement> getSecurityGroupList(String deviceId) throws Exception {
+    public List<? extends ManagerSecurityGroupElement> getSecurityGroupList(String mgrDeviceId) throws Exception {
         return this.txControl.supports(new Callable<List<? extends ManagerSecurityGroupElement>>() {
             @Override
             public List<? extends ManagerSecurityGroupElement> call() throws Exception {
@@ -142,7 +143,7 @@ public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
                 CriteriaQuery<SecurityGroupEntity> query = criteriaBuilder.createQuery(SecurityGroupEntity.class);
                 Root<SecurityGroupEntity> r = query.from(SecurityGroupEntity.class);
                 query.select(r)
-                .where(criteriaBuilder.and(criteriaBuilder.equal(r.get("sgDevice").get("id"), deviceId)));
+                .where(criteriaBuilder.and(criteriaBuilder.equal(r.get("device").get("id"), mgrDeviceId)));
                 return IsmSecurityGroupApi.this.em.createQuery(query).getResultList();
             }
         });
@@ -150,11 +151,10 @@ public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
 
     @Override
     public ManagerSecurityGroupElement getSecurityGroupById(String mgrSecurityGroupId) throws Exception {
-        SecurityGroupEntity sg = getSecurityGroup(this.vs.getMgrId(), mgrSecurityGroupId);
-        return sg;
+        return getSecurityGroup(this.vs.getMgrId(), mgrSecurityGroupId);
     }
 
-    public SecurityGroupEntity getSecurityGroup(String deviceId, final String mgrSecurityGroupId) throws Exception {
+    public SecurityGroupEntity getSecurityGroup(String mgrDeviceId, String mgrSecurityGroupId) throws Exception {
         if (mgrSecurityGroupId == null) {
             return null;
         }
@@ -165,8 +165,8 @@ public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
                 CriteriaQuery<SecurityGroupEntity> query = criteriaBuilder.createQuery(SecurityGroupEntity.class);
                 Root<SecurityGroupEntity> r = query.from(SecurityGroupEntity.class);
                 query.select(r)
-                        .where(criteriaBuilder.and((criteriaBuilder.equal(r.get("sgDevice").get("id"), deviceId)),
-                                criteriaBuilder.equal(r.get("id"), mgrSecurityGroupId)));
+                .where(criteriaBuilder.and((criteriaBuilder.equal(r.get("device").get("id"), mgrDeviceId)),
+                        criteriaBuilder.equal(r.get("id"), mgrSecurityGroupId)));
                 List<SecurityGroupEntity> result = IsmSecurityGroupApi.this.em.createQuery(query).getResultList();
                 return result.isEmpty() == true ? null : result.get(0);
             }
@@ -182,7 +182,7 @@ public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
         });
     }
 
-    private SecurityGroupEntity findSecurityGroupByName(final String name) throws Exception {
+    private SecurityGroupEntity findSecurityGroupByName(String name) throws Exception {
         return this.txControl.supports(new Callable<SecurityGroupEntity>() {
             @Override
             public SecurityGroupEntity call() throws Exception {
@@ -196,7 +196,7 @@ public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
                 } catch (Exception e) {
                     LOGGER.error("Finding sg result in", e);
                 }
-                return result == null ? null : result;
+                return result;
             }
         });
     }

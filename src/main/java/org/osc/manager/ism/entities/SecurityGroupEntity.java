@@ -47,7 +47,7 @@ public class SecurityGroupEntity implements ManagerSecurityGroupElement {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "device_sg_fk", nullable = false, foreignKey = @ForeignKey(name = "FK_SG_DEVICE"))
-    private DeviceEntity sgDevice;
+    private DeviceEntity device;
 
     public SecurityGroupEntity() {
     }
@@ -86,11 +86,11 @@ public class SecurityGroupEntity implements ManagerSecurityGroupElement {
         return getId() == null ? null : getId().toString();
     }
 
-    public DeviceEntity getSgDevice() {
-        return this.sgDevice;
+    public DeviceEntity getDevice() {
+        return this.device;
     }
 
-    public void setSgDevice(DeviceEntity device) {
-        this.sgDevice = device;
+    public void setDevice(DeviceEntity device) {
+        this.device = device;
     }
 }

@@ -42,9 +42,9 @@ public class DeviceEntity implements ManagerDeviceElement {
     private String name;
     @OneToMany(mappedBy = "device", fetch = FetchType.EAGER)
     private List<DeviceMemberEntity> deviceMembers = new ArrayList<DeviceMemberEntity>();
-    @OneToMany(mappedBy = "sgDevice", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "device", fetch = FetchType.EAGER)
     private Set<SecurityGroupEntity> securityGroups;
-    @OneToMany(mappedBy = "sgiDevice", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "device", fetch = FetchType.EAGER)
     private Set<SecurityGroupInterfaceEntity> securityGroupInterfaces;
 
     @Override
