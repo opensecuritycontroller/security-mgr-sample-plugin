@@ -36,7 +36,7 @@ import javax.ws.rs.core.MediaType;
 
 import org.osc.manager.ism.entities.DomainEntity;
 import org.osc.manager.ism.entities.PolicyEntity;
-import org.osc.manager.ism.utils.LogProvider;
+import org.slf4j.LoggerFactory;
 import org.osc.manager.rest.server.SecurityManagerServerRestConstants;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.transaction.control.TransactionControl;
@@ -49,7 +49,7 @@ import org.slf4j.Logger;
 
 public class DomainApis {
 
-    private static final Logger LOG = LogProvider.getLogger(DomainApis.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DomainApis.class);
     private EntityManager em;
     private TransactionControl txControl;
 

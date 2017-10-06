@@ -25,7 +25,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
 import org.osc.manager.ism.entities.DomainEntity;
-import org.osc.manager.ism.utils.LogProvider;
+import org.slf4j.LoggerFactory;
 import org.osc.sdk.manager.api.ManagerDomainApi;
 import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
 import org.osgi.service.transaction.control.TransactionControl;
@@ -33,7 +33,7 @@ import org.slf4j.Logger;
 
 public class IsmDomainApi implements ManagerDomainApi {
 
-    private static final Logger LOG = LogProvider.getLogger(IsmDomainApi.class);
+    private static final Logger LOG = LoggerFactory.getLogger(IsmDomainApi.class);
     private TransactionControl txControl;
     private EntityManager em;
     ApplianceManagerConnectorElement mc;

@@ -29,7 +29,7 @@ import javax.persistence.criteria.Root;
 import org.osc.manager.ism.entities.PolicyEntity;
 import org.osc.manager.ism.entities.SecurityGroupEntity;
 import org.osc.manager.ism.entities.SecurityGroupInterfaceEntity;
-import org.osc.manager.ism.utils.LogProvider;
+import org.slf4j.LoggerFactory;
 import org.osc.sdk.manager.api.ManagerSecurityGroupInterfaceApi;
 import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
 import org.osc.sdk.manager.element.ManagerPolicyElement;
@@ -41,7 +41,7 @@ import org.slf4j.Logger;
 
 public class IsmSecurityGroupInterfaceApi implements ManagerSecurityGroupInterfaceApi {
 
-	private static final Logger LOG = LogProvider.getLogger(IsmSecurityGroupInterfaceApi.class);
+	private static final Logger LOG = LoggerFactory.getLogger(IsmSecurityGroupInterfaceApi.class);
 	private static final String SGI_NOT_FOUND_MESSAGE = "A security group interface with id %s was not found.";
 
 	private final TransactionControl txControl;

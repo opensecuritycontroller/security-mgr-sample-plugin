@@ -25,7 +25,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
 import org.osc.manager.ism.entities.SecurityGroupEntity;
-import org.osc.manager.ism.utils.LogProvider;
+import org.slf4j.LoggerFactory;
 import org.osc.sdk.manager.api.ManagerSecurityGroupApi;
 import org.osc.sdk.manager.element.ManagerSecurityGroupElement;
 import org.osc.sdk.manager.element.SecurityGroupMemberListElement;
@@ -35,7 +35,7 @@ import org.slf4j.Logger;
 
 public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
 
-	private static final Logger LOG = LogProvider.getLogger(IsmSecurityGroupApi.class);
+	private static final Logger LOG = LoggerFactory.getLogger(IsmSecurityGroupApi.class);
 	private VirtualSystemElement vs;
 
 	private final TransactionControl txControl;

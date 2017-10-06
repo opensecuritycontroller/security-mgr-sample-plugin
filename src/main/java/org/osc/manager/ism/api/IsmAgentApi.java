@@ -22,7 +22,7 @@ import java.util.List;
 import javax.persistence.EntityManager;
 
 import org.osc.manager.ism.entities.DeviceMemberEntity;
-import org.osc.manager.ism.utils.LogProvider;
+import org.slf4j.LoggerFactory;
 import org.osc.sdk.manager.api.ManagerDeviceMemberApi;
 import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
 import org.osc.sdk.manager.element.DistributedApplianceInstanceElement;
@@ -33,7 +33,7 @@ import org.slf4j.Logger;
 
 public final class IsmAgentApi implements ManagerDeviceMemberApi {
 
-    private static final Logger LOG = LogProvider.getLogger(IsmAgentApi.class);
+    private static final Logger LOG = LoggerFactory.getLogger(IsmAgentApi.class);
     private IsmDeviceApi api;
     private TransactionControl txControl;
     private EntityManager em;

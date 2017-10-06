@@ -35,7 +35,7 @@ import javax.ws.rs.core.MediaType;
 import org.osc.manager.ism.api.IsmDeviceApi;
 import org.osc.manager.ism.entities.DeviceEntity;
 import org.osc.manager.ism.entities.DeviceMemberEntity;
-import org.osc.manager.ism.utils.LogProvider;
+import org.slf4j.LoggerFactory;
 import org.osc.manager.rest.server.SecurityManagerServerRestConstants;
 import org.osc.sdk.manager.element.ManagerDeviceElement;
 import org.osgi.service.component.annotations.Component;
@@ -47,7 +47,7 @@ import org.slf4j.Logger;
 @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class DeviceApis {
-    private static final Logger LOG = LogProvider.getLogger(DeviceApis.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DeviceApis.class);
     private EntityManager em;
     private TransactionControl txControl;
     private IsmDeviceApi api;

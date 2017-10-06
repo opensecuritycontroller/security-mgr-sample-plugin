@@ -26,7 +26,7 @@ import javax.persistence.criteria.Root;
 
 import org.osc.manager.ism.entities.DomainEntity;
 import org.osc.manager.ism.entities.PolicyEntity;
-import org.osc.manager.ism.utils.LogProvider;
+import org.slf4j.LoggerFactory;
 import org.osc.sdk.manager.api.ManagerPolicyApi;
 import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
 import org.osgi.service.transaction.control.TransactionControl;
@@ -34,7 +34,7 @@ import org.slf4j.Logger;
 
 public class IsmPolicyApi implements ManagerPolicyApi {
 
-    private static final Logger LOG = LogProvider.getLogger(IsmPolicyApi.class);
+    private static final Logger LOG = LoggerFactory.getLogger(IsmPolicyApi.class);
     private TransactionControl txControl;
     private EntityManager em;
     ApplianceManagerConnectorElement mc;
