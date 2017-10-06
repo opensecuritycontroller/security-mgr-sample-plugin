@@ -21,17 +21,19 @@ import java.util.List;
 
 import javax.persistence.EntityManager;
 
-import org.apache.log4j.Logger;
 import org.osc.manager.ism.entities.DeviceMemberEntity;
+import org.osc.manager.ism.utils.LogProvider;
 import org.osc.sdk.manager.api.ManagerDeviceMemberApi;
 import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
 import org.osc.sdk.manager.element.DistributedApplianceInstanceElement;
 import org.osc.sdk.manager.element.ManagerDeviceMemberStatusElement;
 import org.osc.sdk.manager.element.VirtualSystemElement;
 import org.osgi.service.transaction.control.TransactionControl;
+import org.slf4j.Logger;
 
 public final class IsmAgentApi implements ManagerDeviceMemberApi {
-    private static Logger LOG = Logger.getLogger(IsmAgentApi.class);
+
+    private static final Logger LOG = LogProvider.getLogger(IsmAgentApi.class);
     private IsmDeviceApi api;
     private TransactionControl txControl;
     private EntityManager em;

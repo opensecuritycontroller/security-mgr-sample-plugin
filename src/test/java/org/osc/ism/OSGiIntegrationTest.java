@@ -123,7 +123,10 @@ public class OSGiIntegrationTest {
 
                 mavenBundle("org.osc.api", "security-mgr-api").versionAsInProject(),
                 mavenBundle("javax.websocket", "javax.websocket-api").versionAsInProject(),
-                mavenBundle("log4j", "log4j").versionAsInProject(),
+                mavenBundle("org.slf4j", "slf4j-api").versionAsInProject(),
+                // Fragment bundles cannot be started
+                mavenBundle("org.slf4j", "slf4j-simple").versionAsInProject().noStart(),
+
                 mavenBundle("org.apache.aries.jpa", "org.apache.aries.jpa.container").versionAsInProject(),
                 mavenBundle("org.apache.aries.tx-control", "tx-control-service-local").versionAsInProject(),
                 mavenBundle("org.apache.aries.tx-control", "tx-control-provider-jpa-local").versionAsInProject(),

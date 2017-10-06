@@ -24,17 +24,18 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
-import org.apache.log4j.Logger;
 import org.osc.manager.ism.entities.SecurityGroupEntity;
+import org.osc.manager.ism.utils.LogProvider;
 import org.osc.sdk.manager.api.ManagerSecurityGroupApi;
 import org.osc.sdk.manager.element.ManagerSecurityGroupElement;
 import org.osc.sdk.manager.element.SecurityGroupMemberListElement;
 import org.osc.sdk.manager.element.VirtualSystemElement;
 import org.osgi.service.transaction.control.TransactionControl;
+import org.slf4j.Logger;
 
 public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
 
-	private static final Logger LOGGER = Logger.getLogger(IsmSecurityGroupApi.class);
+	private static final Logger LOG = LogProvider.getLogger(IsmSecurityGroupApi.class);
 	private VirtualSystemElement vs;
 
 	private final TransactionControl txControl;
@@ -149,7 +150,7 @@ public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
 				try {
 					result = IsmSecurityGroupApi.this.em.createQuery(query).getSingleResult();
 				} catch (Exception e) {
-					LOGGER.error("Finding sg result in", e);
+					LOG.error("Finding sg result in", e);
 				}
 				return result == null ? null : result;
 			}
@@ -158,7 +159,7 @@ public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
 
 	@Override
 	public void close() {
-		LOGGER.info("Closing connection to the database");
+		LOG.info("Closing connection to the database");
 		this.txControl.required(() -> {
 			this.em.close();
 			return null;
