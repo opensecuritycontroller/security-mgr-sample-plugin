@@ -26,10 +26,10 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
-import org.apache.log4j.Logger;
 import org.osc.manager.ism.entities.PolicyEntity;
 import org.osc.manager.ism.entities.SecurityGroupEntity;
 import org.osc.manager.ism.entities.SecurityGroupInterfaceEntity;
+import org.slf4j.LoggerFactory;
 import org.osc.sdk.manager.api.ManagerSecurityGroupInterfaceApi;
 import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
 import org.osc.sdk.manager.element.ManagerPolicyElement;
@@ -37,10 +37,11 @@ import org.osc.sdk.manager.element.ManagerSecurityGroupInterfaceElement;
 import org.osc.sdk.manager.element.SecurityGroupInterfaceElement;
 import org.osc.sdk.manager.element.VirtualSystemElement;
 import org.osgi.service.transaction.control.TransactionControl;
+import org.slf4j.Logger;
 
 public class IsmSecurityGroupInterfaceApi implements ManagerSecurityGroupInterfaceApi {
 
-	private static final Logger LOGGER = Logger.getLogger(IsmSecurityGroupInterfaceApi.class);
+	private static final Logger LOG = LoggerFactory.getLogger(IsmSecurityGroupInterfaceApi.class);
 	private static final String SGI_NOT_FOUND_MESSAGE = "A security group interface with id %s was not found.";
 
 	private final TransactionControl txControl;
@@ -109,7 +110,7 @@ public class IsmSecurityGroupInterfaceApi implements ManagerSecurityGroupInterfa
 	public void deleteSecurityGroupInterface(String id) throws Exception {
 		SecurityGroupInterfaceEntity existingSgi = getSecurityGroupInterface(id);
 		if (existingSgi == null) {
-			LOGGER.info(String.format(SGI_NOT_FOUND_MESSAGE, id));
+			LOG.info(String.format(SGI_NOT_FOUND_MESSAGE, id));
 			return;
 		}
 		this.txControl.required(new Callable<Void>() {
@@ -152,7 +153,7 @@ public class IsmSecurityGroupInterfaceApi implements ManagerSecurityGroupInterfa
 				try {
 					result = IsmSecurityGroupInterfaceApi.this.em.createQuery(query).getSingleResult();
 				} catch (Exception e) {
-					LOGGER.error("Finding sg result in", e);
+					LOG.error("Finding sg result in", e);
 				}
 				return result == null ? null : result.toString();
 			}
@@ -197,7 +198,7 @@ public class IsmSecurityGroupInterfaceApi implements ManagerSecurityGroupInterfa
 
 	@Override
 	public void close() {
-		LOGGER.info("Closing connection to the database");
+		LOG.info("Closing connection to the database");
 		this.txControl.required(() -> {
 			this.em.close();
 			return null;
