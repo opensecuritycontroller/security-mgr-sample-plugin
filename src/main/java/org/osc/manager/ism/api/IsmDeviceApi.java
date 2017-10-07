@@ -27,9 +27,9 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
-import org.apache.log4j.Logger;
 import org.osc.manager.ism.entities.DeviceEntity;
 import org.osc.manager.ism.entities.DeviceMemberEntity;
+import org.slf4j.LoggerFactory;
 import org.osc.sdk.manager.api.ManagerDeviceApi;
 import org.osc.sdk.manager.element.ApplianceBootstrapInformationElement;
 import org.osc.sdk.manager.element.BootStrapInfoProviderElement;
@@ -38,10 +38,11 @@ import org.osc.sdk.manager.element.ManagerDeviceElement;
 import org.osc.sdk.manager.element.ManagerDeviceMemberElement;
 import org.osc.sdk.manager.element.VirtualSystemElement;
 import org.osgi.service.transaction.control.TransactionControl;
+import org.slf4j.Logger;
 
 public class IsmDeviceApi implements ManagerDeviceApi {
 
-    private static Logger LOG = Logger.getLogger(IsmDeviceApi.class);
+    private static final Logger LOG = LoggerFactory.getLogger(IsmDeviceApi.class);
     private VirtualSystemElement vs;
     private TransactionControl txControl;
     private EntityManager em;

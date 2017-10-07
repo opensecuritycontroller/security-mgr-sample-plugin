@@ -26,7 +26,6 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
-import org.apache.log4j.Logger;
 import org.osc.manager.ism.entities.DeviceEntity;
 import org.osc.manager.ism.entities.PolicyEntity;
 import org.osc.manager.ism.entities.SecurityGroupEntity;
@@ -38,10 +37,12 @@ import org.osc.sdk.manager.element.ManagerSecurityGroupInterfaceElement;
 import org.osc.sdk.manager.element.SecurityGroupInterfaceElement;
 import org.osc.sdk.manager.element.VirtualSystemElement;
 import org.osgi.service.transaction.control.TransactionControl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class IsmSecurityGroupInterfaceApi implements ManagerSecurityGroupInterfaceApi {
 
-    private static Logger LOGGER = Logger.getLogger(IsmSecurityGroupInterfaceApi.class);
+    private static final Logger LOG = LoggerFactory.getLogger(IsmSecurityGroupInterfaceApi.class);
     private static String SGI_NOT_FOUND_MESSAGE = "A security group interface with id %s was not found.";
     private TransactionControl txControl;
     private EntityManager em;
@@ -75,7 +76,7 @@ public class IsmSecurityGroupInterfaceApi implements ManagerSecurityGroupInterfa
         DeviceEntity dev = (DeviceEntity) this.api.getDeviceById(mgrDeviceId);
         if (dev == null) {
             String msg = String.format("Cannot find the device id: %s\n", mgrDeviceId);
-            LOGGER.error(msg);
+            LOG.error(msg);
             throw new IllegalArgumentException(msg);
         }
         String existingSGIId = findSecurityGroupInterfaceByName(sgiElement.getName());
@@ -93,7 +94,7 @@ public class IsmSecurityGroupInterfaceApi implements ManagerSecurityGroupInterfa
                         sgiElement.getManagerSecurityGroupId(), sgiElement.getName());
                 if (sgi != null) {
                     String msg = String.format("SGI already exists name: %s\n", sgiElement.getName());
-                    LOGGER.error(msg);
+                    LOG.error(msg);
                     throw new IllegalArgumentException(msg);
                 }
                 SecurityGroupInterfaceEntity newSGI = new SecurityGroupInterfaceEntity(sgiElement.getName(), policies,
@@ -123,7 +124,7 @@ public class IsmSecurityGroupInterfaceApi implements ManagerSecurityGroupInterfa
                 sgiElement.getManagerSecurityGroupId(), sgiElement.getName());
         if (sgi != null) {
             String msg = String.format("SGI already exists name: %s\n", sgiElement.getName());
-            LOGGER.error(msg);
+            LOG.error(msg);
             throw new IllegalArgumentException(msg);
         }
         existingSgi.setName(sgiElement.getName());
@@ -150,7 +151,7 @@ public class IsmSecurityGroupInterfaceApi implements ManagerSecurityGroupInterfa
             public Void call() throws Exception {
                 SecurityGroupInterfaceEntity existingSgi = getSecurityGroupInterface(mgrDeviceId, mgrSecurityGroupId);
                 if (existingSgi == null) {
-                    LOGGER.warn(String.format(SGI_NOT_FOUND_MESSAGE, mgrSecurityGroupId));
+                    LOG.warn(String.format(SGI_NOT_FOUND_MESSAGE, mgrSecurityGroupId));
                     return null;
                 }
                 IsmSecurityGroupInterfaceApi.this.em.remove(existingSgi);
@@ -184,7 +185,7 @@ public class IsmSecurityGroupInterfaceApi implements ManagerSecurityGroupInterfa
                 try {
                     result = IsmSecurityGroupInterfaceApi.this.em.createQuery(query).getSingleResult();
                 } catch (Exception e) {
-                    LOGGER.error("Finding sg result in", e);
+                    LOG.error("Finding sg result in", e);
                 }
                 return result == null ? null : result.toString();
             }
@@ -213,7 +214,7 @@ public class IsmSecurityGroupInterfaceApi implements ManagerSecurityGroupInterfa
 
     @Override
     public void close() {
-        LOGGER.info("Closing connection to the database");
+        LOG.info("Closing connection to the database");
         this.txControl.required(() -> {
             this.em.close();
             return null;

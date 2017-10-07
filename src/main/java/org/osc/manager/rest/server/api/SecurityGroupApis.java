@@ -31,20 +31,21 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import org.apache.log4j.Logger;
 import org.osc.manager.ism.api.IsmSecurityGroupApi;
 import org.osc.manager.ism.entities.SecurityGroupEntity;
 import org.osc.manager.rest.server.SecurityManagerServerRestConstants;
 import org.osc.sdk.manager.element.ManagerSecurityGroupElement;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.transaction.control.TransactionControl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component(service = SecurityGroupApis.class)
 @Path(SecurityManagerServerRestConstants.SERVER_API_PATH_PREFIX + "/securitygroups")
 @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class SecurityGroupApis {
-    private static Logger LOG = Logger.getLogger(SecurityGroupApis.class);
+    private static Logger LOG = LoggerFactory.getLogger(SecurityGroupApis.class);
     private IsmSecurityGroupApi sgApi;
 
     public void init(EntityManager em, TransactionControl txControl) throws Exception {

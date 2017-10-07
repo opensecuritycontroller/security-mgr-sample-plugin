@@ -31,7 +31,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import org.apache.log4j.Logger;
 import org.osc.manager.ism.api.IsmSecurityGroupInterfaceApi;
 import org.osc.manager.ism.entities.SecurityGroupEntity;
 import org.osc.manager.ism.entities.SecurityGroupInterfaceEntity;
@@ -40,13 +39,15 @@ import org.osc.sdk.manager.element.ManagerSecurityGroupInterfaceElement;
 import org.osc.sdk.manager.element.SecurityGroupInterfaceElement;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.transaction.control.TransactionControl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component(service = SecurityGroupInterfaceApis.class)
 @Path(SecurityManagerServerRestConstants.SERVER_API_PATH_PREFIX + "/securityGroupInterfaces")
 @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class SecurityGroupInterfaceApis {
-    private static Logger LOG = Logger.getLogger(SecurityGroupInterfaceApis.class);
+    private static Logger LOG = LoggerFactory.getLogger(SecurityGroupInterfaceApis.class);
     private IsmSecurityGroupInterfaceApi sgiApi;
 
     public void init(EntityManager em, TransactionControl txControl) throws Exception {

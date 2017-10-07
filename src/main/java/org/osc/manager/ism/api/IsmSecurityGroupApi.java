@@ -24,7 +24,6 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
-import org.apache.log4j.Logger;
 import org.osc.manager.ism.entities.DeviceEntity;
 import org.osc.manager.ism.entities.SecurityGroupEntity;
 import org.osc.sdk.manager.api.ManagerSecurityGroupApi;
@@ -32,10 +31,12 @@ import org.osc.sdk.manager.element.ManagerSecurityGroupElement;
 import org.osc.sdk.manager.element.SecurityGroupMemberListElement;
 import org.osc.sdk.manager.element.VirtualSystemElement;
 import org.osgi.service.transaction.control.TransactionControl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
 
-    private static Logger LOGGER = Logger.getLogger(IsmSecurityGroupApi.class);
+    private static final Logger LOG = LoggerFactory.getLogger(IsmSecurityGroupApi.class);
     private VirtualSystemElement vs;
     private TransactionControl txControl;
     private EntityManager em;
@@ -68,7 +69,7 @@ public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
         DeviceEntity dev = (DeviceEntity) this.api.getDeviceById(mgrDeviceId);
         if (dev == null) {
             String msg = String.format("Cannot find the device id: %s\n", mgrDeviceId);
-            LOGGER.error(msg);
+            LOG.error(msg);
             throw new IllegalArgumentException(msg);
         }
 
@@ -121,7 +122,7 @@ public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
             public Void call() throws Exception {
                 SecurityGroupEntity existingSg = getSecurityGroup(mgrDeviceId, mgrSecurityGroupId);
                 if (existingSg == null) {
-                    LOGGER.warn(String.format(SG_NOT_FOUND_MESSAGE, mgrSecurityGroupId));
+                    LOG.warn(String.format(SG_NOT_FOUND_MESSAGE, mgrSecurityGroupId));
                     return null;
                 }
                 IsmSecurityGroupApi.this.em.remove(existingSg);
@@ -175,7 +176,7 @@ public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
 
     @Override
     public void close() {
-        LOGGER.info("Closing connection to the database");
+        LOG.info("Closing connection to the database");
         this.txControl.required(() -> {
             this.em.close();
             return null;
@@ -194,7 +195,7 @@ public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
                 try {
                     result = IsmSecurityGroupApi.this.em.createQuery(query).getSingleResult();
                 } catch (Exception e) {
-                    LOGGER.error("Finding sg result in", e);
+                    LOG.error("Finding sg result in", e);
                 }
                 return result;
             }

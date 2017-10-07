@@ -24,16 +24,17 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
-import org.apache.log4j.Logger;
 import org.osc.manager.ism.entities.DomainEntity;
 import org.osc.manager.ism.entities.PolicyEntity;
+import org.slf4j.LoggerFactory;
 import org.osc.sdk.manager.api.ManagerPolicyApi;
 import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
 import org.osgi.service.transaction.control.TransactionControl;
+import org.slf4j.Logger;
 
 public class IsmPolicyApi implements ManagerPolicyApi {
 
-    Logger log = Logger.getLogger(IsmPolicyApi.class);
+    private static final Logger LOG = LoggerFactory.getLogger(IsmPolicyApi.class);
     private TransactionControl txControl;
     private EntityManager em;
     ApplianceManagerConnectorElement mc;
@@ -58,14 +59,14 @@ public class IsmPolicyApi implements ManagerPolicyApi {
             @Override
             public PolicyEntity call() throws Exception {
 
-                CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+                CriteriaBuilder criteriaBuilder = IsmPolicyApi.this.em.getCriteriaBuilder();
                 CriteriaQuery<PolicyEntity> query = criteriaBuilder.createQuery(PolicyEntity.class);
                 Root<PolicyEntity> r = query.from(PolicyEntity.class);
                 query.select(r)
                         .where(criteriaBuilder.and(
                                 criteriaBuilder.equal(r.get("domain").get("id"), Long.parseLong(domainId)),
                                 criteriaBuilder.equal(r.get("id"), Long.parseLong(policyId))));
-                List<PolicyEntity> result = em.createQuery(query).getResultList();
+                List<PolicyEntity> result = IsmPolicyApi.this.em.createQuery(query).getResultList();
                 if (result.isEmpty()) {
                     throw new Exception("Policy or Domain Entity does not exists...");
                     //TODO - Add 404 error response - Sudhir
@@ -83,17 +84,17 @@ public class IsmPolicyApi implements ManagerPolicyApi {
             @Override
             public List<PolicyEntity> call() throws Exception {
 
-                DomainEntity result = em.find(DomainEntity.class, Long.parseLong(domainId));
+                DomainEntity result = IsmPolicyApi.this.em.find(DomainEntity.class, Long.parseLong(domainId));
                 if (result == null) {
                     throw new Exception("Domain Entity does not exists...");
                     //TODO - to add RETURN 404 error:Sudhir
                 }
-                CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+                CriteriaBuilder criteriaBuilder = IsmPolicyApi.this.em.getCriteriaBuilder();
                 CriteriaQuery<PolicyEntity> query = criteriaBuilder.createQuery(PolicyEntity.class);
                 Root<PolicyEntity> r = query.from(PolicyEntity.class);
                 query.select(r).where(criteriaBuilder
                         .and(criteriaBuilder.equal(r.get("domain").get("id"), Long.parseLong(domainId))));
-                return em.createQuery(query).getResultList();
+                return IsmPolicyApi.this.em.createQuery(query).getResultList();
             }
         });
     }
