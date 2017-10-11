@@ -30,11 +30,11 @@ alter table SECURITY_GROUP_INTERFACE add constraint if not exists FK_SGI_SG fore
 
 alter table SECURITY_GROUP_INTERFACE add constraint if not exists FK_SGI_DEVICE foreign key (device_fk) references DEVICE;
 
-alter table SECURITY_GROUP_INTERFACE add constraint if not exists UK_SGI_NAME_DEVICE unique (name,device_fk) references DEVICE;
+alter table SECURITY_GROUP_INTERFACE add constraint if not exists UK_SGI_NAME_DEVICE unique (name, device_fk);
 
 alter table SECURITY_GROUP add constraint if not exists FK_SG_DEVICE foreign key (device_fk) references DEVICE;
 
-alter table SECURITY_GROUP add constraint if not exists UK_SG_NAME_DEVICE unique (name,device_fk) references DEVICE;
+alter table SECURITY_GROUP add constraint if not exists UK_SG_NAME_DEVICE unique (name, device_fk);
 
 alter table DEVICE_MEMBER add constraint if not exists FK_DEVICE foreign key (device_fk) references DEVICE;
 

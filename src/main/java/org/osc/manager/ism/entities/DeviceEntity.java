@@ -40,13 +40,13 @@ public class DeviceEntity implements ManagerDeviceElement {
     @Column(name = "name", unique = true, nullable = false)
     private String name;
 
-    @OneToMany(mappedBy = "device", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "device", fetch = FetchType.LAZY)
     private List<DeviceMemberEntity> deviceMembers = new ArrayList<DeviceMemberEntity>();
 
-    @OneToMany(mappedBy = "device", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "device", fetch = FetchType.LAZY)
     private List<SecurityGroupEntity> securityGroups = new ArrayList<>();
 
-    @OneToMany(mappedBy = "device", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "device", fetch = FetchType.LAZY)
     private List<SecurityGroupInterfaceEntity> securityGroupsInterfaces = new ArrayList<>();
 
     @Override

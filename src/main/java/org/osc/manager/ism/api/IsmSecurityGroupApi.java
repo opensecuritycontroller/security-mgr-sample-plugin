@@ -73,9 +73,6 @@ public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
             SecurityGroupEntity newSG = new SecurityGroupEntity(name, device);
             IsmSecurityGroupApi.this.em.persist(newSG);
 
-            device.getSecurityGroups().add(newSG);
-            IsmSecurityGroupApi.this.em.merge(device);
-
             return newSG.getSGId();
         });
     }
@@ -124,6 +121,9 @@ public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
 
     @Override
     public ManagerSecurityGroupElement getSecurityGroupById(String mgrSecurityGroupId) throws Exception {
+        if (mgrSecurityGroupId == null) {
+            return null;
+        }
         DeviceEntity device = this.validationUtil.getDeviceOrThrow(this.vs.getMgrId());
 
         return this.txControl.supports(() -> {
