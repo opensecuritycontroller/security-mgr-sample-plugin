@@ -15,8 +15,12 @@ public class ValidationUtil {
         this.em = em;
     }
 
-    public DeviceEntity getOrThrowDevice(String deviceId) {
-        DeviceEntity device = this.em.find(DeviceEntity.class, deviceId);
+    public DeviceEntity getDeviceOrThrow(String deviceId) {
+
+        DeviceEntity device = this.txControl.required(() -> {
+            return this.em.find(DeviceEntity.class, deviceId);
+        });
+
         if (device == null) {
             throw new IllegalArgumentException(String.format("Cannot find device with id: %s", deviceId));
         }

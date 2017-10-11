@@ -72,7 +72,7 @@ public class IsmSecurityGroupInterfaceApi implements ManagerSecurityGroupInterfa
 
     @Override
     public String createSecurityGroupInterface(SecurityGroupInterfaceElement sgiElement) throws Exception {
-        DeviceEntity device = this.validationUtil.getOrThrowDevice(this.vs.getMgrId());
+        DeviceEntity device = this.validationUtil.getDeviceOrThrow(this.vs.getMgrId());
 
         SecurityGroupInterfaceEntity existingSGI = findSecurityGroupInterfaceEntityByName(sgiElement.getName(), device);
         if (existingSGI != null) {
@@ -135,7 +135,7 @@ public class IsmSecurityGroupInterfaceApi implements ManagerSecurityGroupInterfa
 
     @Override
     public ManagerSecurityGroupInterfaceElement getSecurityGroupInterfaceById(String id) throws Exception {
-        DeviceEntity device = this.validationUtil.getOrThrowDevice(this.vs.getMgrId());
+        DeviceEntity device = this.validationUtil.getDeviceOrThrow(this.vs.getMgrId());
 
         SecurityGroupInterfaceEntity sgi = getSecurityGroupInterfaceById(id, device);
         return sgi;
@@ -143,7 +143,7 @@ public class IsmSecurityGroupInterfaceApi implements ManagerSecurityGroupInterfa
 
     @Override
     public String findSecurityGroupInterfaceByName(String name) throws Exception {
-        DeviceEntity device = this.validationUtil.getOrThrowDevice(this.vs.getMgrId());
+        DeviceEntity device = this.validationUtil.getDeviceOrThrow(this.vs.getMgrId());
 
         SecurityGroupInterfaceEntity sgi = findSecurityGroupInterfaceEntityByName(name, device);
 
@@ -152,7 +152,7 @@ public class IsmSecurityGroupInterfaceApi implements ManagerSecurityGroupInterfa
 
     @Override
     public List<? extends ManagerSecurityGroupInterfaceElement> listSecurityGroupInterfaces() throws Exception {
-        DeviceEntity device = this.validationUtil.getOrThrowDevice(this.vs.getMgrId());
+        DeviceEntity device = this.validationUtil.getDeviceOrThrow(this.vs.getMgrId());
 
         return this.txControl.supports(() -> {
             CriteriaBuilder cb = IsmSecurityGroupInterfaceApi.this.em.getCriteriaBuilder();

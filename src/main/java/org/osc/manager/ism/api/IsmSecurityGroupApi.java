@@ -62,7 +62,7 @@ public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
     public String createSecurityGroup(String name, String oscSgId, SecurityGroupMemberListElement memberList)
             throws Exception {
         // TODO Sudhir: Please handle the memberList
-        DeviceEntity device = this.validationUtil.getOrThrowDevice(this.vs.getMgrId());
+        DeviceEntity device = this.validationUtil.getDeviceOrThrow(this.vs.getMgrId());
 
         SecurityGroupEntity existingSG = findSecurityGroupByName(name, device);
         if (existingSG != null) {
@@ -110,7 +110,7 @@ public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
 
     @Override
     public List<? extends ManagerSecurityGroupElement> getSecurityGroupList() throws Exception {
-        DeviceEntity device = this.validationUtil.getOrThrowDevice(this.vs.getMgrId());
+        DeviceEntity device = this.validationUtil.getDeviceOrThrow(this.vs.getMgrId());
 
         return this.txControl.supports(() -> {
             CriteriaBuilder cb = IsmSecurityGroupApi.this.em.getCriteriaBuilder();
@@ -124,7 +124,7 @@ public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
 
     @Override
     public ManagerSecurityGroupElement getSecurityGroupById(String mgrSecurityGroupId) throws Exception {
-        DeviceEntity device = this.validationUtil.getOrThrowDevice(this.vs.getMgrId());
+        DeviceEntity device = this.validationUtil.getDeviceOrThrow(this.vs.getMgrId());
 
         return this.txControl.supports(() -> {
             CriteriaBuilder cb = IsmSecurityGroupApi.this.em.getCriteriaBuilder();
