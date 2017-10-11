@@ -36,38 +36,54 @@ import org.osc.sdk.manager.element.ManagerDeviceMemberStatusElement;
 @Entity
 @Table(name = "DEVICE_MEMBER")
 public class DeviceMemberEntity implements ManagerDeviceMemberElement, ManagerDeviceMemberStatusElement {
+
     @Id
     @GeneratedValue
     private Long id;
+
     @Column(name = "name", unique = true, nullable = false)
     private String name;
+
     @Column(name = "version")
     private String version;
+
     @Column(name = "rx")
     public Long rx;
+
     @Column(name = "txSva")
     public Long txSva;
+
     @Column(name = "dropSva")
     public Long dropSva;
+
     @Column(name = "applianceIp")
     private String applianceIp;
+
     @Column(name = "managerIp")
     private String managerIp;
+
     @Column(name = "brokerIp")
     private String brokerIp;
+
     @Column(name = "applianceGateway")
     private String applianceGateway;
+
     @Column(name = "applianceSubnetMask")
     private String applianceSubnetMask;
+
     @Column(name = "discovered")
     private Boolean discovered;
+
     @Column(name = "inspectionReady")
     private Boolean inspectionReady;
+
     @Column(name = "publicIp")
     private String publicIp;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "device_fk", nullable = false, foreignKey = @ForeignKey(name = "FK_DEVICE"))
     private DeviceEntity device;
+
     @Transient
     private DistributedApplianceInstanceElement dai;
 

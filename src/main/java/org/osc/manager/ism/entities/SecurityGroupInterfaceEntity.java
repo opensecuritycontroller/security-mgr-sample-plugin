@@ -28,6 +28,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
@@ -56,17 +57,22 @@ public class SecurityGroupInterfaceEntity implements ManagerSecurityGroupInterfa
     private String tag;
 
 	@OneToOne(fetch = FetchType.EAGER)
-	@JoinColumn(name = "security_group_fk", nullable = true, foreignKey = @ForeignKey(name = "FK_SECURITY_GROUP"))
+	@JoinColumn(name = "security_group_fk", nullable = true, foreignKey = @ForeignKey(name = "FK_SGI_SG"))
 	private SecurityGroupEntity securityGroup;
 
-	public SecurityGroupInterfaceEntity() {
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "device_fk", nullable = false, foreignKey = @ForeignKey(name = "FK_SGI_DEVICE"))
+    private DeviceEntity device;
+
+	SecurityGroupInterfaceEntity() {
 	}
 
-	public SecurityGroupInterfaceEntity(String name, Set<PolicyEntity> policies, String tag, SecurityGroupEntity mgrSecurityGroup) {
+	public SecurityGroupInterfaceEntity(String name, Set<PolicyEntity> policies, String tag, SecurityGroupEntity mgrSecurityGroup, DeviceEntity device) {
 		this.name = name;
 		this.policies = policies;
 		this.tag = tag;
 		this.securityGroup = mgrSecurityGroup;
+		this.device = device;
 	}
 
 	public Long getId() {
@@ -129,5 +135,9 @@ public class SecurityGroupInterfaceEntity implements ManagerSecurityGroupInterfa
 	public String getSecurityGroupId() {
 		return getSecurityGroup().getId() == null ? null : getSecurityGroup().getId().toString();
 	}
+
+    public DeviceEntity getDevice() {
+        return this.device;
+    }
 
 }

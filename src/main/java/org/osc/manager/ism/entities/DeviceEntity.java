@@ -32,13 +32,22 @@ import org.osc.sdk.manager.element.ManagerDeviceElement;
 @Entity
 @Table(name = "DEVICE")
 public class DeviceEntity implements ManagerDeviceElement {
+
     @Id
     @GeneratedValue
     private Long id;
+
     @Column(name = "name", unique = true, nullable = false)
     private String name;
+
     @OneToMany(mappedBy = "device", fetch = FetchType.EAGER)
     private List<DeviceMemberEntity> deviceMembers = new ArrayList<DeviceMemberEntity>();
+
+    @OneToMany(mappedBy = "device", fetch = FetchType.EAGER)
+    private List<SecurityGroupEntity> securityGroups = new ArrayList<>();
+
+    @OneToMany(mappedBy = "device", fetch = FetchType.EAGER)
+    private List<SecurityGroupInterfaceEntity> securityGroupsInterfaces = new ArrayList<>();
 
     @Override
     public String getId() {
@@ -65,7 +74,11 @@ public class DeviceEntity implements ManagerDeviceElement {
         return this.deviceMembers;
     }
 
-    public void setDeviceMembers(DeviceMemberEntity deviceMembers) {
-        this.deviceMembers.add(deviceMembers);
+    public List<SecurityGroupEntity> getSecurityGroups() {
+        return this.securityGroups;
+    }
+
+    public List<SecurityGroupInterfaceEntity> getSecurityGroupsInterfaces() {
+        return this.securityGroupsInterfaces;
     }
 }
