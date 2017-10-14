@@ -27,11 +27,12 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 import org.osc.sdk.manager.element.ManagerSecurityGroupElement;
 
 @Entity
-@Table(name = "SECURITY_GROUP")
+@Table(name = "SECURITY_GROUP", uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "device_fk" }) })
 public class SecurityGroupEntity implements ManagerSecurityGroupElement {
 
     @Id
@@ -46,10 +47,15 @@ public class SecurityGroupEntity implements ManagerSecurityGroupElement {
     private SecurityGroupInterfaceEntity securityGroupInterfaces;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "device_sg_fk", nullable = false, foreignKey = @ForeignKey(name = "FK_SG_DEVICE"))
+    @JoinColumn(name = "device_fk", nullable = false, foreignKey = @ForeignKey(name = "FK_SG_DEVICE"))
     private DeviceEntity device;
 
     public SecurityGroupEntity() {
+    }
+
+    public SecurityGroupEntity(String name, DeviceEntity device) {
+        this.name = name;
+        this.device = device;
     }
 
     public SecurityGroupEntity(String name) {

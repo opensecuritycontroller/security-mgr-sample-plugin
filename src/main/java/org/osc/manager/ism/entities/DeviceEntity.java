@@ -35,11 +35,14 @@ import org.osc.sdk.manager.element.ManagerDeviceElement;
 @Entity
 @Table(name = "DEVICE")
 public class DeviceEntity implements ManagerDeviceElement {
+
     @Id
     @GeneratedValue
     private Long id;
+
     @Column(name = "name", unique = true, nullable = false)
     private String name;
+
     @OneToMany(mappedBy = "device", fetch = FetchType.EAGER)
     private List<DeviceMemberEntity> deviceMembers = new ArrayList<DeviceMemberEntity>();
     @OneToMany(mappedBy = "device", fetch = FetchType.EAGER)
@@ -70,10 +73,6 @@ public class DeviceEntity implements ManagerDeviceElement {
 
     public List<DeviceMemberEntity> getDeviceMembers() {
         return this.deviceMembers;
-    }
-
-    public void setDeviceMembers(DeviceMemberEntity deviceMembers) {
-        this.deviceMembers.add(deviceMembers);
     }
 
     public void setSecurityGroups(Collection<SecurityGroupEntity> securityGroups) {

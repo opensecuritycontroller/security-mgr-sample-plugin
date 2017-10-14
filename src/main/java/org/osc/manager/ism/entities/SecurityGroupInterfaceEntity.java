@@ -57,22 +57,24 @@ implements ManagerSecurityGroupInterfaceElement, SecurityGroupInterfaceElement {
     @Column(name = "tag", nullable = true)
     private String tag;
 
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "security_group_fk", nullable = true, foreignKey = @ForeignKey(name = "FK_SECURITY_GROUP"))
+    @OneToOne(fetch=FetchType.EAGER)@JoinColumn(name="security_group_fk",nullable=true,foreignKey=
+            @ForeignKey(name = "FK_SECURITY_GROUP"))
     private SecurityGroupEntity securityGroup;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "device_sgi_fk", nullable = false, foreignKey = @ForeignKey(name = "FK_SGI_DEVICE"))
+    @JoinColumn(name = "device_fk", nullable = false, foreignKey = @ForeignKey(name = "FK_SGI_DEVICE"))
     private DeviceEntity device;
 
     public SecurityGroupInterfaceEntity() {
     }
 
-    public SecurityGroupInterfaceEntity(String name, Set<PolicyEntity> policies, String tag, SecurityGroupEntity mgrSecurityGroup) {
+    public SecurityGroupInterfaceEntity(String name, Set<PolicyEntity> policies, String tag,
+            SecurityGroupEntity mgrSecurityGroup, DeviceEntity device) {
         this.name = name;
         this.policies = policies;
         this.tag = tag;
         this.securityGroup = mgrSecurityGroup;
+        this.device = device;
     }
 
     public Long getId() {
@@ -133,7 +135,10 @@ implements ManagerSecurityGroupInterfaceElement, SecurityGroupInterfaceElement {
 
     @Override
     public String getSecurityGroupId() {
-        return getSecurityGroup().getId() == null ? null : getSecurityGroup().getId().toString();
+        if (getSecurityGroup() != null) {
+            return getSecurityGroup().getId() == null ? null : getSecurityGroup().getId().toString();
+        }
+        return null;
     }
 
     @Override
