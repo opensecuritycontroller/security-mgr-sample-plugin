@@ -34,12 +34,10 @@ import javax.persistence.Table;
 
 import org.osc.sdk.manager.element.ManagerPolicyElement;
 import org.osc.sdk.manager.element.ManagerSecurityGroupInterfaceElement;
-import org.osc.sdk.manager.element.SecurityGroupInterfaceElement;
 
 @Entity
 @Table(name = "SECURITY_GROUP_INTERFACE")
-public class SecurityGroupInterfaceEntity
-implements ManagerSecurityGroupInterfaceElement, SecurityGroupInterfaceElement {
+public class SecurityGroupInterfaceEntity implements ManagerSecurityGroupInterfaceElement {
     @Id
     @GeneratedValue
     @Column(name = "id")
@@ -65,7 +63,7 @@ implements ManagerSecurityGroupInterfaceElement, SecurityGroupInterfaceElement {
     @JoinColumn(name = "device_fk", nullable = false, foreignKey = @ForeignKey(name = "FK_SGI_DEVICE"))
     private DeviceEntity device;
 
-    public SecurityGroupInterfaceEntity() {
+    SecurityGroupInterfaceEntity() {
     }
 
     public SecurityGroupInterfaceEntity(String name, Set<PolicyEntity> policies, String tag,
@@ -141,21 +139,7 @@ implements ManagerSecurityGroupInterfaceElement, SecurityGroupInterfaceElement {
         return null;
     }
 
-    @Override
-    public String getManagerSecurityGroupInterfaceId() {
-        return getSecurityGroupInterfaceId();
-    }
-
-    @Override
-    public String getManagerSecurityGroupId() {
-        return getSecurityGroupId();
-    }
-
     public DeviceEntity getDevice() {
         return this.device;
-    }
-
-    public void setDevice(DeviceEntity device) {
-        this.device = device;
     }
 }

@@ -50,7 +50,7 @@ import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 
 @Component(name = "sm.servlet", service = Servlet.class, property = {
 
-        HTTP_WHITEBOARD_SERVLET_NAME + "=" + "OSC-API", HTTP_WHITEBOARD_SERVLET_PATTERN + "=/testplugin/*",
+        HTTP_WHITEBOARD_SERVLET_NAME + "=" + "SM-API", HTTP_WHITEBOARD_SERVLET_PATTERN + "=/sm/*",
         HTTP_WHITEBOARD_CONTEXT_SELECT + "=(" + HTTP_WHITEBOARD_CONTEXT_NAME + "=" + "OSC-API"
                 + ")",
                 HTTP_WHITEBOARD_TARGET + "=(" + "org.apache.felix.http.name" + "=" + "OSC-API" + ")"
@@ -84,6 +84,7 @@ public class SecurityManagerServletDelegate extends ResourceConfig implements Se
 
     @Reference(target = "(osgi.local.enabled=true)")
     private JPAEntityManagerProviderFactory resourceFactory;
+
     private EntityManager em;
 
     /** The Jersey REST container */

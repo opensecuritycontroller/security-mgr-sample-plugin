@@ -32,8 +32,10 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import org.osc.manager.ism.api.IsmSecurityGroupApi;
+import org.osc.manager.ism.api.util.ValidationUtil;
+import org.osc.manager.ism.entities.DeviceEntity;
 import org.osc.manager.ism.entities.SecurityGroupEntity;
-import org.osc.manager.rest.server.SecurityManagerServerRestConstants;
+import org.osc.manager.ism.entities.VSElement;
 import org.osc.sdk.manager.element.ManagerSecurityGroupElement;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.transaction.control.TransactionControl;
@@ -41,50 +43,72 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Component(service = SecurityGroupApis.class)
-@Path(SecurityManagerServerRestConstants.SERVER_API_PATH_PREFIX + "/securitygroups")
+@Path("/devices/{deviceId}/securitygroups")
 @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class SecurityGroupApis {
+
     private static Logger LOG = LoggerFactory.getLogger(SecurityGroupApis.class);
+
     private IsmSecurityGroupApi sgApi;
 
+    private EntityManager em;
+
+    private TransactionControl txControl;
+
+    private ValidationUtil validationUtil;
+
     public void init(EntityManager em, TransactionControl txControl) throws Exception {
-        this.sgApi = new IsmSecurityGroupApi(null, txControl, em);
+        this.em = em;
+        this.txControl = txControl;
+        this.validationUtil = new ValidationUtil(txControl, em);
     }
 
-    @Path("/{oscSgId}")
     @POST
-    public String createSecurityGroup(@PathParam("oscSgId") String oscSgId, SecurityGroupEntity entity)
+    public String createSecurityGroup(@PathParam("deviceId") Long deviceId, SecurityGroupEntity entity)
             throws Exception {
         LOG.info(String.format("Creating security group  with name %s", entity.getName()));
+        DeviceEntity device = this.validationUtil.getDeviceOrThrow(Long.toString(deviceId));
+        this.validationUtil.validateParentIdMatches(device, Long.parseLong(entity.getDevice().getId()));
         // TODO : SUDHIR - Add SecurityGroupMember
-        return this.sgApi.createSecurityGroup(entity.getDevice().getId(), entity.getName(), oscSgId, null);
+        VSElement vs = new VSElement(deviceId, null);
+        this.sgApi = new IsmSecurityGroupApi(vs, this.txControl, this.em);
+        return this.sgApi.createSecurityGroup(entity.getName(), null, null);
     }
 
-    @Path("/{deviceId}/securitygroups/{sgId}")
+    @Path("/{sgId}")
     @PUT
-    public SecurityGroupEntity updateSecurityGroup(@PathParam("sgId") Long sgId, SecurityGroupEntity entity)
-            throws Exception {
+    public SecurityGroupEntity updateSecurityGroup(@PathParam("deviceId") Long deviceId, @PathParam("sgId") Long sgId,
+            SecurityGroupEntity entity)
+                    throws Exception {
         LOG.info(String.format("Updating the security group for id %s ", Long.toString(sgId)));
+        DeviceEntity device = this.validationUtil.getDeviceOrThrow(Long.toString(deviceId));
+        this.validationUtil.validateParentIdMatches(device, Long.parseLong(entity.getDevice().getId()));
         // TODO : SUDHIR - Add SecurityGroupMember
-        this.sgApi.updateSecurityGroup(entity.getDevice().getId(), Long.toString(sgId), entity.getName(), null);
+        VSElement vs = new VSElement(deviceId, null);
+        this.sgApi = new IsmSecurityGroupApi(vs, this.txControl, this.em);
+        this.sgApi.updateSecurityGroup(Long.toString(sgId), entity.getName(), null);
         return entity;
     }
 
-    @Path("/{deviceId}/securitygroups/{sgId}")
+    @Path("/{sgId}")
     @DELETE
     public void deleteSecurityGroup(@PathParam("sgId") Long sgId, @PathParam("deviceId") Long deviceId)
             throws Exception {
         LOG.info(String.format("Deleting the security group for id %s ", Long.toString(sgId)));
-        SecurityGroupApis.this.sgApi.deleteSecurityGroup(Long.toString(deviceId), Long.toString(sgId));
+        this.validationUtil.getDeviceOrThrow(Long.toString(deviceId));
+        VSElement vs = new VSElement(deviceId, null);
+        this.sgApi = new IsmSecurityGroupApi(vs, this.txControl, this.em);
+        this.sgApi.deleteSecurityGroup(Long.toString(sgId));
     }
 
-    @Path("/{deviceId}/securitygroups")
     @GET
     public List<String> getSecurityGroupIds(@PathParam("deviceId") Long deviceId) throws Exception {
         LOG.info("Listing security group ids'");
-        List<? extends ManagerSecurityGroupElement> securityGroups = this.sgApi
-                .getSecurityGroupList(Long.toString(deviceId));
+        this.validationUtil.getDeviceOrThrow(Long.toString(deviceId));
+        VSElement vs = new VSElement(deviceId, null);
+        this.sgApi = new IsmSecurityGroupApi(vs, this.txControl, this.em);
+        List<? extends ManagerSecurityGroupElement> securityGroups = this.sgApi.getSecurityGroupList();
         List<String> sgList = new ArrayList<String>();
         if (!securityGroups.isEmpty()) {
             sgList = securityGroups.stream().map(ManagerSecurityGroupElement::getSGId).collect(Collectors.toList());
@@ -92,11 +116,14 @@ public class SecurityGroupApis {
         return sgList;
     }
 
-    @Path("/{deviceId}/securitygroups/{sgId}")
+    @Path("/{sgId}")
     @GET
     public SecurityGroupEntity getSecurityGroup(@PathParam("sgId") Long sgId, @PathParam("deviceId") Long deviceId)
             throws Exception {
         LOG.info(String.format("Getting the security group for id %s ", Long.toString(sgId)));
-        return this.sgApi.getSecurityGroup(Long.toString(deviceId), Long.toString(sgId));
+        this.validationUtil.getDeviceOrThrow(Long.toString(deviceId));
+        VSElement vs = new VSElement(deviceId, null);
+        this.sgApi = new IsmSecurityGroupApi(vs, this.txControl, this.em);
+        return (SecurityGroupEntity) this.sgApi.getSecurityGroupById(Long.toString(sgId));
     }
 }

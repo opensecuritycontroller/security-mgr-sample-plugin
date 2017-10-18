@@ -50,16 +50,12 @@ public class SecurityGroupEntity implements ManagerSecurityGroupElement {
     @JoinColumn(name = "device_fk", nullable = false, foreignKey = @ForeignKey(name = "FK_SG_DEVICE"))
     private DeviceEntity device;
 
-    public SecurityGroupEntity() {
+    SecurityGroupEntity() {
     }
 
     public SecurityGroupEntity(String name, DeviceEntity device) {
         this.name = name;
         this.device = device;
-    }
-
-    public SecurityGroupEntity(String name) {
-        this.name = name;
     }
 
     public Long getId() {
@@ -94,9 +90,5 @@ public class SecurityGroupEntity implements ManagerSecurityGroupElement {
 
     public DeviceEntity getDevice() {
         return this.device;
-    }
-
-    public void setDevice(DeviceEntity device) {
-        this.device = device;
     }
 }

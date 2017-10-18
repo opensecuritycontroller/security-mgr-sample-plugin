@@ -38,9 +38,13 @@ import org.slf4j.LoggerFactory;
 public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
 
     private static final Logger LOG = LoggerFactory.getLogger(IsmSecurityGroupApi.class);
+
     private VirtualSystemElement vs;
+
     private TransactionControl txControl;
+
     private EntityManager em;
+
     private ValidationUtil validationUtil;
 
     public IsmSecurityGroupApi(VirtualSystemElement vs, TransactionControl txControl, EntityManager em) {
@@ -59,14 +63,8 @@ public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
     @Override
     public String createSecurityGroup(String name, String oscSgId, SecurityGroupMemberListElement memberList)
             throws Exception {
-        // TODO : SUDHIR - Please handle the memberList
-        return createSecurityGroup(IsmSecurityGroupApi.this.vs.getMgrId(), name, oscSgId, memberList);
-    }
-
-    public String createSecurityGroup(String mgrDeviceId, String name, String oscSgId,
-            SecurityGroupMemberListElement memberList)
-                    throws Exception {
-        DeviceEntity device = this.validationUtil.getDeviceOrThrow(mgrDeviceId);
+        // TODO Sudhir: Please handle the memberList
+        DeviceEntity device = this.validationUtil.getDeviceOrThrow(this.vs.getMgrId());
 
         SecurityGroupEntity existingSG = findSecurityGroupByName(name, device);
         if (existingSG != null) {
@@ -84,15 +82,10 @@ public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
     @Override
     public void updateSecurityGroup(String mgrSecurityGroupId, String name, SecurityGroupMemberListElement memberList)
             throws Exception {
-        updateSecurityGroup(this.vs.getMgrId(), mgrSecurityGroupId, name, memberList);
-    }
 
-    public void updateSecurityGroup(String mgrDeviceId, String mgrSecurityGroupId, String name,
-            SecurityGroupMemberListElement memberList) throws Exception {
-        SecurityGroupEntity existingSg = getSecurityGroup(mgrDeviceId, mgrSecurityGroupId);
+        SecurityGroupEntity existingSg = (SecurityGroupEntity) getSecurityGroupById(mgrSecurityGroupId);
         if (existingSg == null) {
-            String message = String.format("A security group with id %s was not found.", mgrSecurityGroupId);
-            throw new IllegalArgumentException(message);
+            throw new Exception(String.format("A security group with id %s was not found.", mgrSecurityGroupId));
         }
         existingSg.setName(name);
         this.txControl.required(() -> {
@@ -103,16 +96,12 @@ public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
 
     @Override
     public void deleteSecurityGroup(String mgrSecurityGroupId) throws Exception {
-        deleteSecurityGroup(IsmSecurityGroupApi.this.vs.getMgrId(), mgrSecurityGroupId);
-    }
-
-    public void deleteSecurityGroup(String mgrDeviceId, String mgrSecurityGroupId) throws Exception {
-        this.txControl.required(()-> {
-            SecurityGroupEntity existingSg = getSecurityGroup(mgrDeviceId, mgrSecurityGroupId);
+        this.txControl.required(() -> {
+            SecurityGroupEntity existingSg = (SecurityGroupEntity) getSecurityGroupById(mgrSecurityGroupId);
             if (existingSg == null) {
-                LOG.warn(String.format("A security group with id %s was not found.", mgrSecurityGroupId));
-                return null;
+                throw new Exception(String.format("A security group with id %s was not found.", mgrSecurityGroupId));
             }
+
             IsmSecurityGroupApi.this.em.remove(existingSg);
             return null;
         });
@@ -120,17 +109,13 @@ public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
 
     @Override
     public List<? extends ManagerSecurityGroupElement> getSecurityGroupList() throws Exception {
-        return getSecurityGroupList(this.vs.getMgrId());
-    }
-
-    public List<? extends ManagerSecurityGroupElement> getSecurityGroupList(String mgrDeviceId) throws Exception {
-
-        DeviceEntity device = this.validationUtil.getDeviceOrThrow(mgrDeviceId);
+        DeviceEntity device = this.validationUtil.getDeviceOrThrow(this.vs.getMgrId());
 
         return this.txControl.supports(() -> {
             CriteriaBuilder cb = IsmSecurityGroupApi.this.em.getCriteriaBuilder();
             CriteriaQuery<SecurityGroupEntity> query = cb.createQuery(SecurityGroupEntity.class);
             Root<SecurityGroupEntity> root = query.from(SecurityGroupEntity.class);
+
             query.select(root).where(cb.equal(root.get("device"), device));
             return IsmSecurityGroupApi.this.em.createQuery(query).getResultList();
         });
@@ -138,17 +123,12 @@ public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
 
     @Override
     public ManagerSecurityGroupElement getSecurityGroupById(String mgrSecurityGroupId) throws Exception {
-        return getSecurityGroup(this.vs.getMgrId(), mgrSecurityGroupId);
-    }
-
-    public SecurityGroupEntity getSecurityGroup(String mgrDeviceId, String mgrSecurityGroupId) throws Exception {
         if (mgrSecurityGroupId == null) {
             return null;
         }
-        DeviceEntity device = this.validationUtil.getDeviceOrThrow(mgrDeviceId);
+        DeviceEntity device = this.validationUtil.getDeviceOrThrow(this.vs.getMgrId());
 
         return this.txControl.supports(() -> {
-
             CriteriaBuilder cb = IsmSecurityGroupApi.this.em.getCriteriaBuilder();
             CriteriaQuery<SecurityGroupEntity> query = cb.createQuery(SecurityGroupEntity.class);
             Root<SecurityGroupEntity> root = query.from(SecurityGroupEntity.class);
@@ -157,7 +137,6 @@ public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
                     cb.equal(root.get("device"), device));
 
             SecurityGroupEntity result = null;
-
             try {
                 result = IsmSecurityGroupApi.this.em.createQuery(query).getSingleResult();
             } catch (NoResultException e) {
@@ -196,4 +175,5 @@ public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
             return null;
         });
     }
+
 }
