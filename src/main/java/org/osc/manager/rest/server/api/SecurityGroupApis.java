@@ -16,7 +16,6 @@
  *******************************************************************************/
 package org.osc.manager.rest.server.api;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,7 +34,7 @@ import org.osc.manager.ism.api.IsmSecurityGroupApi;
 import org.osc.manager.ism.api.util.ValidationUtil;
 import org.osc.manager.ism.entities.DeviceEntity;
 import org.osc.manager.ism.entities.SecurityGroupEntity;
-import org.osc.manager.ism.entities.VSElement;
+import org.osc.manager.ism.entities.VirtualSystemElementImpl;
 import org.osc.sdk.manager.element.ManagerSecurityGroupElement;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.transaction.control.TransactionControl;
@@ -68,11 +67,16 @@ public class SecurityGroupApis {
     public String createSecurityGroup(@PathParam("deviceId") Long deviceId, SecurityGroupEntity entity)
             throws Exception {
         LOG.info(String.format("Creating security group  with name %s", entity.getName()));
+
         DeviceEntity device = this.validationUtil.getDeviceOrThrow(Long.toString(deviceId));
-        this.validationUtil.validateParentIdMatches(device, Long.parseLong(entity.getDevice().getId()));
+        this.validationUtil.validateParentIdMatches(device, Long.parseLong(entity.getDevice().getId()),
+                "SecurityGroup");
+
         // TODO : SUDHIR - Add SecurityGroupMember
-        VSElement vs = new VSElement(deviceId, null);
+
+        VirtualSystemElementImpl vs = new VirtualSystemElementImpl(deviceId, null);
         this.sgApi = new IsmSecurityGroupApi(vs, this.txControl, this.em);
+
         return this.sgApi.createSecurityGroup(entity.getName(), null, null);
     }
 
@@ -82,12 +86,18 @@ public class SecurityGroupApis {
             SecurityGroupEntity entity)
                     throws Exception {
         LOG.info(String.format("Updating the security group for id %s ", Long.toString(sgId)));
+
         DeviceEntity device = this.validationUtil.getDeviceOrThrow(Long.toString(deviceId));
-        this.validationUtil.validateParentIdMatches(device, Long.parseLong(entity.getDevice().getId()));
+        this.validationUtil.validateParentIdMatches(device, Long.parseLong(entity.getDevice().getId()),
+                "SecurityGroup");
+
         // TODO : SUDHIR - Add SecurityGroupMember
-        VSElement vs = new VSElement(deviceId, null);
+
+        VirtualSystemElementImpl vs = new VirtualSystemElementImpl(deviceId, null);
         this.sgApi = new IsmSecurityGroupApi(vs, this.txControl, this.em);
+
         this.sgApi.updateSecurityGroup(Long.toString(sgId), entity.getName(), null);
+
         return entity;
     }
 
@@ -96,24 +106,26 @@ public class SecurityGroupApis {
     public void deleteSecurityGroup(@PathParam("sgId") Long sgId, @PathParam("deviceId") Long deviceId)
             throws Exception {
         LOG.info(String.format("Deleting the security group for id %s ", Long.toString(sgId)));
+
         this.validationUtil.getDeviceOrThrow(Long.toString(deviceId));
-        VSElement vs = new VSElement(deviceId, null);
+
+        VirtualSystemElementImpl vs = new VirtualSystemElementImpl(deviceId, null);
         this.sgApi = new IsmSecurityGroupApi(vs, this.txControl, this.em);
+
         this.sgApi.deleteSecurityGroup(Long.toString(sgId));
     }
 
     @GET
     public List<String> getSecurityGroupIds(@PathParam("deviceId") Long deviceId) throws Exception {
         LOG.info("Listing security group ids'");
+
         this.validationUtil.getDeviceOrThrow(Long.toString(deviceId));
-        VSElement vs = new VSElement(deviceId, null);
+
+        VirtualSystemElementImpl vs = new VirtualSystemElementImpl(deviceId, null);
         this.sgApi = new IsmSecurityGroupApi(vs, this.txControl, this.em);
-        List<? extends ManagerSecurityGroupElement> securityGroups = this.sgApi.getSecurityGroupList();
-        List<String> sgList = new ArrayList<String>();
-        if (!securityGroups.isEmpty()) {
-            sgList = securityGroups.stream().map(ManagerSecurityGroupElement::getSGId).collect(Collectors.toList());
-        }
-        return sgList;
+
+        return this.sgApi.getSecurityGroupList().stream().map(ManagerSecurityGroupElement::getSGId)
+                .collect(Collectors.toList());
     }
 
     @Path("/{sgId}")
@@ -121,9 +133,12 @@ public class SecurityGroupApis {
     public SecurityGroupEntity getSecurityGroup(@PathParam("sgId") Long sgId, @PathParam("deviceId") Long deviceId)
             throws Exception {
         LOG.info(String.format("Getting the security group for id %s ", Long.toString(sgId)));
+
         this.validationUtil.getDeviceOrThrow(Long.toString(deviceId));
-        VSElement vs = new VSElement(deviceId, null);
+
+        VirtualSystemElementImpl vs = new VirtualSystemElementImpl(deviceId, null);
         this.sgApi = new IsmSecurityGroupApi(vs, this.txControl, this.em);
+
         return (SecurityGroupEntity) this.sgApi.getSecurityGroupById(Long.toString(sgId));
     }
 }

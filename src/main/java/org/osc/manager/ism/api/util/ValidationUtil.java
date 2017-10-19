@@ -44,11 +44,12 @@ public class ValidationUtil {
         return device;
     }
 
-    public void validateParentIdMatches(DeviceEntity entity, Long parentId)
+    public void validateParentIdMatches(DeviceEntity entity, Long parentId, String objName)
             throws Exception {
         if (!parentId.equals(Long.parseLong(entity.getId()))) {
             throw new IllegalArgumentException(
-                    String.format("id mismatch between SG device and passed value: %s", parentId));
+                    String.format("The ID %s specified in the '%s' data does not match the id specified in the URL",
+                            entity.getId(), objName));
         }
     }
 }

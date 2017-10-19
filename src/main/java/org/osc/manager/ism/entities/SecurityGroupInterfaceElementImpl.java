@@ -22,7 +22,7 @@ import java.util.Set;
 import org.osc.sdk.manager.element.ManagerPolicyElement;
 import org.osc.sdk.manager.element.SecurityGroupInterfaceElement;
 
-public class SGInterfaceElement implements SecurityGroupInterfaceElement {
+public class SecurityGroupInterfaceElementImpl implements SecurityGroupInterfaceElement {
 
     private Long id;
 
@@ -34,10 +34,10 @@ public class SGInterfaceElement implements SecurityGroupInterfaceElement {
 
     private SecurityGroupEntity securityGroup;
 
-    public SGInterfaceElement() {
+    SecurityGroupInterfaceElementImpl() {
     }
 
-    public SGInterfaceElement(SecurityGroupInterfaceEntity entity) {
+    public SecurityGroupInterfaceElementImpl(SecurityGroupInterfaceEntity entity) {
         this.id = entity.getId();
         this.name = entity.getName();
         this.policies = entity.getPolicies();

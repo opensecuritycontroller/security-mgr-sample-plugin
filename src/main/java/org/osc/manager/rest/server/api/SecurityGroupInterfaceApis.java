@@ -16,7 +16,6 @@
  *******************************************************************************/
 package org.osc.manager.rest.server.api;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,10 +33,10 @@ import javax.ws.rs.core.MediaType;
 import org.osc.manager.ism.api.IsmSecurityGroupInterfaceApi;
 import org.osc.manager.ism.api.util.ValidationUtil;
 import org.osc.manager.ism.entities.DeviceEntity;
-import org.osc.manager.ism.entities.SGInterfaceElement;
 import org.osc.manager.ism.entities.SecurityGroupEntity;
+import org.osc.manager.ism.entities.SecurityGroupInterfaceElementImpl;
 import org.osc.manager.ism.entities.SecurityGroupInterfaceEntity;
-import org.osc.manager.ism.entities.VSElement;
+import org.osc.manager.ism.entities.VirtualSystemElementImpl;
 import org.osc.sdk.manager.element.ManagerSecurityGroupInterfaceElement;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.transaction.control.TransactionControl;
@@ -71,69 +70,84 @@ public class SecurityGroupInterfaceApis {
             SecurityGroupInterfaceEntity entity)
                     throws Exception {
         LOG.info(String.format("Creating the security group interface with name %s ", entity.getName()));
+
         DeviceEntity device = this.validationUtil.getDeviceOrThrow(Long.toString(deviceId));
-        this.validationUtil.validateParentIdMatches(device, Long.parseLong(entity.getDevice().getId()));
-        VSElement vs = new VSElement(deviceId, null);
+        this.validationUtil.validateParentIdMatches(device, Long.parseLong(entity.getDevice().getId()),
+                "SecurityGroupInterface");
+
+        VirtualSystemElementImpl vs = new VirtualSystemElementImpl(deviceId, null);
         this.sgiApi = new IsmSecurityGroupInterfaceApi(vs, null, this.txControl, this.em);
+
         if (entity.getSecurityGroup() != null) {
             SecurityGroupEntity sgElement = new SecurityGroupEntity(entity.getName(), entity.getDevice());
             sgElement.setId(entity.getSecurityGroup().getId());
             entity.setSecurityGroup(sgElement);
         }
-        return this.sgiApi.createSecurityGroupInterface(new SGInterfaceElement(entity));
+
+        return this.sgiApi.createSecurityGroupInterface(new SecurityGroupInterfaceElementImpl(entity));
     }
 
-    @Path("/{sgIntfId}")
+    @Path("/{sgiId}")
     @PUT
-    public SecurityGroupInterfaceEntity updateSecurityGroupInterface(@PathParam("sgIntfId") Long sgIntfId,
+    public SecurityGroupInterfaceEntity updateSecurityGroupInterface(@PathParam("sgiId") Long sgiId,
             @PathParam("deviceId") Long deviceId, SecurityGroupInterfaceEntity entity) throws Exception {
-        LOG.info(String.format("Updating the security group interface with sginterfaceid %s", Long.toString(sgIntfId)));
+        LOG.info(String.format("Updating the security group interface with sginterfaceid %s", Long.toString(sgiId)));
+
         DeviceEntity device = this.validationUtil.getDeviceOrThrow(Long.toString(deviceId));
-        this.validationUtil.validateParentIdMatches(device, Long.parseLong(entity.getDevice().getId()));
-        VSElement vs = new VSElement(deviceId, null);
+        this.validationUtil.validateParentIdMatches(device, Long.parseLong(entity.getDevice().getId()),
+                "SecurityGroupInterface");
+
+        VirtualSystemElementImpl vs = new VirtualSystemElementImpl(deviceId, null);
         this.sgiApi = new IsmSecurityGroupInterfaceApi(vs, null, this.txControl, this.em);
-        entity.setId(sgIntfId);
-        this.sgiApi.updateSecurityGroupInterface(new SGInterfaceElement(entity));
+        entity.setId(sgiId);
+
+        this.sgiApi.updateSecurityGroupInterface(new SecurityGroupInterfaceElementImpl(entity));
+
         return entity;
     }
 
-    @Path("/{sgIntfId}")
+    @Path("/{sgiId}")
     @DELETE
-    public void deleteSecurityGroupInterface(@PathParam("sgIntfId") Long sgIntfId, @PathParam("deviceId") Long deviceId)
+    public void deleteSecurityGroupInterface(@PathParam("sgiId") Long sgiId, @PathParam("deviceId") Long deviceId)
             throws Exception {
-        LOG.info(String.format("Deleting the security group interface with sginterfaceid %s", Long.toString(sgIntfId)));
+        LOG.info(String.format("Deleting the security group interface with sginterfaceid %s", Long.toString(sgiId)));
+
         this.validationUtil.getDeviceOrThrow(Long.toString(deviceId));
-        VSElement vs = new VSElement(deviceId, null);
+
+        VirtualSystemElementImpl vs = new VirtualSystemElementImpl(deviceId, null);
         this.sgiApi = new IsmSecurityGroupInterfaceApi(vs, null, this.txControl, this.em);
-        this.sgiApi.deleteSecurityGroupInterface(Long.toString(sgIntfId));
+
+        this.sgiApi.deleteSecurityGroupInterface(Long.toString(sgiId));
     }
 
     @GET
     public List<String> getSecurityGroupInterfaceIds(@PathParam("deviceId") Long deviceId)
             throws Exception {
         LOG.info("Listing security group interface ids'");
+
         this.validationUtil.getDeviceOrThrow(Long.toString(deviceId));
-        VSElement vs = new VSElement(deviceId, null);
+
+        VirtualSystemElementImpl vs = new VirtualSystemElementImpl(deviceId, null);
         this.sgiApi = new IsmSecurityGroupInterfaceApi(vs, null, this.txControl, this.em);
-        List<? extends ManagerSecurityGroupInterfaceElement> sgiElements = this.sgiApi.listSecurityGroupInterfaces();
-        List<String> sgiList = new ArrayList<String>();
-        if (!sgiElements.isEmpty()) {
-            sgiList = sgiElements.stream().map(ManagerSecurityGroupInterfaceElement::getSecurityGroupInterfaceId)
-                    .collect(Collectors.toList());
-        }
-        return sgiList;
+
+        return this.sgiApi.listSecurityGroupInterfaces().stream()
+                .map(ManagerSecurityGroupInterfaceElement::getSecurityGroupInterfaceId).collect(Collectors.toList());
     }
 
-    @Path("/{sgIntfId}")
+    @Path("/{sgiId}")
     @GET
-    public SecurityGroupInterfaceEntity getSecurityGroupInterface(@PathParam("sgIntfId") Long sgIntfId,
+    public SecurityGroupInterfaceEntity getSecurityGroupInterface(@PathParam("sgiId") Long sgiId,
             @PathParam("deviceId") Long deviceId) throws Exception {
-        LOG.info(String.format("getting the security group interface with sginterfaceid %s", Long.toString(sgIntfId)));
+        LOG.info(String.format("getting the security group interface with sginterfaceid %s", Long.toString(sgiId)));
+
         this.validationUtil.getDeviceOrThrow(Long.toString(deviceId));
-        VSElement vs = new VSElement(deviceId, null);
+
+        VirtualSystemElementImpl vs = new VirtualSystemElementImpl(deviceId, null);
         this.sgiApi = new IsmSecurityGroupInterfaceApi(vs, null, this.txControl, this.em);
+
         SecurityGroupInterfaceEntity sgiElement = (SecurityGroupInterfaceEntity) this.sgiApi
-                .getSecurityGroupInterfaceById(Long.toString(sgIntfId));
+                .getSecurityGroupInterfaceById(Long.toString(sgiId));
+
         return sgiElement == null ? null : sgiElement;
     }
 }

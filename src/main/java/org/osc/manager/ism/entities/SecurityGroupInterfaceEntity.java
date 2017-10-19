@@ -48,15 +48,15 @@ public class SecurityGroupInterfaceEntity implements ManagerSecurityGroupInterfa
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "SECURITY_GROUP_INTERFACE_POLICY",
-    joinColumns = @JoinColumn(name = "sgi_fk", referencedColumnName = "id"),
-    inverseJoinColumns = @JoinColumn(name = "policy_fk", referencedColumnName = "id"))
+            joinColumns = @JoinColumn(name = "sgi_fk", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "policy_fk", referencedColumnName = "id"))
     private Set<PolicyEntity> policies = new HashSet<>();
 
     @Column(name = "tag", nullable = true)
     private String tag;
 
-    @OneToOne(fetch=FetchType.EAGER)@JoinColumn(name="security_group_fk",nullable=true,foreignKey=
-            @ForeignKey(name = "FK_SECURITY_GROUP"))
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "security_group_fk", nullable = true, foreignKey = @ForeignKey(name = "FK_SECURITY_GROUP"))
     private SecurityGroupEntity securityGroup;
 
     @ManyToOne(fetch = FetchType.EAGER)

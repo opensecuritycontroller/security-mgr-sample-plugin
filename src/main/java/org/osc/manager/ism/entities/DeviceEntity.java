@@ -45,8 +45,12 @@ public class DeviceEntity implements ManagerDeviceElement {
 
     @OneToMany(mappedBy = "device", fetch = FetchType.EAGER)
     private List<DeviceMemberEntity> deviceMembers = new ArrayList<DeviceMemberEntity>();
+
+    // There can be only one list element, otherwise results in multiple bag sql exception.
     @OneToMany(mappedBy = "device", fetch = FetchType.EAGER)
     private Set<SecurityGroupEntity> securityGroups;
+
+    // There can be only one list element, otherwise results in multiple bag sql exception.
     @OneToMany(mappedBy = "device", fetch = FetchType.EAGER)
     private Set<SecurityGroupInterfaceEntity> securityGroupInterfaces;
 

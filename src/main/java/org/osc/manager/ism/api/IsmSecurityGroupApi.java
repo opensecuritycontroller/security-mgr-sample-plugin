@@ -96,13 +96,14 @@ public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
 
     @Override
     public void deleteSecurityGroup(String mgrSecurityGroupId) throws Exception {
-        this.txControl.required(() -> {
-            SecurityGroupEntity existingSg = (SecurityGroupEntity) getSecurityGroupById(mgrSecurityGroupId);
-            if (existingSg == null) {
-                throw new Exception(String.format("A security group with id %s was not found.", mgrSecurityGroupId));
-            }
 
-            IsmSecurityGroupApi.this.em.remove(existingSg);
+        SecurityGroupEntity existingSg = (SecurityGroupEntity) getSecurityGroupById(mgrSecurityGroupId);
+        if (existingSg == null) {
+            LOG.warn(String.format("A security group with id %s was not found.", mgrSecurityGroupId));
+        }
+
+        this.txControl.required(() -> {
+            IsmSecurityGroupApi.this.em.remove(IsmSecurityGroupApi.this.em.merge(existingSg));
             return null;
         });
     }

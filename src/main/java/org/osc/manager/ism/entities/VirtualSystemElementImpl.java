@@ -22,7 +22,7 @@ import org.osc.sdk.manager.element.DomainElement;
 import org.osc.sdk.manager.element.VirtualSystemElement;
 import org.osc.sdk.manager.element.VirtualizationConnectorElement;
 
-public class VSElement implements VirtualSystemElement {
+public class VirtualSystemElementImpl implements VirtualSystemElement {
 
     private Long id;
 
@@ -30,7 +30,7 @@ public class VSElement implements VirtualSystemElement {
 
     private Long mgrId;
 
-    public VSElement(Long mgrId, String name) {
+    public VirtualSystemElementImpl(Long mgrId, String name) {
         this.mgrId = mgrId;
         this.name = name;
     }

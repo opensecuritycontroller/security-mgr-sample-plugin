@@ -122,14 +122,15 @@ public class IsmSecurityGroupInterfaceApi implements ManagerSecurityGroupInterfa
 
     @Override
     public void deleteSecurityGroupInterface(String id) throws Exception {
-        this.txControl.required(() -> {
-            SecurityGroupInterfaceEntity existingSgi = (SecurityGroupInterfaceEntity) getSecurityGroupInterfaceById(id);
-            if (existingSgi == null) {
-                LOG.warn(String.format("Security group interface with id %s was not found.", id));
-                return null;
-            }
 
-            IsmSecurityGroupInterfaceApi.this.em.remove(existingSgi);
+        SecurityGroupInterfaceEntity existingSgi = (SecurityGroupInterfaceEntity) getSecurityGroupInterfaceById(id);
+        if (existingSgi == null) {
+            LOG.warn(String.format("Security group interface with id %s was not found.", id));
+            return;
+        }
+
+        this.txControl.required(() -> {
+            IsmSecurityGroupInterfaceApi.this.em.remove(IsmSecurityGroupInterfaceApi.this.em.merge(existingSgi));
             return null;
         });
     }
