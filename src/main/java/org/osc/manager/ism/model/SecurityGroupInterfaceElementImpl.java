@@ -14,11 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package org.osc.manager.ism.entities;
+package org.osc.manager.ism.model;
 
 import java.util.HashSet;
 import java.util.Set;
 
+import org.osc.manager.ism.entities.PolicyEntity;
+import org.osc.manager.ism.entities.SecurityGroupEntity;
+import org.osc.manager.ism.entities.SecurityGroupInterfaceEntity;
 import org.osc.sdk.manager.element.ManagerPolicyElement;
 import org.osc.sdk.manager.element.SecurityGroupInterfaceElement;
 

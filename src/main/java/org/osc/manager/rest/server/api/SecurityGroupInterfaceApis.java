@@ -34,9 +34,9 @@ import org.osc.manager.ism.api.IsmSecurityGroupInterfaceApi;
 import org.osc.manager.ism.api.util.ValidationUtil;
 import org.osc.manager.ism.entities.DeviceEntity;
 import org.osc.manager.ism.entities.SecurityGroupEntity;
-import org.osc.manager.ism.entities.SecurityGroupInterfaceElementImpl;
 import org.osc.manager.ism.entities.SecurityGroupInterfaceEntity;
-import org.osc.manager.ism.entities.VirtualSystemElementImpl;
+import org.osc.manager.ism.model.SecurityGroupInterfaceElementImpl;
+import org.osc.manager.ism.model.VirtualSystemElementImpl;
 import org.osc.sdk.manager.element.ManagerSecurityGroupInterfaceElement;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.transaction.control.TransactionControl;
@@ -145,9 +145,6 @@ public class SecurityGroupInterfaceApis {
         VirtualSystemElementImpl vs = new VirtualSystemElementImpl(deviceId, null);
         this.sgiApi = new IsmSecurityGroupInterfaceApi(vs, null, this.txControl, this.em);
 
-        SecurityGroupInterfaceEntity sgiElement = (SecurityGroupInterfaceEntity) this.sgiApi
-                .getSecurityGroupInterfaceById(Long.toString(sgiId));
-
-        return sgiElement == null ? null : sgiElement;
+        return (SecurityGroupInterfaceEntity) this.sgiApi.getSecurityGroupInterfaceById(Long.toString(sgiId));
     }
 }

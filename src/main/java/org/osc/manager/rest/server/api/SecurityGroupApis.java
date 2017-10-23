@@ -34,7 +34,7 @@ import org.osc.manager.ism.api.IsmSecurityGroupApi;
 import org.osc.manager.ism.api.util.ValidationUtil;
 import org.osc.manager.ism.entities.DeviceEntity;
 import org.osc.manager.ism.entities.SecurityGroupEntity;
-import org.osc.manager.ism.entities.VirtualSystemElementImpl;
+import org.osc.manager.ism.model.VirtualSystemElementImpl;
 import org.osc.sdk.manager.element.ManagerSecurityGroupElement;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.transaction.control.TransactionControl;

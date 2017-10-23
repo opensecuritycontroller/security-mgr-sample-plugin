@@ -56,7 +56,7 @@ public class SecurityGroupInterfaceEntity implements ManagerSecurityGroupInterfa
     private String tag;
 
     @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "security_group_fk", nullable = true, foreignKey = @ForeignKey(name = "FK_SECURITY_GROUP"))
+    @JoinColumn(name = "security_group_fk", nullable = true, foreignKey = @ForeignKey(name = "FK_SGI_SG"))
     private SecurityGroupEntity securityGroup;
 
     @ManyToOne(fetch = FetchType.EAGER)

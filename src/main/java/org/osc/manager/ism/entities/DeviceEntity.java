@@ -17,8 +17,6 @@
 package org.osc.manager.ism.entities;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -79,16 +77,8 @@ public class DeviceEntity implements ManagerDeviceElement {
         return this.deviceMembers;
     }
 
-    public void setSecurityGroups(Collection<SecurityGroupEntity> securityGroups) {
-        this.securityGroups = new HashSet<>(securityGroups);
-    }
-
     public Set<SecurityGroupEntity> getSecurityGroups() {
         return this.securityGroups;
-    }
-
-    public void setSecurityGroupInterfaces(Collection<SecurityGroupInterfaceEntity> sgi) {
-        this.securityGroupInterfaces = new HashSet<>(sgi);
     }
 
     public Set<SecurityGroupInterfaceEntity> getSecurityGroupInterfaces() {

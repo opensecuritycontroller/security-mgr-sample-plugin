@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package org.osc.manager.ism.entities;
+package org.osc.manager.ism.model;
 
 import org.osc.sdk.manager.element.ApplianceSoftwareVersionElement;
 import org.osc.sdk.manager.element.DistributedApplianceElement;
