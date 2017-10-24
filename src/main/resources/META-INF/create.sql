@@ -38,8 +38,6 @@ alter table SECURITY_GROUP add constraint if not exists UK_SG_NAME_DEVICE unique
 
 alter table DEVICE_MEMBER add constraint if not exists FK_DEVICE foreign key (device_fk) references DEVICE;
 
-alter table SECURITY_GROUP_INTERFACE add constraint if not exists FK_SGI_DEVICE foreign key (device_fk) references DEVICE;
-
 alter table SECURITY_GROUP_INTERFACE_POLICY add constraint if not exists FK_SGI_POLICY_SGI foreign key (sgi_fk) references SECURITY_GROUP_INTERFACE;
 
 alter table SECURITY_GROUP_INTERFACE_POLICY add constraint if not exists FK_SGI_POLICY_POLICY foreign key (policy_fk) references POLICY;

@@ -33,7 +33,6 @@ import javax.ws.rs.core.MediaType;
 import org.osc.manager.ism.api.IsmSecurityGroupInterfaceApi;
 import org.osc.manager.ism.api.util.ValidationUtil;
 import org.osc.manager.ism.entities.DeviceEntity;
-import org.osc.manager.ism.entities.SecurityGroupEntity;
 import org.osc.manager.ism.entities.SecurityGroupInterfaceEntity;
 import org.osc.manager.ism.model.SecurityGroupInterfaceElementImpl;
 import org.osc.manager.ism.model.VirtualSystemElementImpl;
@@ -72,17 +71,11 @@ public class SecurityGroupInterfaceApis {
         LOG.info(String.format("Creating the security group interface with name %s ", entity.getName()));
 
         DeviceEntity device = this.validationUtil.getDeviceOrThrow(Long.toString(deviceId));
-        this.validationUtil.validateParentIdMatches(device, Long.parseLong(entity.getDevice().getId()),
+        this.validationUtil.validateIdMatches(device, Long.parseLong(entity.getDevice().getId()),
                 "SecurityGroupInterface");
 
         VirtualSystemElementImpl vs = new VirtualSystemElementImpl(deviceId, null);
         this.sgiApi = new IsmSecurityGroupInterfaceApi(vs, null, this.txControl, this.em);
-
-        if (entity.getSecurityGroup() != null) {
-            SecurityGroupEntity sgElement = new SecurityGroupEntity(entity.getName(), entity.getDevice());
-            sgElement.setId(entity.getSecurityGroup().getId());
-            entity.setSecurityGroup(sgElement);
-        }
 
         return this.sgiApi.createSecurityGroupInterface(new SecurityGroupInterfaceElementImpl(entity));
     }
@@ -94,7 +87,7 @@ public class SecurityGroupInterfaceApis {
         LOG.info(String.format("Updating the security group interface with sginterfaceid %s", Long.toString(sgiId)));
 
         DeviceEntity device = this.validationUtil.getDeviceOrThrow(Long.toString(deviceId));
-        this.validationUtil.validateParentIdMatches(device, Long.parseLong(entity.getDevice().getId()),
+        this.validationUtil.validateIdMatches(device, Long.parseLong(entity.getDevice().getId()),
                 "SecurityGroupInterface");
 
         VirtualSystemElementImpl vs = new VirtualSystemElementImpl(deviceId, null);

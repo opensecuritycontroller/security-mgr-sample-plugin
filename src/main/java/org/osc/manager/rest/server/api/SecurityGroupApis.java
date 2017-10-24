@@ -69,7 +69,7 @@ public class SecurityGroupApis {
         LOG.info(String.format("Creating security group  with name %s", entity.getName()));
 
         DeviceEntity device = this.validationUtil.getDeviceOrThrow(Long.toString(deviceId));
-        this.validationUtil.validateParentIdMatches(device, Long.parseLong(entity.getDevice().getId()),
+        this.validationUtil.validateIdMatches(device, Long.parseLong(entity.getDevice().getId()),
                 "SecurityGroup");
 
         // TODO : SUDHIR - Add SecurityGroupMember
@@ -88,7 +88,7 @@ public class SecurityGroupApis {
         LOG.info(String.format("Updating the security group for id %s ", Long.toString(sgId)));
 
         DeviceEntity device = this.validationUtil.getDeviceOrThrow(Long.toString(deviceId));
-        this.validationUtil.validateParentIdMatches(device, Long.parseLong(entity.getDevice().getId()),
+        this.validationUtil.validateIdMatches(device, Long.parseLong(entity.getDevice().getId()),
                 "SecurityGroup");
 
         // TODO : SUDHIR - Add SecurityGroupMember
