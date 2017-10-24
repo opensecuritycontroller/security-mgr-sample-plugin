@@ -38,106 +38,108 @@ import org.osc.sdk.manager.element.ManagerSecurityGroupInterfaceElement;
 @Entity
 @Table(name = "SECURITY_GROUP_INTERFACE")
 public class SecurityGroupInterfaceEntity implements ManagerSecurityGroupInterfaceElement {
-
-	@Id
+    @Id
     @GeneratedValue
     @Column(name = "id")
-	private Long id;
+    private Long id;
 
-	@Column(name = "name", unique = true, nullable = false)
+    @Column(name = "name", unique = true, nullable = false)
     private String name;
 
-	@ManyToMany(fetch = FetchType.EAGER)
-	@JoinTable(name = "SECURITY_GROUP_INTERFACE_POLICY",
-			joinColumns = @JoinColumn(name = "sgi_fk", referencedColumnName = "id"),
-			inverseJoinColumns = @JoinColumn(name = "policy_fk", referencedColumnName = "id"))
-	private Set<PolicyEntity> policies = new HashSet<>();
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "SECURITY_GROUP_INTERFACE_POLICY",
+            joinColumns = @JoinColumn(name = "sgi_fk", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "policy_fk", referencedColumnName = "id"))
+    private Set<PolicyEntity> policies = new HashSet<>();
 
-	@Column(name = "tag", nullable = true)
+    @Column(name = "tag", nullable = true)
     private String tag;
 
-	@OneToOne(fetch = FetchType.EAGER)
-	@JoinColumn(name = "security_group_fk", nullable = true, foreignKey = @ForeignKey(name = "FK_SGI_SG"))
-	private SecurityGroupEntity securityGroup;
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "security_group_fk", nullable = true, foreignKey = @ForeignKey(name = "FK_SGI_SG"))
+    private SecurityGroupEntity securityGroup;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "device_fk", nullable = false, foreignKey = @ForeignKey(name = "FK_SGI_DEVICE"))
     private DeviceEntity device;
 
-	SecurityGroupInterfaceEntity() {
-	}
+    SecurityGroupInterfaceEntity() {
+    }
 
-	public SecurityGroupInterfaceEntity(String name, Set<PolicyEntity> policies, String tag, SecurityGroupEntity mgrSecurityGroup, DeviceEntity device) {
-		this.name = name;
-		this.policies = policies;
-		this.tag = tag;
-		this.securityGroup = mgrSecurityGroup;
-		this.device = device;
-	}
+    public SecurityGroupInterfaceEntity(String name, Set<PolicyEntity> policies, String tag,
+            SecurityGroupEntity mgrSecurityGroup, DeviceEntity device) {
+        this.name = name;
+        this.policies = policies;
+        this.tag = tag;
+        this.securityGroup = mgrSecurityGroup;
+        this.device = device;
+    }
 
-	public Long getId() {
-		return this.id;
-	}
+    public Long getId() {
+        return this.id;
+    }
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-	@Override
-	public String getName() {
-		return this.name;
-	}
+    @Override
+    public String getName() {
+        return this.name;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public Set<PolicyEntity> getPolicies() {
-		return this.policies;
-	}
+    public Set<PolicyEntity> getPolicies() {
+        return this.policies;
+    }
 
-	public void setPolicies(Set<PolicyEntity> policies) {
-		this.policies = policies;
-	}
+    public void setPolicies(Set<PolicyEntity> policies) {
+        this.policies = policies;
+    }
 
-	@Override
-	public String getTag() {
-		return this.tag;
-	}
+    @Override
+    public String getTag() {
+        return this.tag;
+    }
 
-	public void setTag(String tag) {
-		this.tag = tag;
-	}
+    public void setTag(String tag) {
+        this.tag = tag;
+    }
 
-	public SecurityGroupEntity getSecurityGroup() {
-		return this.securityGroup;
-	}
+    public SecurityGroupEntity getSecurityGroup() {
+        return this.securityGroup;
+    }
 
-	public void setSecurityGroup(SecurityGroupEntity securityGroup) {
-		this.securityGroup = securityGroup;
-	}
+    public void setSecurityGroup(SecurityGroupEntity securityGroup) {
+        this.securityGroup = securityGroup;
+    }
 
-	@Override
-	public Set<ManagerPolicyElement> getManagerPolicyElements() {
-		Set<ManagerPolicyElement> managerPolicyElements = new HashSet<>();
-		for (PolicyEntity policy : this.policies) {
-			managerPolicyElements.add(policy);
-		}
-		return managerPolicyElements;
-	}
+    @Override
+    public Set<ManagerPolicyElement> getManagerPolicyElements() {
+        Set<ManagerPolicyElement> managerPolicyElements = new HashSet<>();
+        for (PolicyEntity policy : this.policies) {
+            managerPolicyElements.add(policy);
+        }
+        return managerPolicyElements;
+    }
 
-	@Override
-	public String getSecurityGroupInterfaceId() {
-		return getId() == null ? null : getId().toString();
-	}
+    @Override
+    public String getSecurityGroupInterfaceId() {
+        return getId() == null ? null : getId().toString();
+    }
 
-	@Override
-	public String getSecurityGroupId() {
-		return getSecurityGroup().getId() == null ? null : getSecurityGroup().getId().toString();
-	}
+    @Override
+    public String getSecurityGroupId() {
+        if (getSecurityGroup() != null) {
+            return getSecurityGroup().getId() == null ? null : getSecurityGroup().getId().toString();
+        }
+        return null;
+    }
 
     public DeviceEntity getDevice() {
         return this.device;
     }
-
 }

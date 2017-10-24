@@ -35,58 +35,58 @@ import org.osc.sdk.manager.element.ManagerSecurityGroupElement;
 @Table(name = "SECURITY_GROUP", uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "device_fk" }) })
 public class SecurityGroupEntity implements ManagerSecurityGroupElement {
 
-	@Id
-	@GeneratedValue
-	@Column(name = "id")
-	private Long id;
+    @Id
+    @GeneratedValue
+    @Column(name = "id")
+    private Long id;
 
-	@Column(name = "name", unique = true, nullable = false)
-	private String name;
+    @Column(name = "name", unique = true, nullable = false)
+    private String name;
 
-	@OneToOne(mappedBy = "securityGroup", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-	private SecurityGroupInterfaceEntity securityGroupInterfaces;
+    @OneToOne(mappedBy = "securityGroup", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private SecurityGroupInterfaceEntity securityGroupInterfaces;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "device_fk", nullable = false, foreignKey = @ForeignKey(name = "FK_SG_DEVICE"))
     private DeviceEntity device;
 
-	SecurityGroupEntity() {
-	}
+    SecurityGroupEntity() {
+    }
 
-	public SecurityGroupEntity(String name, DeviceEntity device) {
-		this.name = name;
-		this.device = device;
-	}
+    public SecurityGroupEntity(String name, DeviceEntity device) {
+        this.name = name;
+        this.device = device;
+    }
 
-	public Long getId() {
-		return this.id;
-	}
+    public Long getId() {
+        return this.id;
+    }
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-	public SecurityGroupInterfaceEntity getSecurityGroupInterfaces() {
-		return this.securityGroupInterfaces;
-	}
+    public SecurityGroupInterfaceEntity getSecurityGroupInterfaces() {
+        return this.securityGroupInterfaces;
+    }
 
-	public void setSecurityGroupInterfaces(SecurityGroupInterfaceEntity securityGroupInterfaces) {
-		this.securityGroupInterfaces = securityGroupInterfaces;
-	}
+    public void setSecurityGroupInterfaces(SecurityGroupInterfaceEntity securityGroupInterfaces) {
+        this.securityGroupInterfaces = securityGroupInterfaces;
+    }
 
-	@Override
-	public String getName() {
-		return this.name;
-	}
+    @Override
+    public String getName() {
+        return this.name;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	@Override
-	public String getSGId() {
-		return getId() == null ? null : getId().toString();
-	}
+    @Override
+    public String getSGId() {
+        return getId() == null ? null : getId().toString();
+    }
 
     public DeviceEntity getDevice() {
         return this.device;

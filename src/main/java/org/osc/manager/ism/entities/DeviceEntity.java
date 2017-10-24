@@ -18,6 +18,7 @@ package org.osc.manager.ism.entities;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -40,14 +41,16 @@ public class DeviceEntity implements ManagerDeviceElement {
     @Column(name = "name", unique = true, nullable = false)
     private String name;
 
-    @OneToMany(mappedBy = "device", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "device", fetch = FetchType.EAGER)
     private List<DeviceMemberEntity> deviceMembers = new ArrayList<DeviceMemberEntity>();
 
-    @OneToMany(mappedBy = "device", fetch = FetchType.LAZY)
-    private List<SecurityGroupEntity> securityGroups = new ArrayList<>();
+    // There can be only one list element, otherwise results in multiple bag sql exception.
+    @OneToMany(mappedBy = "device", fetch = FetchType.EAGER)
+    private Set<SecurityGroupEntity> securityGroups;
 
-    @OneToMany(mappedBy = "device", fetch = FetchType.LAZY)
-    private List<SecurityGroupInterfaceEntity> securityGroupsInterfaces = new ArrayList<>();
+    // There can be only one list element, otherwise results in multiple bag sql exception.
+    @OneToMany(mappedBy = "device", fetch = FetchType.EAGER)
+    private Set<SecurityGroupInterfaceEntity> securityGroupInterfaces;
 
     @Override
     public String getId() {
@@ -74,11 +77,11 @@ public class DeviceEntity implements ManagerDeviceElement {
         return this.deviceMembers;
     }
 
-    public List<SecurityGroupEntity> getSecurityGroups() {
+    public Set<SecurityGroupEntity> getSecurityGroups() {
         return this.securityGroups;
     }
 
-    public List<SecurityGroupInterfaceEntity> getSecurityGroupsInterfaces() {
-        return this.securityGroupsInterfaces;
+    public Set<SecurityGroupInterfaceEntity> getSecurityGroupInterfaces() {
+        return this.securityGroupInterfaces;
     }
 }

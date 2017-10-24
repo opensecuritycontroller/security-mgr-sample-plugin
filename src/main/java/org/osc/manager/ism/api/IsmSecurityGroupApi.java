@@ -38,10 +38,12 @@ import org.slf4j.LoggerFactory;
 public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
 
     private static final Logger LOG = LoggerFactory.getLogger(IsmSecurityGroupApi.class);
+
     private VirtualSystemElement vs;
 
-    private final TransactionControl txControl;
-    private final EntityManager em;
+    private TransactionControl txControl;
+
+    private EntityManager em;
 
     private ValidationUtil validationUtil;
 
@@ -94,13 +96,14 @@ public class IsmSecurityGroupApi implements ManagerSecurityGroupApi {
 
     @Override
     public void deleteSecurityGroup(String mgrSecurityGroupId) throws Exception {
+
         SecurityGroupEntity existingSg = (SecurityGroupEntity) getSecurityGroupById(mgrSecurityGroupId);
         if (existingSg == null) {
-            throw new Exception(String.format("A security group with id %s was not found.", mgrSecurityGroupId));
+            LOG.warn(String.format("A security group with id %s was not found.", mgrSecurityGroupId));
         }
 
         this.txControl.required(() -> {
-            IsmSecurityGroupApi.this.em.remove(existingSg);
+            IsmSecurityGroupApi.this.em.remove(IsmSecurityGroupApi.this.em.merge(existingSg));
             return null;
         });
     }

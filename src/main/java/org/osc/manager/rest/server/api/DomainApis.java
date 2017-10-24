@@ -36,21 +36,22 @@ import javax.ws.rs.core.MediaType;
 
 import org.osc.manager.ism.entities.DomainEntity;
 import org.osc.manager.ism.entities.PolicyEntity;
-import org.slf4j.LoggerFactory;
-import org.osc.manager.rest.server.SecurityManagerServerRestConstants;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.transaction.control.TransactionControl;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component(service = DomainApis.class)
-@Path(SecurityManagerServerRestConstants.SERVER_API_PATH_PREFIX + "/domains")
+@Path("/domains")
 @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 
 public class DomainApis {
 
     private static final Logger LOG = LoggerFactory.getLogger(DomainApis.class);
+
     private EntityManager em;
+
     private TransactionControl txControl;
 
     /**
@@ -215,7 +216,7 @@ public class DomainApis {
      * @throws Exception
      */
     @Path("/{domainId}/policies/{policyId}")
-	@GET
+    @GET
     public PolicyEntity getPolicy(@PathParam("domainId") Long domainId, @PathParam("policyId") Long policyId)
             throws Exception {
 

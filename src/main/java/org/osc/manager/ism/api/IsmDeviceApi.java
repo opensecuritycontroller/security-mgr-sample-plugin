@@ -383,9 +383,9 @@ public class IsmDeviceApi implements ManagerDeviceApi {
             deviceMember.setDiscovered(Boolean.TRUE);
             deviceMember.setInspectionReady(Boolean.TRUE);
             deviceMember.setVersion(ver);
-            deviceMember.setBrokerIp(null);
-            deviceMember.setRx(null);
-            deviceMember.setDropSva(null);
+            deviceMember.setBrokerIp(contactIpAddress);
+            deviceMember.setRx(10000L);
+            deviceMember.setDropSva(20000L);
         }
     }
 
@@ -397,7 +397,7 @@ public class IsmDeviceApi implements ManagerDeviceApi {
                 return getDeviceMember(Long.parseLong(IsmDeviceApi.this.vs.getMgrId()),
                         Long.parseLong(deviceMember.getId()),
                         null);
-            };
+            }
         });
 
         if (result != null) {

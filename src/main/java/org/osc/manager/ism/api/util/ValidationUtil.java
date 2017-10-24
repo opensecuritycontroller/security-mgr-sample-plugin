@@ -24,6 +24,7 @@ import org.osgi.service.transaction.control.TransactionControl;
 public class ValidationUtil {
 
     private final TransactionControl txControl;
+
     private final EntityManager em;
 
     public ValidationUtil(TransactionControl txControl, EntityManager em) {
@@ -41,5 +42,14 @@ public class ValidationUtil {
             throw new IllegalArgumentException(String.format("Cannot find device with id: %s", deviceId));
         }
         return device;
+    }
+
+    public void validateIdMatches(DeviceEntity entity, Long id, String objName)
+            throws Exception {
+        if (!id.equals(Long.parseLong(entity.getId()))) {
+            throw new IllegalArgumentException(
+                    String.format("The ID %s specified in the '%s' data does not match the id specified in the URL",
+                            entity.getId(), objName));
+        }
     }
 }

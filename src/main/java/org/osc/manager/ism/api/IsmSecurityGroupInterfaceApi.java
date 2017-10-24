@@ -84,7 +84,7 @@ public class IsmSecurityGroupInterfaceApi implements ManagerSecurityGroupInterfa
 
         @SuppressWarnings("resource")
         SecurityGroupEntity sg = (SecurityGroupEntity) new IsmSecurityGroupApi(this.vs, this.txControl, this.em)
-                .getSecurityGroupById(mgrSecurityGroupId);
+        .getSecurityGroupById(mgrSecurityGroupId);
         Set<PolicyEntity> policies = getPoliciesById(sgiElement);
 
         return this.txControl.required(() -> {
@@ -109,7 +109,7 @@ public class IsmSecurityGroupInterfaceApi implements ManagerSecurityGroupInterfa
 
         @SuppressWarnings("resource")
         SecurityGroupEntity sg = (SecurityGroupEntity) new IsmSecurityGroupApi(this.vs, this.txControl, this.em)
-                .getSecurityGroupById(sgiElement.getManagerSecurityGroupId());
+        .getSecurityGroupById(sgiElement.getManagerSecurityGroupId());
 
         existingSgi.setSecurityGroup(sg);
         existingSgi.setTag(sgiElement.getTag());
@@ -122,13 +122,15 @@ public class IsmSecurityGroupInterfaceApi implements ManagerSecurityGroupInterfa
 
     @Override
     public void deleteSecurityGroupInterface(String id) throws Exception {
+
         SecurityGroupInterfaceEntity existingSgi = (SecurityGroupInterfaceEntity) getSecurityGroupInterfaceById(id);
         if (existingSgi == null) {
             LOG.warn(String.format("Security group interface with id %s was not found.", id));
             return;
         }
+
         this.txControl.required(() -> {
-            IsmSecurityGroupInterfaceApi.this.em.remove(existingSgi);
+            IsmSecurityGroupInterfaceApi.this.em.remove(IsmSecurityGroupInterfaceApi.this.em.merge(existingSgi));
             return null;
         });
     }
